@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sheelbi — Login</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:        #0e0f11;
+      --bg2:       #16181c;
+      --bg3:       #1c1f24;
+      --bg4:       #22262d;
+      --input-bg:  #191c21;
+      --border:    #252930;
+      --border2:   #2e333d;
+      --border3:   #3a404d;
+      --text:      #e2e6ef;
+      --text2:     #7a8499;
+      --text3:     #4a5266;
+      --accent:    #6c7fff;
+      --accent2:   #8a9bff;
+      --amber:     #f0a855;
+      --danger:    #e05a6a;
+      --radius:    14px;
+      --radius-sm: 10px;
+      --radius-xs: 7px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+      background: #0e0f11;
+      color: #e2e6ef;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem 1.5rem;
+    }
+
+    /* LOGO */
+    .logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--amber));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 14px;
+      box-shadow: 0 6px 28px rgba(108,127,255,.28);
+    }
+
+    .logo h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .logo p {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 9px;
+      text-align: center;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--text2);
+      font-family: 'Hind Siliguri', sans-serif;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+
+    .tab.active {
+      background: var(--bg3);
+      color: var(--text);
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+
+    /* FORM */
+    .form-group { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: 'Hind Siliguri', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,127,255,.12);
+    }
+
+    input::placeholder { color: var(--text3); }
+
+    /* BUTTON */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent), #5060ee);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Hind Siliguri', sans-serif;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: all 0.2s;
+      box-shadow: 0 3px 14px rgba(108,127,255,.32);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 20px rgba(108,127,255,.44);
+    }
+
+    .btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* MESSAGES */
+    .error {
+      background: rgba(224,90,106,.1);
+      border: 1px solid rgba(224,90,106,.25);
+      color: var(--danger);
+      padding: 10px 14px;
+      border-radius: var(--radius-xs);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .success {
+      background: rgba(76,222,154,.08);
+      border: 1px solid rgba(76,222,154,.2);
+      color: #4cde9a;
+      padding: 10px 14px;
+      border-radius: var(--radius-xs);
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    /* FREE BADGE */
+    .free-badge {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text3);
+    }
+
+    .free-badge span { color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="logo">
+      <div class="logo-icon">🎓</div>
+      <h1>Sheelbi</h1>
+      <p>NCTB · ক্লাস ১–১২ · বাংলা অথবা Englis</p>
+    </div>
+
+    <!-- ── TABS (English) ── -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Login</button>
+      <button class="tab" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div id="error-box" class="error"></div>
+    <div id="success-box" class="success"></div>
+
+    <!-- ── NAME (register only) ── -->
+    <div class="form-group" id="register-name" style="display:none;">
+      <label>Your Name</label>
+      <input type="text" id="name" placeholder="e.g. Tasnim Zara" />
+    </div>
+
+    <!-- ── EMAIL ── -->
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="example@gmail.com" />
+    </div>
+
+    <!-- ── PASSWORD ── -->
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="At least 6 characters" />
+    </div>
+
+    <button class="btn" id="submit-btn" onclick="handleSubmit()">Login</button>
+
+    <div class="free-badge">
+      Start free — <span>10 questions/day</span> at no cost
+    </div>
+
+  </div>
+
+  <script>
+    let currentTab = 'login';
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active',
+          (i === 0 && tab === 'login') || (i === 1 && tab === 'register')
+        );
+      });
+      document.getElementById('register-name').style.display =
+        tab === 'register' ? 'block' : 'none';
+      document.getElementById('submit-btn').textContent =
+        tab === 'login' ? 'Login' : 'Create Account';
+      clearMessages();
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('error-box');
+      box.textContent = msg;
+      box.style.display = 'block';
+      document.getElementById('success-box').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const box = document.getElementById('success-box');
+      box.textContent = msg;
+      box.style.display = 'block';
+      document.getElementById('error-box').style.display = 'none';
+    }
+
+    function clearMessages() {
+      document.getElementById('error-box').style.display = 'none';
+      document.getElementById('success-box').style.display = 'none';
+    }
+
+    async function handleSubmit() {
+      clearMessages();
+      const btn = document.getElementById('submit-btn');
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const name = document.getElementById('name').value.trim();
+
+      if (!email || !password) { showError('Please enter your email and password.'); return; }
+      if (currentTab === 'register' && !name) { showError('Please enter your name.'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Please wait...';
+
+      const url = currentTab === 'login' ? '/login' : '/register';
+      const body = currentTab === 'login'
+        ? { email, password }
+        : { name, email, password };
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showSuccess(currentTab === 'login'
+            ? `Welcome back, ${data.name}! 👋`
+            : 'Account created successfully! ✓');
+          setTimeout(() => window.location.href = '/', 1200);
+        } else {
+          showError(data.error || 'Something went wrong. Please try again.');
+        }
+      } catch (e) {
+        showError('Server error. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = currentTab === 'login' ? 'Login' : 'Create Account';
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSubmit();
+    });
+  </script>
+</body>
+</html>
