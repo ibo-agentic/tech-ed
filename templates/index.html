@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ShikhoAI — NCTB AI Tutor</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><text y='.9em' font-size='80' x='10'>🎓</text></svg>">
+  <title>Sheelbi — AI Tutor</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><text y='.9em' font-size='80' x='10'>✦</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -70,6 +70,13 @@
     }
 
     /* ══════════════════════════════════════════
+       SHEELBI LOGO SVG
+    ══════════════════════════════════════════ */
+    .sheelbi-logo-svg {
+      width: 28px; height: 28px; flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════
        APP LAYOUT
     ══════════════════════════════════════════ */
     .app-layout{flex:1;min-height:0;display:flex;overflow:hidden;}
@@ -90,12 +97,6 @@
       display:flex;align-items:center;gap:9px;
       padding:16px 14px 12px;border-bottom:1px solid var(--border);
       flex-shrink:0;
-    }
-    .sb-logo-icon{
-      width:32px;height:32px;border-radius:9px;
-      background:linear-gradient(135deg,var(--blue),var(--purple));
-      display:flex;align-items:center;justify-content:center;
-      font-size:16px;flex-shrink:0;
     }
     .sb-logo-text{font-size:16px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
     .sb-logo-text span{color:var(--blue);}
@@ -152,6 +153,9 @@
     .folder-input-row.visible{display:flex;}
     .folder-input{flex:1;background:var(--input-bg);border:1px solid var(--blue);border-radius:var(--radius-xs);padding:5px 8px;color:var(--text);font-size:11.5px;font-family:'Sora',sans-serif;outline:none;}
     .folder-input-confirm{background:var(--blue);border:none;border-radius:var(--radius-xs);color:#fff;font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap;}
+
+    /* Empty state for folders/history */
+    .sb-empty-hint{padding:10px 14px;font-size:11px;color:var(--text3);font-style:italic;}
 
     /* Recent history */
     .sb-history-section{flex:1;min-height:0;overflow-y:auto;padding-bottom:8px;}
@@ -251,6 +255,9 @@
     .subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:480px;width:100%;margin-bottom:16px;}
     .subj-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 10px;cursor:pointer;transition:all .18s;text-align:left;}
     .subj-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-2px);}
+    .subj-card.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;position:relative;}
+    .subj-card.disabled:hover{transform:none;border-color:var(--border2);background:var(--bg2);}
+    .coming-soon-tag{display:inline-block;font-size:8.5px;font-weight:700;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,160,48,.25);border-radius:8px;padding:1px 6px;margin-top:4px;letter-spacing:.03em;}
     .subj-card-icon{font-size:17px;margin-bottom:5px;}
     .subj-card-title{font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:2px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .subj-card-example{font-size:10px;color:var(--text2);line-height:1.5;font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -260,7 +267,7 @@
     .message.user{flex-direction:row-reverse;}
     .avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
     .user .avatar{background:linear-gradient(135deg,var(--blue),var(--purple));font-size:10px;font-weight:700;color:#fff;}
-    .bot .avatar{background:var(--bg3);border:1px solid var(--border2);font-size:14px;}
+    .bot .avatar{background:var(--bg3);border:1px solid var(--border2);font-size:14px;overflow:hidden;}
     .bot-col{flex:1;min-width:0;display:flex;flex-direction:column;}
 
     /* Bot bubble */
@@ -277,7 +284,7 @@
     .bot .bubble ul,.bot .bubble ol{padding-left:0;list-style:none;margin:8px 0;display:flex;flex-direction:column;gap:4px;}
     .bot .bubble li{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 var(--radius-xs) var(--radius-xs) 0;padding:7px 11px;line-height:1.75;}
 
-    /* User bubble — green like screenshot */
+    /* User bubble */
     .user .bubble{
       max-width:70%;
       background:var(--user-bubble);
@@ -287,16 +294,6 @@
       word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;
     }
     .user .bubble img.sent-image{display:block;width:100%;max-width:240px;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);}
-
-    /* AI response card (structured) */
-    .ai-response-card{
-      background:var(--bg3);border:1px solid var(--border2);
-      border-radius:var(--radius-sm);padding:10px 13px;
-      margin-top:8px;font-size:12.5px;line-height:1.8;
-      font-family:'Noto Sans Bengali','Sora',sans-serif;color:var(--text2);
-    }
-    .ai-response-card-title{font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
-    .ai-hsc-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(13,228,160,.1);border:1px solid rgba(13,228,160,.2);border-radius:10px;padding:2px 8px;font-size:10px;color:var(--green);font-weight:600;margin-top:6px;}
 
     .message-actions{display:flex;gap:4px;margin-top:5px;opacity:0;transition:opacity .15s;}
     .message:hover .message-actions{opacity:1;}
@@ -309,15 +306,25 @@
 
     mark{background:rgba(77,127,255,.1);color:var(--blue);border-radius:3px;padding:1px 5px;font-weight:600;}
     .katex-display{margin:.7em auto;text-align:center;overflow-x:auto;}
-    .math-block-wrap{position:relative;}
-    .math-copy-btn{position:absolute;top:5px;right:7px;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--radius-xs);padding:2px 7px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif;opacity:0;transition:opacity .13s;}
-    .math-block-wrap:hover .math-copy-btn{opacity:1;}
 
-    /* Thinking */
-    .thinking-bubble{display:flex;align-items:center;gap:8px;padding:10px 14px;}
-    .thinking-spinner{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0;}
-    .thinking-text{font-size:13px;color:var(--text3);font-style:italic;}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    /* ── Disha AI typing indicator ── */
+    .typing-bubble{
+      display:flex;align-items:center;gap:9px;
+      padding:10px 14px;
+    }
+    .typing-status-dot{
+      width:9px;height:9px;border-radius:50%;flex-shrink:0;
+      background:var(--green);
+      box-shadow:0 0 6px var(--green);
+      transition:background .4s,box-shadow .4s;
+    }
+    .typing-status-dot.idle{
+      background:var(--text3);
+      box-shadow:none;
+    }
+    @keyframes pulseActive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+    .typing-status-dot:not(.idle){animation:pulseActive 1.2s ease-in-out infinite;}
+    .typing-text{font-size:13px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
 
     /* Scroll btn */
     #scroll-btn{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:16px;padding:5px 14px;font-size:11px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;font-family:'Sora',sans-serif;font-weight:600;z-index:20;white-space:nowrap;}
@@ -326,13 +333,9 @@
     /* Input area */
     #input-area{
       background:var(--bg2);border-top:1px solid var(--border);
-      padding:10px 14px 12px;padding-bottom:calc(12px + var(--safe-bottom));
+      padding:10px 14px 8px;padding-bottom:calc(8px + var(--safe-bottom));
       flex-shrink:0;position:relative;z-index:10;
     }
-    #quick-panel{display:none;position:absolute;bottom:calc(100% + 8px);left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px;flex-wrap:wrap;gap:5px;z-index:50;box-shadow:0 -8px 28px rgba(0,0,0,.4);}
-    #quick-panel.open{display:flex;}
-    .quick-pill{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:3px 11px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:all .13s;}
-    .quick-pill:hover{background:var(--green);border-color:var(--green);color:#0d1117;}
     #image-preview-strip{display:none;max-width:100%;margin:0 0 7px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
     #image-preview-strip.visible{display:flex;}
     #preview-thumb{width:36px;height:36px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;}
@@ -360,9 +363,21 @@
     }
     #send-btn:hover{background:var(--green2);transform:translateY(-1px);}
     #send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none;color:var(--text3);}
+
+    /* Bottom hint row */
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
+
+    /* Disclaimer */
+    .disclaimer-bar{
+      text-align:center;padding:4px 14px 6px;
+      font-size:9.5px;color:var(--text3);
+      font-family:'Noto Sans Bengali','Sora',sans-serif;
+      line-height:1.5;
+    }
+    .disclaimer-bar a{color:var(--text3);text-decoration:underline;text-decoration-color:var(--border2);}
+
     .error-bubble{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius-sm);padding:9px 13px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;justify-content:space-between;gap:9px;}
 
     /* ══════════════════════════════════════════
@@ -511,7 +526,7 @@
     .back-link button{background:none;border:none;color:var(--text2);font-size:11px;cursor:pointer;font-family:'Sora',sans-serif;}
 
     /* ══════════════════════════════════════════
-       MOBILE BOTTOM NAV — matches screenshot
+       MOBILE BOTTOM NAV
     ══════════════════════════════════════════ */
     .mobile-bottom-nav{
       display:none;height:56px;background:var(--bg2);
@@ -618,10 +633,24 @@
   <!-- ═══ LEFT SIDEBAR ═══ -->
   <div class="left-sidebar" id="sidebar">
 
-    <!-- Logo -->
+    <!-- Logo — Sheelbi with spinner SVG -->
     <div class="sb-logo-row">
-      <div class="sb-logo-icon">🎓</div>
-      <div class="sb-logo-text">Shikho<span>AI</span></div>
+      <!-- Sheelbi spinner logo (matches the provided logo image) -->
+      <svg class="sheelbi-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="7" fill="#f0a030" stroke="#1a1a1a" stroke-width="3"/>
+        <!-- Blue arm top -->
+        <line x1="50" y1="43" x2="50" y2="8" stroke="#4d7fff" stroke-width="11" stroke-linecap="round"/>
+        <!-- Orange arm left -->
+        <line x1="43" y1="50" x2="8" y2="50" stroke="#f0a030" stroke-width="11" stroke-linecap="round"/>
+        <!-- Orange arm bottom-left -->
+        <line x1="45" y1="55" x2="18" y2="82" stroke="#c07020" stroke-width="11" stroke-linecap="round"/>
+        <!-- Blue-purple arm top-right -->
+        <line x1="55" y1="45" x2="82" y2="18" stroke="#7b8fff" stroke-width="11" stroke-linecap="round"/>
+        <!-- Purple arm bottom-right -->
+        <line x1="55" y1="55" x2="82" y2="82" stroke="#9b6fd4" stroke-width="11" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="7" fill="#f0a030"/>
+      </svg>
+      <div class="sb-logo-text">Sheelbi</div>
     </div>
 
     <!-- Search -->
@@ -632,7 +661,7 @@
       </div>
     </div>
 
-    <!-- Folders -->
+    <!-- Folders — only user-created, no hardcoded fake ones -->
     <div class="sb-folders-section">
       <div class="sb-folders-header">
         <span class="sb-folders-label">FOLDERS</span>
@@ -645,47 +674,19 @@
       </div>
     </div>
 
-    <!-- Recent History -->
+    <!-- Recent History — only real saved chats -->
     <div class="sb-history-section">
       <div class="sb-section-label">RECENT HISTORY</div>
       <div id="sidebar-chat-list">
-        <!-- Populated by JS -->
-        <div class="chat-item active" onclick="openChat()">
-          <div class="chat-item-dot green"></div>
-          <div class="chat-item-info">
-            <div class="chat-item-title">বিদ্রোহী কবিতার বিশ্লেষণ</div>
-            <div class="chat-item-sub">2m ago</div>
-          </div>
-        </div>
-        <div class="chat-item" onclick="openChat()">
-          <div class="chat-item-dot green"></div>
-          <div class="chat-item-info">
-            <div class="chat-item-title">Cell division — mitosis vs meiosis</div>
-            <div class="chat-item-sub">1h ago</div>
-          </div>
-        </div>
-        <div class="chat-item" onclick="openChat()">
-          <div class="chat-item-dot gray"></div>
-          <div class="chat-item-info">
-            <div class="chat-item-title">English passive voice practice</div>
-            <div class="chat-item-sub">Yesterday</div>
-          </div>
-        </div>
-        <div class="chat-item" onclick="openChat()">
-          <div class="chat-item-dot gray"></div>
-          <div class="chat-item-info">
-            <div class="chat-item-title">Chemistry — acid-base theory</div>
-            <div class="chat-item-sub">2d ago</div>
-          </div>
-        </div>
+        <!-- Populated dynamically from localStorage only -->
       </div>
     </div>
 
-    <!-- Study time footer -->
+    <!-- Study time footer — real session timer starting at 00:00:00 -->
     <div class="sb-footer">
       <div class="sb-study-label">TODAY'S STUDY TIME</div>
-      <div class="sb-study-time" id="sb-study-time">00:47:55</div>
-      <div class="sb-study-vs">+12 min vs yesterday</div>
+      <div class="sb-study-time" id="sb-study-time">00:00:00</div>
+      <div class="sb-study-vs" id="sb-study-vs" style="visibility:hidden;">+0 min vs yesterday</div>
     </div>
   </div>
 
@@ -695,10 +696,21 @@
     <!-- Mobile search bar -->
     <div class="main-search-bar" id="main-search-bar">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
-        <div style="font-size:16px;font-weight:800;color:var(--text);">Shikho<span style="color:var(--blue);">AI</span></div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <svg width="22" height="22" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="7" fill="#f0a030" stroke="#1a1a1a" stroke-width="3"/>
+            <line x1="50" y1="43" x2="50" y2="10" stroke="#4d7fff" stroke-width="10" stroke-linecap="round"/>
+            <line x1="43" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="10" stroke-linecap="round"/>
+            <line x1="45" y1="55" x2="20" y2="80" stroke="#c07020" stroke-width="10" stroke-linecap="round"/>
+            <line x1="55" y1="45" x2="80" y2="20" stroke="#7b8fff" stroke-width="10" stroke-linecap="round"/>
+            <line x1="55" y1="55" x2="80" y2="80" stroke="#9b6fd4" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="7" fill="#f0a030"/>
+          </svg>
+          <span style="font-size:16px;font-weight:800;color:var(--text);">Sheelbi</span>
+        </div>
         <div class="main-search-inner" style="flex:1;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" placeholder="Search or ask anythi...">
+          <input type="text" placeholder="Search or ask...">
         </div>
         <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:2px;" onclick="toggleSidebar()">☰</button>
       </div>
@@ -708,7 +720,7 @@
     <div class="mob-study-bar" id="mob-study-bar">
       <div class="mob-study-time-col">
         <div class="mob-study-label">Study time today</div>
-        <div class="mob-study-timer" id="mob-timer">00:48:03</div>
+        <div class="mob-study-timer" id="mob-timer">00:00:00</div>
       </div>
       <div class="mob-rank-col">
         <div class="mob-rank-label">Rank</div>
@@ -718,12 +730,12 @@
 
     <!-- Chat topic bar (desktop) -->
     <div class="chat-topic-bar" id="chat-topic-bar">
-      <div class="chat-topic-bar-title">বিদ্রোহী কবিতার বিশ্লেষণ</div>
-      <span class="chat-topic-tag">HSC Bangla</span>
+      <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
+      <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Sheelbi AI</span>
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
-      <button class="chat-topic-action" title="Login" onclick="showLoginPrompt(false)">👤</button>
+      <button class="chat-topic-action" title="Account" onclick="showLoginPrompt(false)" id="account-btn">👤</button>
     </div>
 
     <!-- LOGIN OVERLAY -->
@@ -731,7 +743,7 @@
       <div id="login-backdrop" style="position:absolute;inset:0;" onclick="tryDismissLogin()"></div>
       <div class="login-card" id="login-card">
         <button class="card-close-btn" onclick="hideLoginPrompt()">✕</button>
-        <h2>Welcome to <span>ShikhoAI!</span></h2>
+        <h2>Welcome to <span>Sheelbi!</span></h2>
         <p id="login-modal-sub">Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.</p>
         <div class="login-form">
           <div class="login-tabs">
@@ -818,11 +830,17 @@
     <!-- Chat box -->
     <div id="chat-box">
       <div class="welcome" id="welcome-screen">
-        <h2>আসসালামু আলাইকুম! 👋</h2>
-        <p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">ShikhoAI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p>
+        <h2>নতুন চ্যাট শুরু করো 👋</h2>
+        <p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p>
         <p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>
         <div class="subject-grid">
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="দ্বিঘাত সমীকরণ কী? সহজ করে বোঝাও"><div class="subj-card-icon">🔢</div><div class="subj-card-title">গণিত</div><div class="subj-card-example">দ্বিঘাত সমীকরণ কী?</div></div>
+          <!-- Math  — disabled/coming soon -->
+          <div class="subj-card disabled">
+            <div class="subj-card-icon">💻</div>
+            <div class="subj-card-title">Math</div>
+            <div class="subj-card-example">Solve Math Step-by-Step</div>
+            <span class="coming-soon-tag">Coming Soon</span>
+          </div>
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="সালোকসংশ্লেষণ প্রক্রিয়া ব্যাখ্যা করো"><div class="subj-card-icon">🌿</div><div class="subj-card-title">বিজ্ঞান</div><div class="subj-card-example">Explain photosynthesis</div></div>
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="পিথাগোরাসের উপপাদ্য কী? প্রমাণ দাও"><div class="subj-card-icon">📐</div><div class="subj-card-title">জ্যামিতি</div><div class="subj-card-example">পিথাগোরাসের উপপাদ্য</div></div>
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="What is osmosis? Explain with example"><div class="subj-card-icon">🔬</div><div class="subj-card-title">Biology</div><div class="subj-card-example">What is osmosis?</div></div>
@@ -839,7 +857,7 @@
       <div class="fv-search">
         <div class="main-search-inner">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" placeholder="Search folders & his...">
+          <input type="text" placeholder="Search folders...">
         </div>
       </div>
       <div class="fv-inner">
@@ -847,56 +865,18 @@
           <span class="fv-section-label">MY FOLDERS</span>
           <button class="fv-add-btn" onclick="showFolderInput()">+</button>
         </div>
-        <div class="fv-folder-list" id="fv-folder-list">
-          <div class="fv-folder-item active" onclick="openChat()">
-            <div class="fv-folder-left"><span class="fv-folder-icon">📁</span><span class="fv-folder-name">HSC Bangla</span></div>
-            <span class="fv-folder-count">12 chats</span>
-          </div>
-          <div class="fv-folder-item" onclick="openChat()">
-            <div class="fv-folder-left"><span class="fv-folder-icon">📁</span><span class="fv-folder-name">Biology notes</span></div>
-            <span class="fv-folder-count">8 chats</span>
-          </div>
-          <div class="fv-folder-item" onclick="openChat()">
-            <div class="fv-folder-left"><span class="fv-folder-icon">📁</span><span class="fv-folder-name">Exam practice</span></div>
-            <span class="fv-folder-count">21 chats</span>
-          </div>
-        </div>
+        <div class="fv-folder-list" id="fv-folder-list"></div>
         <div class="fv-section-header">
           <span class="fv-section-label">RECENT HISTORY</span>
         </div>
-        <div class="fv-history-list">
-          <div class="fv-history-item" onclick="openChat(); setMobNav('mob-chat')">
-            <div class="fv-history-dot-row"><div class="fv-history-dot green"></div><div class="fv-history-title">বিদ্রোহী কবিতার বিশ্লেষণ</div></div>
-            <div class="fv-history-meta">2 min ago · HSC Bangla</div>
-          </div>
-          <div class="fv-history-item" onclick="openChat(); setMobNav('mob-chat')">
-            <div class="fv-history-dot-row"><div class="fv-history-dot green"></div><div class="fv-history-title">Cell division — mitosis vs meiosis</div></div>
-            <div class="fv-history-meta">1 hour ago · Biology</div>
-          </div>
-          <div class="fv-history-item" onclick="openChat(); setMobNav('mob-chat')">
-            <div class="fv-history-dot-row"><div class="fv-history-dot gray"></div><div class="fv-history-title">English passive voice exercises</div></div>
-            <div class="fv-history-meta">Yesterday · English</div>
-          </div>
-          <div class="fv-history-item" onclick="openChat(); setMobNav('mob-chat')">
-            <div class="fv-history-dot-row"><div class="fv-history-dot gray"></div><div class="fv-history-title">Acid-base theory notes</div></div>
-            <div class="fv-history-meta">2 days ago · Chemistry</div>
-          </div>
+        <div class="fv-history-list" id="fv-history-list">
+          <!-- Populated dynamically -->
         </div>
       </div>
     </div>
 
     <!-- Input area -->
     <div id="input-area">
-      <div id="quick-panel">
-        <button class="quick-pill" onclick="useQuick(this)">দ্বিঘাত সমীকরণ সমাধান করো</button>
-        <button class="quick-pill" onclick="useQuick(this)">সহজ করে বোঝাও</button>
-        <button class="quick-pill" onclick="useQuick(this)">আরেকটি উদাহরণ দাও</button>
-        <button class="quick-pill" onclick="useQuick(this)">অনুশীলনী প্রশ্ন দাও</button>
-        <button class="quick-pill" onclick="useQuick(this)">ধাপে ধাপে দেখাও</button>
-        <button class="quick-pill" onclick="useQuick(this)">Explain in English</button>
-        <button class="quick-pill" onclick="useQuick(this)">সূত্র মনে করিয়ে দাও</button>
-        <button class="quick-pill" onclick="useQuick(this)">পরীক্ষার প্রশ্ন দাও</button>
-      </div>
       <div id="image-preview-strip">
         <img id="preview-thumb" src="" alt="preview">
         <span id="preview-name"></span>
@@ -907,13 +887,23 @@
         <button class="inp-icon-btn" id="attach-btn" title="ছবি যোগ করো" onclick="document.getElementById('file-input').click()">📎</button>
         <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1"
           onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this)"></textarea>
-        <button id="send-btn" onclick="sendMessage()">
+        <button id="send-btn" onclick="sendMessage()" title="পাঠাও">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
       </div>
       <div class="hint-bar">
-        <span class="hint">Enter পাঠাও &nbsp;·&nbsp; Shift+Enter নতুন লাইন</span>
+        <span class="hint">
+          <span style="display:inline-flex;align-items:center;gap:4px;">
+            <!-- Disha AI status dot -->
+            <span id="disha-dot" class="typing-status-dot idle" style="display:inline-block;width:7px;height:7px;border-radius:50%;"></span>
+            <span id="disha-status-text" style="font-size:9.5px;color:var(--text3);">Disha AI</span>
+          </span>
+        </span>
         <span class="char-count" id="char-count"></span>
+      </div>
+      <!-- Disclaimer -->
+      <div class="disclaimer-bar">
+        AI can sometimes make mistakes, so it's always good to double-check. ✦ Sheelbi
       </div>
     </div>
 
@@ -1021,7 +1011,7 @@
 
 </div><!-- end .app-layout -->
 
-<!-- MOBILE BOTTOM NAV — Chat, Folders, Ranks, Exam -->
+<!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
   <button class="mob-nav-btn active" id="mob-chat" onclick="openChat(); setMobNav('mob-chat')">
     <span class="mob-nav-icon">💬</span>
@@ -1051,7 +1041,6 @@ const sendBtn       = document.getElementById('send-btn');
 const attachBtn     = document.getElementById('attach-btn');
 const strip         = document.getElementById('image-preview-strip');
 const scrollBtn     = document.getElementById('scroll-btn');
-const quickPanel    = document.getElementById('quick-panel');
 const loginOverlay  = document.getElementById('login-overlay');
 const verifyOverlay = document.getElementById('verify-overlay');
 const forgotOverlay = document.getElementById('forgot-overlay');
@@ -1062,6 +1051,7 @@ const highlightExt={name:'highlight',level:'inline',start(src){return src.indexO
 marked.use({extensions:[highlightExt],breaks:true,gfm:true});
 
 let selectedFile=null,isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,currentView='chat';
+let isAiTyping=false;
 
 const GUEST_LIMIT=5;
 function getGuestCount(){return parseInt(sessionStorage.getItem('guest_msg_count')||'0');}
@@ -1069,21 +1059,68 @@ function incrementGuestCount(){sessionStorage.setItem('guest_msg_count',getGuest
 function isGuestLimitReached(){return getGuestCount()>=GUEST_LIMIT;}
 
 // ═══════════════════════════════════════════════
-// TIMER
+// REAL SESSION TIMER — starts at 00:00:00
 // ═══════════════════════════════════════════════
-let studySeconds = 47*60+55; // Start at 47:55 like screenshot
+const SESSION_KEY = 'sheelbi_session_start';
+// Store start time in sessionStorage so it persists across soft reloads but resets on new session
+if (!sessionStorage.getItem(SESSION_KEY)) {
+  sessionStorage.setItem(SESSION_KEY, Date.now().toString());
+}
+
+function getStudySeconds() {
+  const start = parseInt(sessionStorage.getItem(SESSION_KEY) || Date.now());
+  return Math.floor((Date.now() - start) / 1000);
+}
+
+function fmtTime(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
 setInterval(()=>{
-  studySeconds++;
-  const h=Math.floor(studySeconds/3600);
-  const m=Math.floor((studySeconds%3600)/60);
-  const s=studySeconds%60;
-  const fmt=(n)=>String(n).padStart(2,'0');
-  const str=`${fmt(h)}:${fmt(m)}:${fmt(s)}`;
-  const el=document.getElementById('sb-study-time');
-  const mob=document.getElementById('mob-timer');
-  if(el)el.textContent=str;
-  if(mob)mob.textContent=str;
-},1000);
+  const secs = getStudySeconds();
+  const str = fmtTime(secs);
+  const el = document.getElementById('sb-study-time');
+  const mob = document.getElementById('mob-timer');
+  if(el) el.textContent = str;
+  if(mob) mob.textContent = str;
+}, 1000);
+
+// ═══════════════════════════════════════════════
+// DISHA AI STATUS DOT
+// ═══════════════════════════════════════════════
+const TYPING_PHRASES_BN = [
+  'Disha AI লিখছে...',
+  'আমি উত্তর লিখছি...',
+  'একটু ভাবছি...',
+  'তৈরি হচ্ছে...',
+];
+
+let dishaStatusInterval = null;
+
+function setDishaTyping(active) {
+  isAiTyping = active;
+  const dot = document.getElementById('disha-dot');
+  const txt = document.getElementById('disha-status-text');
+  if (!dot || !txt) return;
+
+  if (active) {
+    dot.classList.remove('idle');
+    let pi = 0;
+    txt.textContent = TYPING_PHRASES_BN[0];
+    if (dishaStatusInterval) clearInterval(dishaStatusInterval);
+    dishaStatusInterval = setInterval(() => {
+      pi = (pi + 1) % TYPING_PHRASES_BN.length;
+      txt.textContent = TYPING_PHRASES_BN[pi];
+    }, 1800);
+  } else {
+    dot.classList.add('idle');
+    if (dishaStatusInterval) { clearInterval(dishaStatusInterval); dishaStatusInterval = null; }
+    txt.textContent = 'Disha AI';
+  }
+}
 
 // ═══════════════════════════════════════════════
 // COUNTDOWN
@@ -1098,35 +1135,51 @@ function updateHscDays(){
 updateHscDays();
 
 // ═══════════════════════════════════════════════
-// FOLDERS
+// FOLDERS — no hardcoded defaults
 // ═══════════════════════════════════════════════
-const FOLDER_STORAGE_KEY='shikhoai_folders_v1';
+const FOLDER_STORAGE_KEY='sheelbi_folders_v1';
 let folders=loadFolders();
 let activeFolderId=null;
 
 function loadFolders(){
   try{const raw=localStorage.getItem(FOLDER_STORAGE_KEY);if(raw)return JSON.parse(raw);}catch(e){}
-  return [
-    {id:'hsc_bangla',name:'HSC Bangla',icon:'📁',count:12},
-    {id:'bio_notes',name:'Biology notes',icon:'📁',count:8},
-    {id:'exam_prac',name:'Exam practice',icon:'📁',count:21},
-    {id:'eng_gram',name:'English grammar',icon:'📁',count:5},
-  ];
+  return []; // Start empty — user creates their own
 }
 function saveFolders(){try{localStorage.setItem(FOLDER_STORAGE_KEY,JSON.stringify(folders));}catch(e){}}
 
 function renderFolders(){
   const list=document.getElementById('folders-list');
-  if(!list)return;
-  list.innerHTML='';
-  folders.forEach(f=>{
-    const item=document.createElement('div');
-    item.className='folder-item'+(f.id===activeFolderId?' active':'');
-    item.innerHTML=`<span class="folder-icon">${f.icon}</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
-    item.addEventListener('click',e=>{if(e.target.classList.contains('folder-delete-btn'))return;activeFolderId=f.id;renderFolders();openChatView();});
-    list.appendChild(item);
-  });
+  const fvList=document.getElementById('fv-folder-list');
+  if(list){
+    list.innerHTML='';
+    if(folders.length===0){
+      list.innerHTML='<div class="sb-empty-hint">No folders yet. Press + to create one.</div>';
+    } else {
+      folders.forEach(f=>{
+        const item=document.createElement('div');
+        item.className='folder-item'+(f.id===activeFolderId?' active':'');
+        item.innerHTML=`<span class="folder-icon">${f.icon}</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
+        item.addEventListener('click',e=>{if(e.target.classList.contains('folder-delete-btn'))return;activeFolderId=f.id;renderFolders();openChatView();});
+        list.appendChild(item);
+      });
+    }
+  }
+  if(fvList){
+    fvList.innerHTML='';
+    if(folders.length===0){
+      fvList.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No folders yet. Press + to create one.</div>';
+    } else {
+      folders.forEach(f=>{
+        const item=document.createElement('div');
+        item.className='fv-folder-item'+(f.id===activeFolderId?' active':'');
+        item.innerHTML=`<div class="fv-folder-left"><span class="fv-folder-icon">${f.icon}</span><span class="fv-folder-name">${escapeHtml(f.name)}</span></div><span class="fv-folder-count">${f.count||0}</span>`;
+        item.addEventListener('click',()=>{activeFolderId=f.id;renderFolders();openChat();setMobNav('mob-chat');});
+        fvList.appendChild(item);
+      });
+    }
+  }
 }
+
 function showFolderInput(){const row=document.getElementById('folder-input-row');if(row)row.classList.add('visible');setTimeout(()=>document.getElementById('folder-name-input')?.focus(),50);}
 function hideFolderInput(){document.getElementById('folder-input-row')?.classList.remove('visible');const i=document.getElementById('folder-name-input');if(i)i.value='';}
 function folderInputKey(e){if(e.key==='Enter')confirmNewFolder();if(e.key==='Escape')hideFolderInput();}
@@ -1137,6 +1190,145 @@ function confirmNewFolder(){
   saveFolders();renderFolders();hideFolderInput();
 }
 function deleteFolder(e,folderId){e.stopPropagation();folders=folders.filter(f=>f.id!==folderId);saveFolders();if(activeFolderId===folderId)activeFolderId=null;renderFolders();}
+
+// ═══════════════════════════════════════════════
+// HISTORY — real chats from localStorage only
+// ═══════════════════════════════════════════════
+const HISTORY_KEY = 'sheelbi_history_v1';
+
+function loadHistoryMeta() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveHistoryMeta(arr) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0, 30))); } catch(e) {}
+}
+
+function addHistoryEntry(chatId, title) {
+  const arr = loadHistoryMeta();
+  // Remove any existing entry with same id
+  const filtered = arr.filter(h => h.id !== chatId);
+  filtered.unshift({ id: chatId, title, ts: Date.now() });
+  saveHistoryMeta(filtered);
+  renderHistory();
+}
+
+function renderHistory() {
+  const arr = loadHistoryMeta();
+  const list = document.getElementById('sidebar-chat-list');
+  const fvList = document.getElementById('fv-history-list');
+
+  function timeAgo(ts) {
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    if (diff < 172800) return 'Yesterday';
+    return Math.floor(diff/86400) + 'd ago';
+  }
+
+  if (list) {
+    list.innerHTML = '';
+    if (arr.length === 0) {
+      list.innerHTML = '<div class="sb-empty-hint">No chats yet. Start a conversation!</div>';
+    } else {
+      arr.forEach((h, i) => {
+        const item = document.createElement('div');
+        item.className = 'chat-item' + (h.id === currentChatId ? ' active' : '');
+        item.innerHTML = `
+          <div class="chat-item-dot ${i === 0 ? 'green' : 'gray'}"></div>
+          <div class="chat-item-info">
+            <div class="chat-item-title">${escapeHtml(h.title)}</div>
+            <div class="chat-item-sub">${timeAgo(h.ts)}</div>
+          </div>
+          <button class="chat-delete-btn" onclick="deleteHistoryEntry(event,'${h.id}')" title="Delete">✕</button>`;
+        item.addEventListener('click', e => {
+          if(e.target.classList.contains('chat-delete-btn')) return;
+          loadChatById(h.id);
+        });
+        list.appendChild(item);
+      });
+    }
+  }
+
+  if (fvList) {
+    fvList.innerHTML = '';
+    if (arr.length === 0) {
+      fvList.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No chats yet.</div>';
+    } else {
+      arr.forEach((h, i) => {
+        const item = document.createElement('div');
+        item.className = 'fv-history-item';
+        item.innerHTML = `
+          <div class="fv-history-dot-row">
+            <div class="fv-history-dot ${i===0?'green':'gray'}"></div>
+            <div class="fv-history-title">${escapeHtml(h.title)}</div>
+          </div>
+          <div class="fv-history-meta">${timeAgo(h.ts)}</div>`;
+        item.addEventListener('click', () => { loadChatById(h.id); setMobNav('mob-chat'); });
+        fvList.appendChild(item);
+      });
+    }
+  }
+}
+
+function deleteHistoryEntry(e, chatId) {
+  e.stopPropagation();
+  const arr = loadHistoryMeta().filter(h => h.id !== chatId);
+  saveHistoryMeta(arr);
+  // Also remove the chat messages
+  try { localStorage.removeItem('sheelbi_chat_msgs_' + chatId); } catch(e2) {}
+  if (currentChatId === chatId) { currentChatId = null; newChat(); }
+  renderHistory();
+}
+
+function loadChatById(chatId) {
+  try {
+    const msgs = JSON.parse(localStorage.getItem('sheelbi_chat_msgs_' + chatId) || '[]');
+    if (!msgs.length) return;
+    currentChatId = chatId;
+    openChatView();
+    chatBox.innerHTML = '';
+    msgs.forEach(m => {
+      if (m.role === 'user') addUserBubble(m.text, m.imageUrl || null);
+      else {
+        const div = createBotWrapper(m.html || '');
+        chatBox.appendChild(div);
+        renderMath(div.querySelector('.bubble'));
+      }
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+    renderHistory();
+    // update topic bar
+    const arr = loadHistoryMeta();
+    const entry = arr.find(h => h.id === chatId);
+    if (entry) {
+      const title = document.getElementById('topic-bar-title');
+      if (title) title.textContent = entry.title;
+    }
+  } catch(e) {}
+}
+
+// Save messages for current chat
+function saveChatMessages() {
+  if (!currentChatId) return;
+  try {
+    const msgs = [];
+    chatBox.querySelectorAll('.message').forEach(div => {
+      if (div.classList.contains('user')) {
+        const bubble = div.querySelector('.bubble');
+        const img = bubble?.querySelector('img.sent-image');
+        const span = bubble?.querySelector('span');
+        msgs.push({ role: 'user', text: span?.textContent || '', imageUrl: img?.src || null });
+      } else {
+        const bubble = div.querySelector('.bubble');
+        if (bubble && !bubble.querySelector('.typing-text')) {
+          msgs.push({ role: 'bot', html: bubble.innerHTML });
+        }
+      }
+    });
+    localStorage.setItem('sheelbi_chat_msgs_' + currentChatId, JSON.stringify(msgs.slice(-60)));
+  } catch(e) {}
+}
 
 // ═══════════════════════════════════════════════
 // VIEW MANAGEMENT
@@ -1169,14 +1361,14 @@ function newChat(){
   const welcome=document.createElement('div');
   welcome.id='welcome-screen';
   welcome.className='welcome';
-  welcome.innerHTML=`<h2>নতুন চ্যাট শুরু করো 👋</h2><p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">ShikhoAI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p><p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>`;
+  welcome.innerHTML=`<h2>নতুন চ্যাট শুরু করো 👋</h2><p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p><p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>`;
   chatBox.appendChild(welcome);
   input.value='';input.focus();
-  // Update topic bar title
-  const title=document.querySelector('.chat-topic-bar-title');
-  const tag=document.querySelector('.chat-topic-tag');
+  const title=document.getElementById('topic-bar-title');
+  const tag=document.getElementById('topic-bar-tag');
   if(title)title.textContent='New Chat';
   if(tag)tag.style.display='none';
+  setDishaTyping(false);
 }
 
 function showFoldersView(){
@@ -1207,15 +1399,10 @@ function toggleTheme(){isDark=!isDark;document.documentElement.setAttribute('dat
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function updateCharCount(el){const n=el.value.length;document.getElementById('char-count').textContent=n>30?n+' chars':'';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
-function toggleQuickPanel(){quickPanel.classList.toggle('open');}
-function useQuick(btn){input.value=btn.textContent;autoResize(input);quickPanel.classList.remove('open');input.focus();}
 function filterChats(q){q=q.toLowerCase();document.querySelectorAll('.chat-item').forEach(el=>{const title=el.querySelector('.chat-item-title')?.textContent.toLowerCase()||'';el.style.display=title.includes(q)?'':'none';});}
 function checkConfirmMatch(){const bar=document.getElementById('confirm-strength-bar');if(!bar)return;const pwd=document.getElementById('new-password')?.value||'';const confirm=document.getElementById('confirm-password')?.value||'';if(!confirm){bar.style.width='0%';return;}bar.style.width='100%';bar.style.background=pwd===confirm?'var(--green)':'var(--danger)';}
 function checkPasswordStrength(pwd){const bar=document.getElementById('strength-bar');if(!bar)return;let score=0;if(pwd.length>=6)score++;if(pwd.length>=10)score++;if(/[A-Z]/.test(pwd))score++;if(/[0-9]/.test(pwd))score++;if(/[^A-Za-z0-9]/.test(pwd))score++;const colors=['var(--danger)','#f0a030','#f0a030','var(--green)','var(--green)'];bar.style.width=(score*20)+'%';bar.style.background=colors[score-1]||'var(--border2)';}
 
-document.addEventListener('click',e=>{
-  if(!document.getElementById('quick-panel')?.contains(e.target)&&e.target.id!=='quick-btn'){quickPanel?.classList.remove('open');}
-});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){if(sidebarOpen)closeSidebar();tryDismissLogin();forgotOverlay?.classList.remove('active');}
 });
@@ -1223,20 +1410,56 @@ chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatB
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
 // ═══════════════════════════════════════════════
-// AUTH
+// AUTH — fixed login state loading
 // ═══════════════════════════════════════════════
+let loggedInUser = null;
+
+function updateUserUI(userData) {
+  loggedInUser = userData;
+  const btn = document.getElementById('account-btn');
+  if (btn && userData) {
+    const initials = getInitials(userData.name || userData.email || 'U');
+    btn.textContent = '';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#0d1117';
+    btn.style.fontWeight = '700';
+    btn.style.fontSize = '11px';
+    btn.textContent = initials;
+    btn.title = userData.name || userData.email;
+  }
+}
+
 function getInitials(name){if(!name)return'?';return name.trim().split(/\s+/).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
+
 async function checkLoginState(){
   try{
-    const res=await fetch('/me');const data=await res.json();
+    const res=await fetch('/me');
+    if (!res.ok) return;
+    const data=await res.json();
     if(data.logged_in){
-      const loginBtns=document.querySelectorAll('.login-trigger-btn');loginBtns.forEach(b=>b.style.display='none');
-      if(data.needs_verification&&data.email)showVerifyScreen(data.email);
+      updateUserUI(data);
+      if(data.needs_verification&&data.email) showVerifyScreen(data.email);
     }
   }catch(e){}
 }
-async function handleLogout(){try{await fetch('/logout',{method:'POST'});}catch(e){}localStorage.removeItem('shikhoai_chat_v1');sessionStorage.removeItem('guest_msg_count');window.location.href='/';}
+
+async function handleLogout(){
+  try{await fetch('/logout',{method:'POST'});}catch(e){}
+  loggedInUser = null;
+  localStorage.removeItem('sheelbi_history_v1');
+  sessionStorage.removeItem('guest_msg_count');
+  const btn = document.getElementById('account-btn');
+  if (btn) { btn.textContent = '👤'; btn.style.background = ''; btn.style.color = ''; }
+  window.location.href='/';
+}
+
 function showLoginPrompt(isLimitReached=false){
+  // If already logged in, show account info or logout option
+  if (loggedInUser) {
+    const doLogout = confirm(`Logged in as ${loggedInUser.name || loggedInUser.email}.\n\nLog out?`);
+    if (doLogout) handleLogout();
+    return;
+  }
   const sub=document.getElementById('login-modal-sub');const card=document.getElementById('login-card');
   if(isLimitReached&&sub)sub.innerHTML=`You've used your free messages! Login to continue.<br><strong>10 questions/day</strong> at no cost.`;
   else if(sub)sub.innerHTML=`Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.`;
@@ -1249,7 +1472,41 @@ function switchCardTab(tab){cardTab=tab;document.querySelectorAll('.login-tab').
 function showCardError(msg){const b=document.getElementById('card-error');b.textContent=msg;b.style.display='block';document.getElementById('card-success').style.display='none';}
 function showCardSuccess(msg){const b=document.getElementById('card-success');b.textContent=msg;b.style.display='block';document.getElementById('card-error').style.display='none';}
 function clearCardMessages(){document.getElementById('card-error').style.display='none';document.getElementById('card-success').style.display='none';}
-async function handleCardSubmit(){clearCardMessages();const btn=document.getElementById('card-submit');const email=document.getElementById('card-email').value.trim();const password=document.getElementById('card-password').value.trim();const name=document.getElementById('card-name').value.trim();if(!email||!password){showCardError('Please enter your email and password.');return;}if(cardTab==='register'&&!name){showCardError('Please enter your name.');return;}btn.disabled=true;btn.textContent='Please wait...';const url=cardTab==='login'?'/login':'/register';const body=cardTab==='login'?{email,password}:{name,email,password};try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await res.json();if(data.success){if(data.needs_verification){hideLoginPrompt();showVerifyScreen(email);}else{showCardSuccess(`Welcome, ${data.name}! 👋`);sessionStorage.removeItem('guest_msg_count');setTimeout(()=>{hideLoginPrompt();checkLoginState();input.focus();},1200);}}else{showCardError(data.error||'Something went wrong.');}}catch(e){showCardError('Server error. Please try again.');}finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}}
+
+async function handleCardSubmit(){
+  clearCardMessages();
+  const btn=document.getElementById('card-submit');
+  const email=document.getElementById('card-email').value.trim();
+  const password=document.getElementById('card-password').value.trim();
+  const name=document.getElementById('card-name').value.trim();
+  if(!email||!password){showCardError('Please enter your email and password.');return;}
+  if(cardTab==='register'&&!name){showCardError('Please enter your name.');return;}
+  btn.disabled=true;btn.textContent='Please wait...';
+  const url=cardTab==='login'?'/login':'/register';
+  const body=cardTab==='login'?{email,password}:{name,email,password};
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await res.json();
+    if(data.success){
+      if(data.needs_verification){
+        hideLoginPrompt();showVerifyScreen(email);
+      } else {
+        showCardSuccess(`Welcome${data.name ? ', '+data.name : ''}! 👋`);
+        sessionStorage.removeItem('guest_msg_count');
+        // Update UI immediately with returned user data
+        updateUserUI({ name: data.name, email: email });
+        setTimeout(()=>{
+          hideLoginPrompt();
+          input.focus();
+        },1200);
+      }
+    } else {
+      showCardError(data.error||'Something went wrong.');
+    }
+  }catch(e){showCardError('Server error. Please try again.');}
+  finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}
+}
+
 loginOverlay?.addEventListener('keydown',e=>{if(e.key==='Enter')handleCardSubmit();});
 function showVerifyScreen(email){verifyEmail=email;verifySubmitting=false;const el=document.getElementById('verify-email-display');if(el)el.textContent=email;document.getElementById('verify-error').style.display='none';document.getElementById('verify-success').style.display='none';['c1','c2','c3','c4','c5','c6'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const btn=document.getElementById('verify-btn');if(btn){btn.disabled=false;btn.textContent='Verify Email ✓';}verifyOverlay?.classList.add('active');setTimeout(()=>document.getElementById('c1')?.focus(),300);}
 function hideVerifyScreen(){verifyOverlay?.classList.remove('active');}
@@ -1267,23 +1524,9 @@ function resetCodeKey(e,el,prevId,nextId){if(e.key==='Backspace'&&!el.value&&pre
 async function submitResetPassword(){if(resetSubmitting)return;const code=['r1','r2','r3','r4','r5','r6'].map(id=>document.getElementById(id)?.value||'').join('');const newPassword=document.getElementById('new-password')?.value.trim();const confirmPwd=document.getElementById('confirm-password')?.value.trim();['reset-error','reset-success'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});if(code.length<6){const e=document.getElementById('reset-error');if(e){e.textContent='Please enter the full 6-digit code.';e.style.display='block';}return;}if(!newPassword||newPassword.length<6){const e=document.getElementById('reset-error');if(e){e.textContent='Password must be at least 6 characters.';e.style.display='block';}return;}if(newPassword!==confirmPwd){const e=document.getElementById('reset-error');if(e){e.textContent='Passwords do not match.';e.style.display='block';}return;}resetSubmitting=true;const btn=document.getElementById('reset-btn');if(btn){btn.disabled=true;btn.textContent='Resetting...';}try{const res=await fetch('/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:resetEmail,code,new_password:newPassword})});const data=await res.json();if(data.success){const box=document.getElementById('reset-success');if(box){box.textContent='✓ Password reset! You can now log in.';box.style.display='block';}setTimeout(()=>{forgotOverlay?.classList.remove('active');showLoginPrompt(false);},2000);}else{const e=document.getElementById('reset-error');if(e){e.textContent=data.error||'Something went wrong.';e.style.display='block';}resetSubmitting=false;}}catch(e){const el=document.getElementById('reset-error');if(el){el.textContent='Server error.';el.style.display='block';}resetSubmitting=false;}finally{if(btn){btn.disabled=false;btn.textContent='Reset Password';}}}
 
 // ═══════════════════════════════════════════════
-// HISTORY
+// MATH / MARKDOWN
 // ═══════════════════════════════════════════════
-const STORAGE_KEY='shikhoai_chat_v1';
-function saveHistory(){try{const allMsgs=[];chatBox.querySelectorAll('.message').forEach(div=>{const role=div.classList.contains('user')?'user':'bot';const bt=div.querySelector('.user .bubble');const b=div.querySelector('.bot .bubble');if(role==='user'&&bt)allMsgs.push({role,text:bt.textContent,type:'text'});else if(role==='bot'&&b&&!b.querySelector('.thinking-text'))allMsgs.push({role,html:b.innerHTML,type:'html'});});localStorage.setItem(STORAGE_KEY,JSON.stringify(allMsgs.slice(-40)));}catch(e){}}
-function loadHistory(){try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const msgs=JSON.parse(raw);if(!msgs.length)return;document.getElementById('welcome-screen')?.remove();msgs.forEach(m=>{if(m.role==='user')addUserBubble(m.text);else{const bubble=createBotBubble();bubble.innerHTML=m.html;chatBox.appendChild(bubble.parentElement?.parentElement||createBotWrapper(m.html));renderMath(bubble);}});chatBox.scrollTop=chatBox.scrollHeight;}catch(e){localStorage.removeItem(STORAGE_KEY);}}
-
-// ═══════════════════════════════════════════════
-// MATH PROCESSING (ported from original)
-// ═══════════════════════════════════════════════
-function isBengali(cp){return cp>=0x0980&&cp<=0x09FF;}
-const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','n':'ⁿ','x':'ˣ','a':'ᵃ','b':'ᵇ','i':'ⁱ'};
-const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','n':'ₙ','i':'ᵢ'};
-const toSup=s=>s.split('').map(c=>SUP[c]||c).join('');
-const toSub=s=>s.split('').map(c=>SUB[c]||c).join('');
-function latexToPlain(s){return s.replace(/\\rightarrow|\\to/g,'→').replace(/\\leftarrow/g,'←').replace(/\\times/g,'×').replace(/\\cdot/g,'·').replace(/\\pm/g,'±').replace(/\\neq/g,'≠').replace(/\\leq/g,'≤').replace(/\\geq/g,'≥').replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g,'($1)/($2)').replace(/\\sqrt\{([^}]+)\}/g,'√($1)').replace(/\\left\s*[([\{]/g,'(').replace(/\\right\s*[)\]}\}]/g,')').replace(/\{([^}]*)\}/g,'$1').replace(/_\{([^}]+)\}/g,(_,s)=>toSub(s)).replace(/_([0-9a-zn])/g,(_,s)=>toSub(s)).replace(/\^\{([^}]+)\}/g,(_,s)=>toSup(s)).replace(/\^([0-9a-zn])/g,(_,s)=>toSup(s)).replace(/\\[a-zA-Z]+/g,'').replace(/\s+/g,' ').trim();}
-function hasLatex(s){return/\\(?:frac|sqrt|left|right|cdot|times|pm|rightarrow|leftarrow|leq|geq|neq|alpha|beta|theta|pi|sigma|delta|lambda|mu|infty|sum|int|prod|lim|log|sin|cos|tan)\b/.test(s)||/[a-zA-Z]\^[{0-9]/.test(s)||/[a-zA-Z]_[{0-9]/.test(s);}
-function processText(raw){return raw;}
+const highlightExtMd={name:'highlight',level:'inline',start(src){return src.indexOf('==');},tokenizer(src){const m=src.match(/^==([^=]+)==/);if(m)return{type:'highlight',raw:m[0],text:m[1]};},renderer(token){return`<mark>${token.text}</mark>`;}};
 function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false,trust:true});}catch(e){}}
 function extractSuggestions(text){const lines=text.split('\n');let idx=-1;for(let i=lines.length-1;i>=0;i--){if(/^\s*\[.+\]/.test(lines[i])){idx=i;break;}}if(idx===-1)return{cleanText:text,buttons:[]};const buttons=[];const re=/\[([^\]]+)\]/g;let m2;while((m2=re.exec(lines[idx]))!==null)buttons.push(m2[1]);return{cleanText:lines.filter((_,i)=>i!==idx).join('\n').trimEnd(),buttons};}
 
@@ -1292,20 +1535,37 @@ function extractSuggestions(text){const lines=text.split('\n');let idx=-1;for(le
 // ═══════════════════════════════════════════════
 function escapeHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function addUserBubble(text,imageDataUrl=null){
+// User avatar initials
+function getUserAvatar() {
+  if (loggedInUser && loggedInUser.name) return getInitials(loggedInUser.name);
+  return 'U';
+}
+
+function addUserBubble(text, imageDataUrl=null){
   document.getElementById('welcome-screen')?.remove();
   const div=document.createElement('div');div.className='message user';
   const bubble=document.createElement('div');bubble.className='bubble';
   if(imageDataUrl){const img=document.createElement('img');img.src=imageDataUrl;img.className='sent-image';bubble.appendChild(img);}
   const span=document.createElement('span');span.textContent=text;bubble.appendChild(span);
-  div.innerHTML=`<div class="avatar">R</div>`;
+  div.innerHTML=`<div class="avatar">${getUserAvatar()}</div>`;
   div.appendChild(bubble);
   chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
 function createBotWrapper(htmlContent){
   const div=document.createElement('div');div.className='message bot';
-  div.innerHTML=`<div class="avatar">AI</div>`;
+  // Bot avatar: Sheelbi mini SVG
+  div.innerHTML=`<div class="avatar" title="Disha AI">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
+      <line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/>
+      <line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/>
+      <line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/>
+      <line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
+    </svg>
+  </div>`;
   const col=document.createElement('div');col.className='bot-col';
   const bubble=document.createElement('div');bubble.className='bubble';
   bubble.innerHTML=htmlContent;
@@ -1327,12 +1587,12 @@ function addMessage(text,role,imageDataUrl=null){
   bubble.style.lineHeight=/[\u0980-\u09FF]/.test(cleanText)?'2.1':'1.85';
   if(buttons.length>0){const row=document.createElement('div');row.className='ai-suggestions';buttons.forEach(label=>{const btn=document.createElement('button');btn.className='ai-suggestion-btn';btn.textContent=label;btn.onclick=()=>{input.value=label;sendMessage();};row.appendChild(btn);});bubble.appendChild(row);}
   chatBox.appendChild(div);renderMath(bubble);chatBox.scrollTop=chatBox.scrollHeight;
-  saveHistory();
+  saveChatMessages();
 }
 
 function addErrorMessage(msg,retryFn){
   const div=document.createElement('div');div.className='message bot';
-  div.innerHTML=`<div class="avatar">AI</div>`;
+  div.innerHTML=`<div class="avatar">⚠️</div>`;
   const col=document.createElement('div');col.className='bot-col';
   const err=document.createElement('div');err.className='error-bubble';
   err.innerHTML=`<span>⚠️ ${msg}</span>`;
@@ -1340,16 +1600,33 @@ function addErrorMessage(msg,retryFn){
   col.appendChild(err);div.appendChild(col);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-let thinkingTimer=null;
-const thinkingPhrases=['উত্তর তৈরি হচ্ছে...','চিন্তা করছি...','লিখছি...','একটু ভাবছি...'];
 function showTyping(){
   document.getElementById('welcome-screen')?.remove();
+  setDishaTyping(true);
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
-  div.innerHTML=`<div class="avatar">AI</div><div class="bot-col"><div class="bubble" style="padding:10px 14px;"><div class="thinking-bubble"><div class="thinking-spinner"></div><span class="thinking-text" id="thinking-text">ভাবছি...</span></div></div></div>`;
+  div.innerHTML=`<div class="avatar" title="Disha AI">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/>
+      <line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/>
+      <line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/>
+      <line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/>
+      <line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
+    </svg>
+  </div>`;
+  const col=document.createElement('div');col.className='bot-col';
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.style.padding='10px 14px';
+  const typing=document.createElement('div');typing.className='typing-bubble';
+  typing.innerHTML=`<div class="typing-status-dot"></div><span class="typing-text" id="thinking-text">আমি উত্তর লিখছি...</span>`;
+  bubble.appendChild(typing);col.appendChild(bubble);div.appendChild(col);
   chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
-  let i=0;thinkingTimer=setInterval(()=>{const el=document.getElementById('thinking-text');if(el){i=(i+1)%thinkingPhrases.length;el.textContent=thinkingPhrases[i];}},1800);
 }
-function removeTyping(){if(thinkingTimer){clearInterval(thinkingTimer);thinkingTimer=null;}document.getElementById('typing-indicator')?.remove();}
+
+function removeTyping(){
+  setDishaTyping(false);
+  document.getElementById('typing-indicator')?.remove();
+}
+
 function sendSuggestion(cardEl){const q=cardEl.dataset?.q||cardEl.textContent;input.value=q;sendMessage();}
 
 // ═══════════════════════════════════════════════
@@ -1382,7 +1659,20 @@ async function sendMessage(){
         if(data.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
         reply=data.reply||'দুঃখিত, সমস্যা হয়েছে।';if(data.chat_id)currentChatId=data.chat_id;
       }
-      removeTyping();addMessage(reply,'bot');
+      removeTyping();
+      addMessage(reply,'bot');
+
+      // Save to history with auto-generated title from first message
+      if (currentChatId) {
+        const chatTitle = displayText.length > 40 ? displayText.slice(0, 40) + '…' : displayText;
+        addHistoryEntry(currentChatId, chatTitle);
+        // Update topic bar
+        const titleEl = document.getElementById('topic-bar-title');
+        const tagEl = document.getElementById('topic-bar-tag');
+        if (titleEl) titleEl.textContent = chatTitle;
+        if (tagEl) tagEl.style.display = '';
+      }
+
       setTimeout(()=>chatBox.scrollTop=chatBox.scrollHeight,100);
     }catch(err){removeTyping();addErrorMessage('সংযোগে সমস্যা হয়েছে।',doRequest);}
     sendBtn.disabled=false;input.focus();
@@ -1402,6 +1692,7 @@ input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({b
 // INIT
 // ═══════════════════════════════════════════════
 renderFolders();
+renderHistory();
 checkLoginState();
 if(isGuestLimitReached())showLoginPrompt(true);
 </script>
