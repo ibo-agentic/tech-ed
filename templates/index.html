@@ -72,9 +72,7 @@
     /* ══════════════════════════════════════════
        SHEELBI LOGO SVG
     ══════════════════════════════════════════ */
-    .sheelbi-logo-svg {
-      width: 28px; height: 28px; flex-shrink: 0;
-    }
+    .sheelbi-logo-svg { width:28px;height:28px;flex-shrink:0; }
 
     /* ══════════════════════════════════════════
        APP LAYOUT
@@ -91,17 +89,12 @@
       display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
       transition:transform .25s ease;
     }
-
-    /* Logo row */
     .sb-logo-row{
       display:flex;align-items:center;gap:9px;
-      padding:16px 14px 12px;border-bottom:1px solid var(--border);
-      flex-shrink:0;
+      padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;
     }
     .sb-logo-text{font-size:16px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
     .sb-logo-text span{color:var(--blue);}
-
-    /* Search */
     .sb-search{padding:10px 10px 8px;}
     .sb-search-inner{
       display:flex;align-items:center;gap:7px;
@@ -109,27 +102,18 @@
       border-radius:var(--radius-sm);padding:7px 10px;
     }
     .sb-search-inner svg{color:var(--text3);flex-shrink:0;}
-    .sb-search-inner input{
-      flex:1;background:transparent;border:none;outline:none;
-      font-size:12px;color:var(--text);font-family:'Sora',sans-serif;
-    }
+    .sb-search-inner input{flex:1;background:transparent;border:none;outline:none;font-size:12px;color:var(--text);font-family:'Sora',sans-serif;}
     .sb-search-inner input::placeholder{color:var(--text3);}
 
-    /* Folders */
+    /* ── FOLDERS ── */
     .sb-folders-section{flex-shrink:0;}
-    .sb-folders-header{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:10px 14px 6px;
-    }
+    .sb-folders-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;}
     .sb-folders-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;}
-    .sb-folder-add-btn{
-      width:20px;height:20px;background:transparent;border:none;
-      color:var(--text3);font-size:16px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      transition:color .15s;
-    }
+    .sb-folder-add-btn{width:20px;height:20px;background:transparent;border:none;color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s;}
     .sb-folder-add-btn:hover{color:var(--green);}
     .sb-folders-list{padding:0 8px 8px;display:flex;flex-direction:column;gap:2px;}
+
+    /* Folder item */
     .folder-item{
       display:flex;align-items:center;gap:8px;
       padding:7px 10px;border-radius:var(--radius-sm);
@@ -141,10 +125,7 @@
     .folder-item.active .folder-icon{color:var(--green);}
     .folder-name{font-size:12px;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .folder-item.active .folder-name{color:var(--text);font-weight:600;}
-    .folder-count{
-      font-size:10px;background:var(--bg4);color:var(--text3);
-      padding:1px 6px;border-radius:10px;flex-shrink:0;
-    }
+    .folder-count{font-size:10px;background:var(--bg4);color:var(--text3);padding:1px 6px;border-radius:10px;flex-shrink:0;}
     .folder-item.active .folder-count{background:var(--green-bg);color:var(--green);}
     .folder-delete-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:9px;padding:1px 3px;border-radius:3px;opacity:0;transition:all .13s;flex-shrink:0;}
     .folder-item:hover .folder-delete-btn{opacity:1;}
@@ -153,21 +134,14 @@
     .folder-input-row.visible{display:flex;}
     .folder-input{flex:1;background:var(--input-bg);border:1px solid var(--blue);border-radius:var(--radius-xs);padding:5px 8px;color:var(--text);font-size:11.5px;font-family:'Sora',sans-serif;outline:none;}
     .folder-input-confirm{background:var(--blue);border:none;border-radius:var(--radius-xs);color:#fff;font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap;}
-
-    /* Empty state for folders/history */
     .sb-empty-hint{padding:10px 14px;font-size:11px;color:var(--text3);font-style:italic;}
 
-    /* Recent history */
+    /* ── HISTORY IN SIDEBAR ── */
     .sb-history-section{flex:1;min-height:0;overflow-y:auto;padding-bottom:8px;}
     .sb-history-section::-webkit-scrollbar{width:3px;}
     .sb-history-section::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
     .sb-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:10px 14px 5px;font-weight:600;}
-    .chat-item{
-      display:flex;align-items:center;gap:8px;
-      padding:6px 10px;border-radius:var(--radius-sm);
-      cursor:pointer;transition:background .13s;margin:1px 6px;
-      position:relative;
-    }
+    .chat-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:background .13s;margin:1px 6px;position:relative;}
     .chat-item:hover{background:var(--bg3);}
     .chat-item.active{background:var(--bg3);}
     .chat-item-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
@@ -182,13 +156,9 @@
     .chat-delete-btn:hover{color:var(--danger);}
 
     /* Study time footer */
-    .sb-footer{
-      border-top:1px solid var(--border);padding:10px 12px;
-      flex-shrink:0;background:var(--bg3);
-    }
+    .sb-footer{border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;background:var(--bg3);}
     .sb-study-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:4px;}
     .sb-study-time{font-size:22px;font-weight:800;color:var(--text);font-family:'Sora',sans-serif;letter-spacing:.5px;line-height:1;}
-    .sb-study-vs{font-size:10px;color:var(--green);margin-top:3px;}
 
     /* Sidebar overlay */
     .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39;backdrop-filter:blur(3px);}
@@ -198,65 +168,45 @@
        MAIN CONTENT
     ══════════════════════════════════════════ */
     .main-content{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;overflow:hidden;position:relative;}
-
-    /* Chat topic bar */
-    .chat-topic-bar{
-      display:flex;align-items:center;gap:10px;
-      padding:10px 16px;border-bottom:1px solid var(--border);
-      background:var(--bg2);flex-shrink:0;
-    }
+    .chat-topic-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
     .chat-topic-bar-title{font-size:14px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
-    .chat-topic-tag{
-      font-size:10px;font-weight:600;
-      background:var(--green-bg);color:var(--green);
-      border:1px solid rgba(13,228,160,.2);
-      border-radius:12px;padding:3px 9px;white-space:nowrap;
-    }
+    .chat-topic-tag{font-size:10px;font-weight:600;background:var(--green-bg);color:var(--green);border:1px solid rgba(13,228,160,.2);border-radius:12px;padding:3px 9px;white-space:nowrap;}
     .chat-topic-spacer{flex:1;}
-    .chat-topic-action{
-      width:30px;height:30px;background:var(--bg3);border:1px solid var(--border2);
-      border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;transition:all .15s;
-    }
+    .chat-topic-action{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
     .chat-topic-action:hover{border-color:var(--blue);color:var(--blue);}
 
-    /* Top search bar (mobile main) */
-    .main-search-bar{
-      display:none;
-      padding:10px 14px;border-bottom:1px solid var(--border);
-      background:var(--bg2);flex-shrink:0;
-    }
-    .main-search-inner{
-      display:flex;align-items:center;gap:8px;
-      background:var(--bg3);border:1px solid var(--border2);
-      border-radius:var(--radius-sm);padding:8px 12px;
-    }
+    /* Mobile search bar */
+    .main-search-bar{display:none;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+    .main-search-inner{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;}
     .main-search-inner svg{color:var(--text3);flex-shrink:0;}
-    .main-search-inner input{
-      flex:1;background:transparent;border:none;outline:none;
-      font-size:13px;color:var(--text);font-family:'Sora',sans-serif;
-    }
+    .main-search-inner input{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text);font-family:'Sora',sans-serif;}
     .main-search-inner input::placeholder{color:var(--text3);}
 
     /* Chat box */
-    #chat-box{
-      flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
-      padding:18px 16px 12px;display:flex;flex-direction:column;
-      gap:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
-    }
+    #chat-box{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 16px 12px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
     #chat-box::-webkit-scrollbar{width:4px;}
     #chat-box::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
     /* Welcome */
-    .welcome{text-align:center;margin:0 auto;padding:28px 20px 16px;animation:fadeUp .5s ease both;display:flex;flex-direction:column;align-items:center;max-width:560px;width:100%;}
+    .welcome{text-align:center;margin:0 auto;padding:28px 20px 16px;animation:fadeUp .5s ease both;display:flex;flex-direction:column;align-items:center;max-width:580px;width:100%;}
     .welcome h2{font-size:20px;font-weight:700;margin-bottom:7px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .welcome .welcome-sub{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.9;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .welcome .welcome-img-note{font-size:11px;color:var(--green);margin-bottom:22px;}
-    .subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:480px;width:100%;margin-bottom:16px;}
+
+    /* Subject grid — 3 col, Math centered in middle */
+    .subject-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:7px;max-width:520px;width:100%;margin-bottom:16px;
+    }
+    .subject-grid .subj-card:nth-child(1){ /* Finance — col 1 row 1 */}
+    .subject-grid .subj-card.math-center{
+      grid-column:2; /* center */
+    }
+
     .subj-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 10px;cursor:pointer;transition:all .18s;text-align:left;}
     .subj-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-2px);}
-    .subj-card.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;position:relative;}
-    .subj-card.disabled:hover{transform:none;border-color:var(--border2);background:var(--bg2);}
+    .subj-card.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;}
     .coming-soon-tag{display:inline-block;font-size:8.5px;font-weight:700;background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,160,48,.25);border-radius:8px;padding:1px 6px;margin-top:4px;letter-spacing:.03em;}
     .subj-card-icon{font-size:17px;margin-bottom:5px;}
     .subj-card-title{font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:2px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -269,13 +219,7 @@
     .user .avatar{background:linear-gradient(135deg,var(--blue),var(--purple));font-size:10px;font-weight:700;color:#fff;}
     .bot .avatar{background:var(--bg3);border:1px solid var(--border2);font-size:14px;overflow:hidden;}
     .bot-col{flex:1;min-width:0;display:flex;flex-direction:column;}
-
-    /* Bot bubble */
-    .bot .bubble{
-      background:var(--bg2);border:1px solid var(--border);color:var(--text);
-      border-radius:4px var(--radius) var(--radius) var(--radius);
-      padding:12px 16px;font-size:14px;line-height:1.95;word-break:break-word;
-    }
+    .bot .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);padding:12px 16px;font-size:14px;line-height:1.95;word-break:break-word;}
     [data-theme="light"] .bot .bubble{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);}
     .bot .bubble p{margin-bottom:9px;}
     .bot .bubble p:last-child{margin-bottom:0;}
@@ -283,18 +227,8 @@
     .bot .bubble h1,.bot .bubble h2,.bot .bubble h3{font-size:13px;font-weight:700;margin:10px 0 6px;color:var(--blue);}
     .bot .bubble ul,.bot .bubble ol{padding-left:0;list-style:none;margin:8px 0;display:flex;flex-direction:column;gap:4px;}
     .bot .bubble li{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 var(--radius-xs) var(--radius-xs) 0;padding:7px 11px;line-height:1.75;}
-
-    /* User bubble */
-    .user .bubble{
-      max-width:70%;
-      background:var(--user-bubble);
-      color:#fff;
-      border-radius:var(--radius) 4px var(--radius) var(--radius);
-      padding:10px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;
-      word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;
-    }
+    .user .bubble{max-width:70%;background:var(--user-bubble);color:#fff;border-radius:var(--radius) 4px var(--radius) var(--radius);padding:10px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .user .bubble img.sent-image{display:block;width:100%;max-width:240px;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);}
-
     .message-actions{display:flex;gap:4px;margin-top:5px;opacity:0;transition:opacity .15s;}
     .message:hover .message-actions{opacity:1;}
     .action-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-xs);padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif;transition:all .13s;}
@@ -303,25 +237,13 @@
     .ai-suggestions{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
     .ai-suggestion-btn{background:transparent;border:1px solid var(--border3);border-radius:16px;padding:3px 11px;color:var(--text2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .ai-suggestion-btn:hover{background:var(--green);border-color:var(--green);color:#0d1117;}
-
     mark{background:rgba(77,127,255,.1);color:var(--blue);border-radius:3px;padding:1px 5px;font-weight:600;}
     .katex-display{margin:.7em auto;text-align:center;overflow-x:auto;}
 
-    /* ── Disha AI typing indicator ── */
-    .typing-bubble{
-      display:flex;align-items:center;gap:9px;
-      padding:10px 14px;
-    }
-    .typing-status-dot{
-      width:9px;height:9px;border-radius:50%;flex-shrink:0;
-      background:var(--green);
-      box-shadow:0 0 6px var(--green);
-      transition:background .4s,box-shadow .4s;
-    }
-    .typing-status-dot.idle{
-      background:var(--text3);
-      box-shadow:none;
-    }
+    /* Typing indicator */
+    .typing-bubble{display:flex;align-items:center;gap:9px;padding:10px 14px;}
+    .typing-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--green);box-shadow:0 0 6px var(--green);transition:background .4s,box-shadow .4s;}
+    .typing-status-dot.idle{background:var(--text3);box-shadow:none;}
     @keyframes pulseActive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
     .typing-status-dot:not(.idle){animation:pulseActive 1.2s ease-in-out infinite;}
     .typing-text{font-size:13px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -331,11 +253,7 @@
     #scroll-btn.visible{opacity:1;pointer-events:auto;}
 
     /* Input area */
-    #input-area{
-      background:var(--bg2);border-top:1px solid var(--border);
-      padding:10px 14px 8px;padding-bottom:calc(8px + var(--safe-bottom));
-      flex-shrink:0;position:relative;z-index:10;
-    }
+    #input-area{background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px 8px;padding-bottom:calc(8px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
     #image-preview-strip{display:none;max-width:100%;margin:0 0 7px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
     #image-preview-strip.visible{display:flex;}
     #preview-thumb{width:36px;height:36px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;}
@@ -346,47 +264,22 @@
     .inp-icon-btn{width:38px;height:38px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:14px;cursor:pointer;transition:all .13s;display:flex;align-items:center;justify-content:center;min-width:38px;}
     .inp-icon-btn:hover{border-color:var(--blue);color:var(--blue);}
     #attach-btn.has-image{border-color:var(--green);color:var(--green);}
-    #user-input{
-      flex:1;background:var(--bg3);border:1px solid var(--border2);
-      border-radius:var(--radius-sm);padding:9px 13px;color:var(--text);
-      font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;outline:none;
-      max-height:120px;transition:border-color .18s;line-height:1.6;
-      font-size:max(14px,16px);
-    }
+    #user-input{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:9px 13px;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;outline:none;max-height:120px;transition:border-color .18s;line-height:1.6;font-size:max(14px,16px);}
     #user-input:focus{border-color:var(--green);}
     #user-input::placeholder{color:var(--text3);}
-    #send-btn{
-      width:38px;height:38px;flex-shrink:0;min-width:38px;
-      background:var(--green);border:none;border-radius:var(--radius-sm);
-      color:#0d1117;font-size:15px;cursor:pointer;transition:all .13s;
-      display:flex;align-items:center;justify-content:center;
-    }
+    #send-btn{width:38px;height:38px;flex-shrink:0;min-width:38px;background:var(--green);border:none;border-radius:var(--radius-sm);color:#0d1117;font-size:15px;cursor:pointer;transition:all .13s;display:flex;align-items:center;justify-content:center;}
     #send-btn:hover{background:var(--green2);transform:translateY(-1px);}
     #send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none;color:var(--text3);}
-
-    /* Bottom hint row */
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
-
-    /* Disclaimer */
-    .disclaimer-bar{
-      text-align:center;padding:4px 14px 6px;
-      font-size:9.5px;color:var(--text3);
-      font-family:'Noto Sans Bengali','Sora',sans-serif;
-      line-height:1.5;
-    }
-    .disclaimer-bar a{color:var(--text3);text-decoration:underline;text-decoration-color:var(--border2);}
-
+    .disclaimer-bar{text-align:center;padding:4px 14px 6px;font-size:9.5px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
     .error-bubble{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius-sm);padding:9px 13px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;justify-content:space-between;gap:9px;}
 
     /* ══════════════════════════════════════════
        RIGHT SIDEBAR
     ══════════════════════════════════════════ */
-    .right-sidebar{
-      width:var(--right-w);background:var(--bg2);border-left:1px solid var(--border);
-      display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden;
-    }
+    .right-sidebar{width:var(--right-w);background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden;}
     .right-sidebar::-webkit-scrollbar{width:3px;}
     .right-sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
     .rs-section{padding:12px 12px;border-bottom:1px solid var(--border);}
@@ -394,7 +287,11 @@
     .rs-title{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
     .rs-title-link{font-size:10px;color:var(--blue);cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;}
 
-    /* Leaderboard */
+    /* Leaderboard — empty state */
+    .lb-empty{padding:20px 8px;text-align:center;}
+    .lb-empty-icon{font-size:28px;margin-bottom:8px;}
+    .lb-empty-text{font-size:11px;color:var(--text3);line-height:1.6;}
+    .lb-empty-text strong{color:var(--text2);display:block;margin-bottom:3px;}
     .leaderboard-list{display:flex;flex-direction:column;gap:5px;}
     .lb-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);}
     .lb-item.you{border-color:rgba(13,228,160,.25);background:rgba(13,228,160,.05);}
@@ -405,6 +302,9 @@
     .lb-item.you .lb-name{color:var(--green);}
     .lb-score{font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;}
     .lb-item.you .lb-score{color:var(--green);}
+    .lb-you-row{background:rgba(13,228,160,.05);border:1px dashed rgba(13,228,160,.2);border-radius:var(--radius-sm);padding:8px 9px;display:flex;align-items:center;gap:8px;margin-top:4px;}
+    .lb-you-label{font-size:11px;color:var(--green);flex:1;}
+    .lb-you-score{font-size:11px;font-weight:700;color:var(--green);}
 
     /* Progress bars */
     .progress-list{display:flex;flex-direction:column;gap:8px;}
@@ -419,29 +319,16 @@
     .progress-bar{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.25,.46,.45,.94);}
 
     /* HSC Countdown */
-    .hsc-countdown-card{
-      background:var(--bg3);border:1px solid var(--border2);
-      border-radius:var(--radius-sm);padding:12px;
-      display:flex;align-items:center;justify-content:space-around;gap:8px;
-      text-align:center;
-    }
+    .hsc-countdown-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;justify-content:space-around;gap:8px;text-align:center;}
     .hsc-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;}
     .hsc-val-label{font-size:9.5px;color:var(--text3);margin-top:3px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .hsc-val-divider{width:1px;height:36px;background:var(--border2);}
-    .hsc-predicted{
-      background:var(--green-bg);border:1px solid rgba(13,228,160,.2);
-      border-radius:var(--radius-xs);padding:6px 10px;
-    }
+    .hsc-predicted{background:var(--green-bg);border:1px solid rgba(13,228,160,.2);border-radius:var(--radius-xs);padding:6px 10px;}
     .hsc-predicted-grade{font-size:18px;font-weight:800;color:var(--green);line-height:1;}
     .hsc-predicted-label{font-size:9px;color:var(--green);margin-top:2px;}
 
     /* Battle mode btn */
-    .battle-btn{
-      display:flex;align-items:center;gap:10px;
-      background:rgba(155,111,212,.08);border:1px solid rgba(155,111,212,.2);
-      border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;
-      transition:all .15s;width:100%;
-    }
+    .battle-btn{display:flex;align-items:center;gap:10px;background:rgba(155,111,212,.08);border:1px solid rgba(155,111,212,.2);border-radius:var(--radius-sm);padding:10px 12px;cursor:pointer;transition:all .15s;width:100%;}
     .battle-btn:hover{border-color:var(--purple);background:rgba(155,111,212,.12);}
     .battle-btn-icon{font-size:16px;flex-shrink:0;}
     .battle-btn-text{flex:1;}
@@ -451,12 +338,72 @@
     @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 
     /* ══════════════════════════════════════════
-       MODALS
+       MODALS — SHARED
     ══════════════════════════════════════════ */
     @keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
     @keyframes popCard{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
 
+    /* ══════════════════════════════════════════
+       BEAUTIFUL LOGOUT MODAL
+    ══════════════════════════════════════════ */
+    #logout-overlay{
+      display:none;position:fixed;inset:0;z-index:998;
+      align-items:center;justify-content:center;
+      background:rgba(8,9,12,.75);backdrop-filter:blur(10px);
+    }
+    #logout-overlay.active{display:flex;animation:fadeOverlay .2s ease both;}
+    .logout-card{
+      background:var(--bg2);
+      border:1px solid var(--border2);
+      border-radius:20px;
+      padding:28px 28px 22px;
+      max-width:320px;width:calc(100% - 32px);
+      text-align:center;
+      box-shadow:0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+      animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;
+      position:relative;
+    }
+    .logout-avatar{
+      width:56px;height:56px;border-radius:16px;
+      background:linear-gradient(135deg, var(--green), var(--blue));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;font-weight:800;color:#fff;
+      margin:0 auto 14px;
+      box-shadow:0 8px 24px rgba(13,228,160,.25);
+    }
+    .logout-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
+    .logout-email{font-size:12px;color:var(--text3);margin-bottom:6px;}
+    .logout-plan-badge{
+      display:inline-flex;align-items:center;gap:5px;
+      background:var(--green-bg);border:1px solid rgba(13,228,160,.2);
+      color:var(--green);border-radius:20px;padding:3px 10px;
+      font-size:10.5px;font-weight:600;margin-bottom:22px;
+    }
+    .logout-divider{height:1px;background:var(--border);margin:0 -28px 18px;}
+    .logout-btn-group{display:flex;flex-direction:column;gap:8px;}
+    .logout-btn{
+      width:100%;padding:11px;border-radius:var(--radius-sm);
+      font-size:13.5px;font-weight:600;font-family:'Sora',sans-serif;
+      cursor:pointer;transition:all .15s;border:none;
+    }
+    .logout-btn.danger{
+      background:rgba(248,81,73,.1);
+      border:1px solid rgba(248,81,73,.25);
+      color:var(--danger);
+    }
+    .logout-btn.danger:hover{background:rgba(248,81,73,.18);border-color:var(--danger);}
+    .logout-btn.cancel{
+      background:var(--bg3);
+      border:1px solid var(--border2);
+      color:var(--text2);
+    }
+    .logout-btn.cancel:hover{background:var(--bg4);color:var(--text);}
+
+    /* ══════════════════════════════════════════
+       LOGIN OVERLAY
+    ══════════════════════════════════════════ */
     #login-overlay{display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;background:rgba(8,9,12,.78);backdrop-filter:blur(8px);}
     #login-overlay.active{display:flex;animation:fadeOverlay .22s ease both;}
     .login-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px 24px 20px;max-width:360px;width:calc(100% - 28px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;position:relative;}
@@ -485,6 +432,7 @@
     .card-footer{font-size:10.5px;color:var(--text3);margin-top:10px;}
     .card-footer span{color:var(--green);}
 
+    /* Verify overlay */
     #verify-overlay{display:none;position:fixed;inset:0;z-index:1000;align-items:center;justify-content:center;background:rgba(8,9,12,.85);backdrop-filter:blur(8px);}
     #verify-overlay.active{display:flex;animation:fadeOverlay .22s ease both;}
     .verify-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px 24px 22px;max-width:360px;width:calc(100% - 28px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;}
@@ -503,6 +451,7 @@
     .resend-link{margin-top:10px;font-size:11px;color:var(--text3);}
     .resend-link button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:11px;font-family:'Sora',sans-serif;}
 
+    /* Forgot overlay */
     #forgot-overlay{display:none;position:fixed;inset:0;z-index:1001;align-items:center;justify-content:center;background:rgba(8,9,12,.85);backdrop-filter:blur(8px);}
     #forgot-overlay.active{display:flex;animation:fadeOverlay .22s ease both;}
     .forgot-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px 24px 20px;max-width:380px;width:calc(100% - 28px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;max-height:90vh;overflow-y:auto;}
@@ -528,29 +477,13 @@
     /* ══════════════════════════════════════════
        MOBILE BOTTOM NAV
     ══════════════════════════════════════════ */
-    .mobile-bottom-nav{
-      display:none;height:56px;background:var(--bg2);
-      border-top:1px solid var(--border);
-      flex-shrink:0;align-items:stretch;
-      padding-bottom:var(--safe-bottom);
-    }
-    .mob-nav-btn{
-      flex:1;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;gap:2px;background:transparent;border:none;
-      color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;
-      transition:color .15s;padding:4px 0;
-    }
+    .mobile-bottom-nav{display:none;height:56px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;align-items:stretch;padding-bottom:var(--safe-bottom);}
+    .mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;transition:color .15s;padding:4px 0;}
     .mob-nav-btn.active{color:var(--green);}
     .mob-nav-icon{font-size:18px;line-height:1;}
     .mob-nav-label{font-size:9px;font-weight:600;letter-spacing:.02em;}
 
-    /* Mobile: study time + rank bar */
-    .mob-study-bar{
-      display:none;
-      background:var(--bg3);border-bottom:1px solid var(--border);
-      padding:8px 14px;flex-shrink:0;
-      align-items:center;justify-content:space-between;gap:12px;
-    }
+    .mob-study-bar{display:none;background:var(--bg3);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0;align-items:center;justify-content:space-between;gap:12px;}
     .mob-study-time-col{}
     .mob-study-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;}
     .mob-study-timer{font-size:17px;font-weight:800;color:var(--text);letter-spacing:1px;font-family:'Sora',sans-serif;line-height:1.2;}
@@ -559,9 +492,7 @@
     .mob-rank-val{font-size:17px;font-weight:800;color:var(--green);line-height:1.2;}
 
     /* Mobile folders view */
-    #folders-view{
-      display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden;
-    }
+    #folders-view{display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden;}
     #folders-view.active{display:flex;}
     .fv-search{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
     .fv-inner{flex:1;min-height:0;overflow-y:auto;}
@@ -572,11 +503,7 @@
     .fv-add-btn{width:22px;height:22px;background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s;}
     .fv-add-btn:hover{color:var(--green);}
     .fv-folder-list{padding:0 10px;display:flex;flex-direction:column;gap:3px;}
-    .fv-folder-item{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;
-      transition:background .13s;
-    }
+    .fv-folder-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .13s;}
     .fv-folder-item:hover{background:var(--bg3);}
     .fv-folder-item.active{background:var(--bg3);}
     .fv-folder-left{display:flex;align-items:center;gap:9px;}
@@ -586,10 +513,7 @@
     .fv-folder-count{font-size:11px;color:var(--text3);background:var(--bg4);padding:2px 8px;border-radius:10px;}
     .fv-folder-item.active .fv-folder-count{background:var(--green-bg);color:var(--green);}
     .fv-history-list{padding:0 10px 12px;display:flex;flex-direction:column;gap:3px;}
-    .fv-history-item{
-      display:flex;flex-direction:column;gap:3px;
-      padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .13s;
-    }
+    .fv-history-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;transition:background .13s;}
     .fv-history-item:hover{background:var(--bg3);}
     .fv-history-dot-row{display:flex;align-items:center;gap:7px;}
     .fv-history-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
@@ -604,12 +528,7 @@
     @media(max-width:1100px){:root{--right-w:220px;}}
     @media(max-width:900px){.right-sidebar{display:none;}}
     @media(max-width:700px){
-      .left-sidebar{
-        position:fixed;top:0;left:0;bottom:0;z-index:40;
-        transform:translateX(-100%);
-        transition:transform .25s ease;
-        width:var(--left-w) !important;
-      }
+      .left-sidebar{position:fixed;top:0;left:0;bottom:0;z-index:40;transform:translateX(-100%);transition:transform .25s ease;width:var(--left-w) !important;}
       .left-sidebar.open{transform:translateX(0);}
       .right-sidebar{display:none !important;}
       .mobile-bottom-nav{display:flex;}
@@ -632,28 +551,19 @@
 
   <!-- ═══ LEFT SIDEBAR ═══ -->
   <div class="left-sidebar" id="sidebar">
-
-    <!-- Logo — Sheelbi with spinner SVG -->
     <div class="sb-logo-row">
-      <!-- Sheelbi spinner logo (matches the provided logo image) -->
       <svg class="sheelbi-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
         <circle cx="50" cy="50" r="7" fill="#f0a030" stroke="#1a1a1a" stroke-width="3"/>
-        <!-- Blue arm top -->
         <line x1="50" y1="43" x2="50" y2="8" stroke="#4d7fff" stroke-width="11" stroke-linecap="round"/>
-        <!-- Orange arm left -->
         <line x1="43" y1="50" x2="8" y2="50" stroke="#f0a030" stroke-width="11" stroke-linecap="round"/>
-        <!-- Orange arm bottom-left -->
         <line x1="45" y1="55" x2="18" y2="82" stroke="#c07020" stroke-width="11" stroke-linecap="round"/>
-        <!-- Blue-purple arm top-right -->
         <line x1="55" y1="45" x2="82" y2="18" stroke="#7b8fff" stroke-width="11" stroke-linecap="round"/>
-        <!-- Purple arm bottom-right -->
         <line x1="55" y1="55" x2="82" y2="82" stroke="#9b6fd4" stroke-width="11" stroke-linecap="round"/>
         <circle cx="50" cy="50" r="7" fill="#f0a030"/>
       </svg>
       <div class="sb-logo-text">Sheelbi</div>
     </div>
 
-    <!-- Search -->
     <div class="sb-search">
       <div class="sb-search-inner">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -661,7 +571,7 @@
       </div>
     </div>
 
-    <!-- Folders — only user-created, no hardcoded fake ones -->
+    <!-- FOLDERS — real user-created only -->
     <div class="sb-folders-section">
       <div class="sb-folders-header">
         <span class="sb-folders-label">FOLDERS</span>
@@ -674,19 +584,15 @@
       </div>
     </div>
 
-    <!-- Recent History — only real saved chats -->
+    <!-- HISTORY -->
     <div class="sb-history-section">
-      <div class="sb-section-label">RECENT HISTORY</div>
-      <div id="sidebar-chat-list">
-        <!-- Populated dynamically from localStorage only -->
-      </div>
+      <div class="sb-section-label" id="history-section-label">RECENT HISTORY</div>
+      <div id="sidebar-chat-list"></div>
     </div>
 
-    <!-- Study time footer — real session timer starting at 00:00:00 -->
     <div class="sb-footer">
       <div class="sb-study-label">TODAY'S STUDY TIME</div>
       <div class="sb-study-time" id="sb-study-time">00:00:00</div>
-      <div class="sb-study-vs" id="sb-study-vs" style="visibility:hidden;">+0 min vs yesterday</div>
     </div>
   </div>
 
@@ -724,7 +630,7 @@
       </div>
       <div class="mob-rank-col">
         <div class="mob-rank-label">Rank</div>
-        <div class="mob-rank-val">#3</div>
+        <div class="mob-rank-val" id="mob-rank-val">—</div>
       </div>
     </div>
 
@@ -735,7 +641,31 @@
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
-      <button class="chat-topic-action" title="Account" onclick="showLoginPrompt(false)" id="account-btn">👤</button>
+      <button class="chat-topic-action" title="Account" onclick="showAccountModal()" id="account-btn">👤</button>
+    </div>
+
+    <!-- ════════════════════════════════
+         BEAUTIFUL LOGOUT / ACCOUNT MODAL
+    ════════════════════════════════ -->
+    <div id="logout-overlay" onclick="handleLogoutOverlayClick(event)">
+      <div class="logout-card" id="logout-card">
+        <div class="logout-avatar" id="logout-avatar-initials">U</div>
+        <div class="logout-name" id="logout-display-name">User</div>
+        <div class="logout-email" id="logout-display-email">—</div>
+        <div class="logout-plan-badge">
+          <span>✦</span>
+          <span id="logout-plan-label">Free Plan</span>
+        </div>
+        <div class="logout-divider"></div>
+        <div class="logout-btn-group">
+          <button class="logout-btn danger" onclick="confirmLogout()">
+            🚪 Log out
+          </button>
+          <button class="logout-btn cancel" onclick="hideLogoutModal()">
+            Stay logged in
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- LOGIN OVERLAY -->
@@ -834,18 +764,40 @@
         <p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p>
         <p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>
         <div class="subject-grid">
-          <!-- Math  — disabled/coming soon -->
-          <div class="subj-card disabled">
-            <div class="subj-card-icon">💻</div>
+          <!-- Row 1: Finance | Math (center, coming soon) | Biology -->
+          <div class="subj-card" onclick="sendSuggestion(this)" data-q="Personal finance basics: budgeting, saving and investing explained">
+            <div class="subj-card-icon">💰</div>
+            <div class="subj-card-title">Finance</div>
+            <div class="subj-card-example">Budgeting & investing</div>
+          </div>
+          <div class="subj-card disabled math-center">
+            <div class="subj-card-icon">🔢</div>
             <div class="subj-card-title">Math</div>
-            <div class="subj-card-example">Solve Math Step-by-Step</div>
+            <div class="subj-card-example">Solve step-by-step</div>
             <span class="coming-soon-tag">Coming Soon</span>
           </div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="সালোকসংশ্লেষণ প্রক্রিয়া ব্যাখ্যা করো"><div class="subj-card-icon">🌿</div><div class="subj-card-title">বিজ্ঞান</div><div class="subj-card-example">Explain photosynthesis</div></div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="পিথাগোরাসের উপপাদ্য কী? প্রমাণ দাও"><div class="subj-card-icon">📐</div><div class="subj-card-title">জ্যামিতি</div><div class="subj-card-example">পিথাগোরাসের উপপাদ্য</div></div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="What is osmosis? Explain with example"><div class="subj-card-icon">🔬</div><div class="subj-card-title">Biology</div><div class="subj-card-example">What is osmosis?</div></div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="এসিড ও ক্ষারের পার্থক্য কী?"><div class="subj-card-icon">⚗️</div><div class="subj-card-title">রসায়ন</div><div class="subj-card-example">এসিড ও ক্ষার</div></div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="নিউটনের গতিসূত্র তিনটি ব্যাখ্যা করো"><div class="subj-card-icon">💡</div><div class="subj-card-title">পদার্থবিজ্ঞান</div><div class="subj-card-example">নিউটনের সূত্র</div></div>
+          <div class="subj-card" onclick="sendSuggestion(this)" data-q="What is osmosis? Explain with example">
+            <div class="subj-card-icon">🔬</div>
+            <div class="subj-card-title">Biology</div>
+            <div class="subj-card-example">What is osmosis?</div>
+          </div>
+
+          <!-- Row 2: English | Chemistry | Physics -->
+          <div class="subj-card" onclick="sendSuggestion(this)" data-q="How do I write a perfect paragraph in English?">
+            <div class="subj-card-icon">🗣️</div>
+            <div class="subj-card-title">English</div>
+            <div class="subj-card-example">Writing & grammar</div>
+          </div>
+          <div class="subj-card" onclick="sendSuggestion(this)" data-q="এসিড ও ক্ষারের পার্থক্য কী?">
+            <div class="subj-card-icon">⚗️</div>
+            <div class="subj-card-title">রসায়ন</div>
+            <div class="subj-card-example">এসিড ও ক্ষার</div>
+          </div>
+          <div class="subj-card" onclick="sendSuggestion(this)" data-q="নিউটনের গতিসূত্র তিনটি ব্যাখ্যা করো">
+            <div class="subj-card-icon">💡</div>
+            <div class="subj-card-title">পদার্থবিজ্ঞান</div>
+            <div class="subj-card-example">নিউটনের সূত্র</div>
+          </div>
         </div>
       </div>
     </div>
@@ -869,9 +821,7 @@
         <div class="fv-section-header">
           <span class="fv-section-label">RECENT HISTORY</span>
         </div>
-        <div class="fv-history-list" id="fv-history-list">
-          <!-- Populated dynamically -->
-        </div>
+        <div class="fv-history-list" id="fv-history-list"></div>
       </div>
     </div>
 
@@ -894,14 +844,12 @@
       <div class="hint-bar">
         <span class="hint">
           <span style="display:inline-flex;align-items:center;gap:4px;">
-            <!-- Disha AI status dot -->
             <span id="disha-dot" class="typing-status-dot idle" style="display:inline-block;width:7px;height:7px;border-radius:50%;"></span>
             <span id="disha-status-text" style="font-size:9.5px;color:var(--text3);">Disha AI</span>
           </span>
         </span>
         <span class="char-count" id="char-count"></span>
       </div>
-      <!-- Disclaimer -->
       <div class="disclaimer-bar">
         AI can sometimes make mistakes, so it's always good to double-check. ✦ Sheelbi
       </div>
@@ -912,64 +860,16 @@
   <!-- ═══ RIGHT SIDEBAR ═══ -->
   <div class="right-sidebar" id="right-sidebar">
 
-    <!-- Leaderboard -->
+    <!-- Leaderboard — real users only -->
     <div class="rs-section">
-      <div class="rs-title">
-        LEADERBOARD
-        <span class="rs-title-link" onclick="showLoginPrompt(false)">see all</span>
-      </div>
-      <div class="leaderboard-list">
-        <div class="lb-item">
-          <div class="lb-rank">1</div>
-          <div class="lb-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">TH</div>
-          <div class="lb-name">Tahsin H.</div>
-          <div class="lb-score">4,820</div>
-        </div>
-        <div class="lb-item">
-          <div class="lb-rank">2</div>
-          <div class="lb-avatar" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">NS</div>
-          <div class="lb-name">Nusrat S.</div>
-          <div class="lb-score">3,910</div>
-        </div>
-        <div class="lb-item you">
-          <div class="lb-rank">3</div>
-          <div class="lb-avatar" style="background:var(--green);color:#0d1117;">R</div>
-          <div class="lb-name">You</div>
-          <div class="lb-score">3,480</div>
-        </div>
-        <div class="lb-item">
-          <div class="lb-rank">4</div>
-          <div class="lb-avatar" style="background:linear-gradient(135deg,#f97316,#ec4899);">AM</div>
-          <div class="lb-name">Arif M.</div>
-          <div class="lb-score">3,110</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Today's Progress -->
-    <div class="rs-section">
-      <div class="rs-title">TODAY'S PROGRESS</div>
-      <div class="progress-list">
-        <div class="progress-item">
-          <div class="progress-row">
-            <span class="progress-subj">Bangla</span>
-            <span class="progress-pct high">92%</span>
+      <div class="rs-title">LEADERBOARD</div>
+      <div id="leaderboard-container">
+        <div class="lb-empty">
+          <div class="lb-empty-icon">🏆</div>
+          <div class="lb-empty-text">
+            <strong>Coming soon</strong>
+            Leaderboard will show real users ranked by study activity.
           </div>
-          <div class="progress-bar-bg"><div class="progress-bar" style="width:92%;background:var(--green);"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-row">
-            <span class="progress-subj">Biology</span>
-            <span class="progress-pct mid">61%</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar" style="width:61%;background:var(--amber);"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-row">
-            <span class="progress-subj">English</span>
-            <span class="progress-pct low">40%</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar" style="width:40%;background:var(--danger);"></div></div>
         </div>
       </div>
     </div>
@@ -979,7 +879,7 @@
       <div class="rs-title">HSC COUNTDOWN</div>
       <div class="hsc-countdown-card">
         <div>
-          <div class="hsc-val" id="hsc-days">47</div>
+          <div class="hsc-val" id="hsc-days">—</div>
           <div class="hsc-val-label">days</div>
         </div>
         <div class="hsc-val-divider"></div>
@@ -1000,8 +900,8 @@
       <button class="battle-btn" onclick="showLoginPrompt(false)">
         <div class="battle-btn-icon">⚔️</div>
         <div class="battle-btn-text">
-          <div class="battle-btn-title">Battle mode — 3 live</div>
-          <div class="battle-btn-sub">Friends online now</div>
+          <div class="battle-btn-title">Battle mode</div>
+          <div class="battle-btn-sub">Coming soon — challenge friends</div>
         </div>
         <div class="battle-live-dot"></div>
       </button>
@@ -1025,9 +925,9 @@
     <span class="mob-nav-icon">📊</span>
     <span class="mob-nav-label">Ranks</span>
   </button>
-  <button class="mob-nav-btn" id="mob-exam" onclick="showLoginPrompt(false)">
-    <span class="mob-nav-icon">📅</span>
-    <span class="mob-nav-label">Exam</span>
+  <button class="mob-nav-btn" id="mob-account" onclick="showAccountModal()">
+    <span class="mob-nav-icon">👤</span>
+    <span class="mob-nav-label">Account</span>
   </button>
 </nav>
 
@@ -1044,6 +944,7 @@ const scrollBtn     = document.getElementById('scroll-btn');
 const loginOverlay  = document.getElementById('login-overlay');
 const verifyOverlay = document.getElementById('verify-overlay');
 const forgotOverlay = document.getElementById('forgot-overlay');
+const logoutOverlay = document.getElementById('logout-overlay');
 const sidebar       = document.getElementById('sidebar');
 const sidebarOverlay= document.getElementById('sidebar-overlay');
 
@@ -1052,6 +953,7 @@ marked.use({extensions:[highlightExt],breaks:true,gfm:true});
 
 let selectedFile=null,isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,currentView='chat';
 let isAiTyping=false;
+let loggedInUser=null;
 
 const GUEST_LIMIT=5;
 function getGuestCount(){return parseInt(sessionStorage.getItem('guest_msg_count')||'0');}
@@ -1059,75 +961,31 @@ function incrementGuestCount(){sessionStorage.setItem('guest_msg_count',getGuest
 function isGuestLimitReached(){return getGuestCount()>=GUEST_LIMIT;}
 
 // ═══════════════════════════════════════════════
-// REAL SESSION TIMER — starts at 00:00:00
+// SESSION TIMER
 // ═══════════════════════════════════════════════
-const SESSION_KEY = 'sheelbi_session_start';
-// Store start time in sessionStorage so it persists across soft reloads but resets on new session
-if (!sessionStorage.getItem(SESSION_KEY)) {
-  sessionStorage.setItem(SESSION_KEY, Date.now().toString());
-}
-
-function getStudySeconds() {
-  const start = parseInt(sessionStorage.getItem(SESSION_KEY) || Date.now());
-  return Math.floor((Date.now() - start) / 1000);
-}
-
-function fmtTime(s) {
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-}
-
-setInterval(()=>{
-  const secs = getStudySeconds();
-  const str = fmtTime(secs);
-  const el = document.getElementById('sb-study-time');
-  const mob = document.getElementById('mob-timer');
-  if(el) el.textContent = str;
-  if(mob) mob.textContent = str;
-}, 1000);
+const SESSION_KEY='sheelbi_session_start';
+if(!sessionStorage.getItem(SESSION_KEY)){sessionStorage.setItem(SESSION_KEY,Date.now().toString());}
+function getStudySeconds(){const start=parseInt(sessionStorage.getItem(SESSION_KEY)||Date.now());return Math.floor((Date.now()-start)/1000);}
+function fmtTime(s){const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);const sec=s%60;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;}
+setInterval(()=>{const str=fmtTime(getStudySeconds());const el=document.getElementById('sb-study-time');const mob=document.getElementById('mob-timer');if(el)el.textContent=str;if(mob)mob.textContent=str;},1000);
 
 // ═══════════════════════════════════════════════
-// DISHA AI STATUS DOT
+// DISHA AI STATUS
 // ═══════════════════════════════════════════════
-const TYPING_PHRASES_BN = [
-  'Disha AI লিখছে...',
-  'আমি উত্তর লিখছি...',
-  'একটু ভাবছি...',
-  'তৈরি হচ্ছে...',
-];
-
-let dishaStatusInterval = null;
-
-function setDishaTyping(active) {
-  isAiTyping = active;
-  const dot = document.getElementById('disha-dot');
-  const txt = document.getElementById('disha-status-text');
-  if (!dot || !txt) return;
-
-  if (active) {
-    dot.classList.remove('idle');
-    let pi = 0;
-    txt.textContent = TYPING_PHRASES_BN[0];
-    if (dishaStatusInterval) clearInterval(dishaStatusInterval);
-    dishaStatusInterval = setInterval(() => {
-      pi = (pi + 1) % TYPING_PHRASES_BN.length;
-      txt.textContent = TYPING_PHRASES_BN[pi];
-    }, 1800);
-  } else {
-    dot.classList.add('idle');
-    if (dishaStatusInterval) { clearInterval(dishaStatusInterval); dishaStatusInterval = null; }
-    txt.textContent = 'Disha AI';
-  }
+const TYPING_PHRASES=['Disha AI লিখছে...','আমি উত্তর লিখছি...','একটু ভাবছি...','তৈরি হচ্ছে...'];
+let dishaStatusInterval=null;
+function setDishaTyping(active){
+  isAiTyping=active;
+  const dot=document.getElementById('disha-dot');const txt=document.getElementById('disha-status-text');if(!dot||!txt)return;
+  if(active){dot.classList.remove('idle');let pi=0;txt.textContent=TYPING_PHRASES[0];if(dishaStatusInterval)clearInterval(dishaStatusInterval);dishaStatusInterval=setInterval(()=>{pi=(pi+1)%TYPING_PHRASES.length;txt.textContent=TYPING_PHRASES[pi];},1800);}
+  else{dot.classList.add('idle');if(dishaStatusInterval){clearInterval(dishaStatusInterval);dishaStatusInterval=null;}txt.textContent='Disha AI';}
 }
 
 // ═══════════════════════════════════════════════
-// COUNTDOWN
+// HSC COUNTDOWN
 // ═══════════════════════════════════════════════
 function updateHscDays(){
-  const examDate=new Date('2025-11-01');
-  const today=new Date();
+  const examDate=new Date('2025-11-01');const today=new Date();
   const diff=Math.ceil((examDate-today)/(1000*60*60*24));
   const el=document.getElementById('hsc-days');
   if(el)el.textContent=diff>0?diff:'🎉';
@@ -1135,49 +993,65 @@ function updateHscDays(){
 updateHscDays();
 
 // ═══════════════════════════════════════════════
-// FOLDERS — no hardcoded defaults
+// FOLDERS — real user-created, with chats inside
 // ═══════════════════════════════════════════════
-const FOLDER_STORAGE_KEY='sheelbi_folders_v1';
+const FOLDER_STORAGE_KEY='sheelbi_folders_v2';
 let folders=loadFolders();
 let activeFolderId=null;
 
-function loadFolders(){
-  try{const raw=localStorage.getItem(FOLDER_STORAGE_KEY);if(raw)return JSON.parse(raw);}catch(e){}
-  return []; // Start empty — user creates their own
-}
+function loadFolders(){try{const raw=localStorage.getItem(FOLDER_STORAGE_KEY);if(raw)return JSON.parse(raw);}catch(e){}return[];}
 function saveFolders(){try{localStorage.setItem(FOLDER_STORAGE_KEY,JSON.stringify(folders));}catch(e){}}
+
+function getFolderChatCount(folderId){
+  return loadHistoryMeta().filter(h=>h.folderId===folderId).length;
+}
 
 function renderFolders(){
   const list=document.getElementById('folders-list');
   const fvList=document.getElementById('fv-folder-list');
+
+  // Update counts from actual chats
+  folders=folders.map(f=>({...f,count:getFolderChatCount(f.id)}));
+  saveFolders();
+
   if(list){
     list.innerHTML='';
     if(folders.length===0){
       list.innerHTML='<div class="sb-empty-hint">No folders yet. Press + to create one.</div>';
-    } else {
+    }else{
+      // "All chats" pseudo-folder
+      const allItem=document.createElement('div');
+      allItem.className='folder-item'+(activeFolderId===null?' active':'');
+      allItem.innerHTML=`<span class="folder-icon">💬</span><span class="folder-name">All Chats</span><span class="folder-count">${loadHistoryMeta().length}</span>`;
+      allItem.addEventListener('click',()=>{activeFolderId=null;renderFolders();renderHistory();});
+      list.appendChild(allItem);
+
       folders.forEach(f=>{
         const item=document.createElement('div');
         item.className='folder-item'+(f.id===activeFolderId?' active':'');
-        item.innerHTML=`<span class="folder-icon">${f.icon}</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
-        item.addEventListener('click',e=>{if(e.target.classList.contains('folder-delete-btn'))return;activeFolderId=f.id;renderFolders();openChatView();});
+        item.innerHTML=`<span class="folder-icon">📁</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
+        item.addEventListener('click',e=>{if(e.target.classList.contains('folder-delete-btn'))return;activeFolderId=f.id;renderFolders();renderHistory();});
         list.appendChild(item);
       });
     }
   }
+
   if(fvList){
     fvList.innerHTML='';
     if(folders.length===0){
       fvList.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No folders yet. Press + to create one.</div>';
-    } else {
+    }else{
       folders.forEach(f=>{
         const item=document.createElement('div');
         item.className='fv-folder-item'+(f.id===activeFolderId?' active':'');
-        item.innerHTML=`<div class="fv-folder-left"><span class="fv-folder-icon">${f.icon}</span><span class="fv-folder-name">${escapeHtml(f.name)}</span></div><span class="fv-folder-count">${f.count||0}</span>`;
-        item.addEventListener('click',()=>{activeFolderId=f.id;renderFolders();openChat();setMobNav('mob-chat');});
+        item.innerHTML=`<div class="fv-folder-left"><span class="fv-folder-icon">📁</span><span class="fv-folder-name">${escapeHtml(f.name)}</span></div><span class="fv-folder-count">${f.count||0}</span>`;
+        item.addEventListener('click',()=>{activeFolderId=f.id;renderFolders();renderHistory();openChat();setMobNav('mob-chat');});
         fvList.appendChild(item);
       });
     }
   }
+
+  renderHistory();
 }
 
 function showFolderInput(){const row=document.getElementById('folder-input-row');if(row)row.classList.add('visible');setTimeout(()=>document.getElementById('folder-name-input')?.focus(),50);}
@@ -1186,148 +1060,132 @@ function folderInputKey(e){if(e.key==='Enter')confirmNewFolder();if(e.key==='Esc
 function confirmNewFolder(){
   const nameEl=document.getElementById('folder-name-input');
   const name=nameEl?.value.trim();if(!name)return;
-  folders.push({id:'folder_'+Date.now(),name,icon:'📁',count:0});
+  folders.push({id:'folder_'+Date.now(),name,count:0});
   saveFolders();renderFolders();hideFolderInput();
 }
-function deleteFolder(e,folderId){e.stopPropagation();folders=folders.filter(f=>f.id!==folderId);saveFolders();if(activeFolderId===folderId)activeFolderId=null;renderFolders();}
-
-// ═══════════════════════════════════════════════
-// HISTORY — real chats from localStorage only
-// ═══════════════════════════════════════════════
-const HISTORY_KEY = 'sheelbi_history_v1';
-
-function loadHistoryMeta() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
-}
-function saveHistoryMeta(arr) {
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(0, 30))); } catch(e) {}
+function deleteFolder(e,folderId){
+  e.stopPropagation();
+  // Move chats from this folder back to "unfiled"
+  const arr=loadHistoryMeta().map(h=>h.folderId===folderId?{...h,folderId:null}:h);
+  saveHistoryMeta(arr);
+  folders=folders.filter(f=>f.id!==folderId);
+  saveFolders();
+  if(activeFolderId===folderId)activeFolderId=null;
+  renderFolders();
 }
 
-function addHistoryEntry(chatId, title) {
-  const arr = loadHistoryMeta();
-  // Remove any existing entry with same id
-  const filtered = arr.filter(h => h.id !== chatId);
-  filtered.unshift({ id: chatId, title, ts: Date.now() });
+// Move chat to folder (context menu or drag-drop placeholder)
+function moveChatToFolder(chatId,folderId){
+  const arr=loadHistoryMeta().map(h=>h.id===chatId?{...h,folderId:folderId||null}:h);
+  saveHistoryMeta(arr);renderFolders();
+}
+
+// ═══════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════
+const HISTORY_KEY='sheelbi_history_v2';
+function loadHistoryMeta(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch(e){return[];}}
+function saveHistoryMeta(arr){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(arr.slice(0,50)));}catch(e){}}
+
+function addHistoryEntry(chatId,title){
+  const arr=loadHistoryMeta();
+  const filtered=arr.filter(h=>h.id!==chatId);
+  filtered.unshift({id:chatId,title,ts:Date.now(),folderId:activeFolderId||null});
   saveHistoryMeta(filtered);
-  renderHistory();
+  renderFolders();
 }
 
-function renderHistory() {
-  const arr = loadHistoryMeta();
-  const list = document.getElementById('sidebar-chat-list');
-  const fvList = document.getElementById('fv-history-list');
+function renderHistory(){
+  let arr=loadHistoryMeta();
+  // Filter by active folder
+  if(activeFolderId){arr=arr.filter(h=>h.folderId===activeFolderId);}
 
-  function timeAgo(ts) {
-    const diff = Math.floor((Date.now() - ts) / 1000);
-    if (diff < 60) return 'just now';
-    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-    if (diff < 172800) return 'Yesterday';
-    return Math.floor(diff/86400) + 'd ago';
+  const list=document.getElementById('sidebar-chat-list');
+  const fvList=document.getElementById('fv-history-list');
+  const label=document.getElementById('history-section-label');
+  if(label){
+    const folder=folders.find(f=>f.id===activeFolderId);
+    label.textContent=folder?`📁 ${folder.name.toUpperCase()}`:'RECENT HISTORY';
   }
 
-  if (list) {
-    list.innerHTML = '';
-    if (arr.length === 0) {
-      list.innerHTML = '<div class="sb-empty-hint">No chats yet. Start a conversation!</div>';
-    } else {
-      arr.forEach((h, i) => {
-        const item = document.createElement('div');
-        item.className = 'chat-item' + (h.id === currentChatId ? ' active' : '');
-        item.innerHTML = `
-          <div class="chat-item-dot ${i === 0 ? 'green' : 'gray'}"></div>
+  function timeAgo(ts){const diff=Math.floor((Date.now()-ts)/1000);if(diff<60)return'just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';if(diff<172800)return'Yesterday';return Math.floor(diff/86400)+'d ago';}
+
+  if(list){
+    list.innerHTML='';
+    if(arr.length===0){
+      list.innerHTML='<div class="sb-empty-hint">'+(activeFolderId?'No chats in this folder.':'No chats yet. Start a conversation!')+'</div>';
+    }else{
+      arr.forEach((h,i)=>{
+        const item=document.createElement('div');
+        item.className='chat-item'+(h.id===currentChatId?' active':'');
+        item.innerHTML=`
+          <div class="chat-item-dot ${i===0?'green':'gray'}"></div>
           <div class="chat-item-info">
             <div class="chat-item-title">${escapeHtml(h.title)}</div>
             <div class="chat-item-sub">${timeAgo(h.ts)}</div>
           </div>
           <button class="chat-delete-btn" onclick="deleteHistoryEntry(event,'${h.id}')" title="Delete">✕</button>`;
-        item.addEventListener('click', e => {
-          if(e.target.classList.contains('chat-delete-btn')) return;
-          loadChatById(h.id);
-        });
+        item.addEventListener('click',e=>{if(e.target.classList.contains('chat-delete-btn'))return;loadChatById(h.id);});
         list.appendChild(item);
       });
     }
   }
 
-  if (fvList) {
-    fvList.innerHTML = '';
-    if (arr.length === 0) {
-      fvList.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No chats yet.</div>';
-    } else {
-      arr.forEach((h, i) => {
-        const item = document.createElement('div');
-        item.className = 'fv-history-item';
-        item.innerHTML = `
-          <div class="fv-history-dot-row">
-            <div class="fv-history-dot ${i===0?'green':'gray'}"></div>
-            <div class="fv-history-title">${escapeHtml(h.title)}</div>
-          </div>
-          <div class="fv-history-meta">${timeAgo(h.ts)}</div>`;
-        item.addEventListener('click', () => { loadChatById(h.id); setMobNav('mob-chat'); });
+  if(fvList){
+    fvList.innerHTML='';
+    if(arr.length===0){
+      fvList.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No chats yet.</div>';
+    }else{
+      arr.forEach((h,i)=>{
+        const item=document.createElement('div');item.className='fv-history-item';
+        item.innerHTML=`<div class="fv-history-dot-row"><div class="fv-history-dot ${i===0?'green':'gray'}"></div><div class="fv-history-title">${escapeHtml(h.title)}</div></div><div class="fv-history-meta">${timeAgo(h.ts)}</div>`;
+        item.addEventListener('click',()=>{loadChatById(h.id);setMobNav('mob-chat');});
         fvList.appendChild(item);
       });
     }
   }
 }
 
-function deleteHistoryEntry(e, chatId) {
+function deleteHistoryEntry(e,chatId){
   e.stopPropagation();
-  const arr = loadHistoryMeta().filter(h => h.id !== chatId);
+  const arr=loadHistoryMeta().filter(h=>h.id!==chatId);
   saveHistoryMeta(arr);
-  // Also remove the chat messages
-  try { localStorage.removeItem('sheelbi_chat_msgs_' + chatId); } catch(e2) {}
-  if (currentChatId === chatId) { currentChatId = null; newChat(); }
-  renderHistory();
+  try{localStorage.removeItem('sheelbi_chat_msgs_'+chatId);}catch(e2){}
+  if(currentChatId===chatId){currentChatId=null;newChat();}
+  renderFolders();
 }
 
-function loadChatById(chatId) {
-  try {
-    const msgs = JSON.parse(localStorage.getItem('sheelbi_chat_msgs_' + chatId) || '[]');
-    if (!msgs.length) return;
-    currentChatId = chatId;
-    openChatView();
-    chatBox.innerHTML = '';
-    msgs.forEach(m => {
-      if (m.role === 'user') addUserBubble(m.text, m.imageUrl || null);
-      else {
-        const div = createBotWrapper(m.html || '');
-        chatBox.appendChild(div);
-        renderMath(div.querySelector('.bubble'));
-      }
+function loadChatById(chatId){
+  try{
+    const msgs=JSON.parse(localStorage.getItem('sheelbi_chat_msgs_'+chatId)||'[]');
+    if(!msgs.length)return;
+    currentChatId=chatId;openChatView();
+    chatBox.innerHTML='';
+    msgs.forEach(m=>{
+      if(m.role==='user')addUserBubble(m.text,m.imageUrl||null);
+      else{const div=createBotWrapper(m.html||'');chatBox.appendChild(div);renderMath(div.querySelector('.bubble'));}
     });
-    chatBox.scrollTop = chatBox.scrollHeight;
-    renderHistory();
-    // update topic bar
-    const arr = loadHistoryMeta();
-    const entry = arr.find(h => h.id === chatId);
-    if (entry) {
-      const title = document.getElementById('topic-bar-title');
-      if (title) title.textContent = entry.title;
-    }
-  } catch(e) {}
+    chatBox.scrollTop=chatBox.scrollHeight;renderHistory();
+    const arr=loadHistoryMeta();const entry=arr.find(h=>h.id===chatId);
+    if(entry){const title=document.getElementById('topic-bar-title');if(title)title.textContent=entry.title;}
+  }catch(e){}
 }
 
-// Save messages for current chat
-function saveChatMessages() {
-  if (!currentChatId) return;
-  try {
-    const msgs = [];
-    chatBox.querySelectorAll('.message').forEach(div => {
-      if (div.classList.contains('user')) {
-        const bubble = div.querySelector('.bubble');
-        const img = bubble?.querySelector('img.sent-image');
-        const span = bubble?.querySelector('span');
-        msgs.push({ role: 'user', text: span?.textContent || '', imageUrl: img?.src || null });
-      } else {
-        const bubble = div.querySelector('.bubble');
-        if (bubble && !bubble.querySelector('.typing-text')) {
-          msgs.push({ role: 'bot', html: bubble.innerHTML });
-        }
+function saveChatMessages(){
+  if(!currentChatId)return;
+  try{
+    const msgs=[];
+    chatBox.querySelectorAll('.message').forEach(div=>{
+      if(div.classList.contains('user')){
+        const bubble=div.querySelector('.bubble');const img=bubble?.querySelector('img.sent-image');const span=bubble?.querySelector('span');
+        msgs.push({role:'user',text:span?.textContent||'',imageUrl:img?.src||null});
+      }else{
+        const bubble=div.querySelector('.bubble');
+        if(bubble&&!bubble.querySelector('.typing-text'))msgs.push({role:'bot',html:bubble.innerHTML});
       }
     });
-    localStorage.setItem('sheelbi_chat_msgs_' + currentChatId, JSON.stringify(msgs.slice(-60)));
-  } catch(e) {}
+    localStorage.setItem('sheelbi_chat_msgs_'+currentChatId,JSON.stringify(msgs.slice(-60)));
+  }catch(e){}
 }
 
 // ═══════════════════════════════════════════════
@@ -1335,55 +1193,28 @@ function saveChatMessages() {
 // ═══════════════════════════════════════════════
 function openChatView(){
   currentView='chat';
-  const fv=document.getElementById('folders-view');
-  if(fv)fv.classList.remove('active');
+  const fv=document.getElementById('folders-view');if(fv)fv.classList.remove('active');
   chatBox.style.display='flex';
-  const ia=document.getElementById('input-area');
-  if(ia)ia.style.display='block';
+  const ia=document.getElementById('input-area');if(ia)ia.style.display='block';
   closeSidebar();
 }
-
 function openChat(prefillText){
   openChatView();
-  if(prefillText){
-    input.value=prefillText;
-    autoResize(input);
-    setTimeout(()=>sendMessage(),100);
-  } else {
-    setTimeout(()=>input.focus(),100);
-  }
+  if(prefillText){input.value=prefillText;autoResize(input);setTimeout(()=>sendMessage(),100);}
+  else{setTimeout(()=>input.focus(),100);}
 }
-
 function newChat(){
-  currentChatId=null;
-  openChatView();
-  chatBox.innerHTML='';
-  const welcome=document.createElement('div');
-  welcome.id='welcome-screen';
-  welcome.className='welcome';
+  currentChatId=null;openChatView();chatBox.innerHTML='';
+  const welcome=document.createElement('div');welcome.id='welcome-screen';welcome.className='welcome';
   welcome.innerHTML=`<h2>নতুন চ্যাট শুরু করো 👋</h2><p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p><p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>`;
   chatBox.appendChild(welcome);
   input.value='';input.focus();
-  const title=document.getElementById('topic-bar-title');
-  const tag=document.getElementById('topic-bar-tag');
-  if(title)title.textContent='New Chat';
-  if(tag)tag.style.display='none';
+  const title=document.getElementById('topic-bar-title');const tag=document.getElementById('topic-bar-tag');
+  if(title)title.textContent='New Chat';if(tag)tag.style.display='none';
   setDishaTyping(false);
 }
-
-function showFoldersView(){
-  currentView='folders';
-  const fv=document.getElementById('folders-view');
-  if(fv)fv.classList.add('active');
-  chatBox.style.display='none';
-  const ia=document.getElementById('input-area');
-  if(ia)ia.style.display='none';
-}
-
-function setMobNav(id){
-  document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id)?.classList.add('active');
-}
+function showFoldersView(){currentView='folders';const fv=document.getElementById('folders-view');if(fv)fv.classList.add('active');chatBox.style.display='none';const ia=document.getElementById('input-area');if(ia)ia.style.display='none';}
+function setMobNav(id){document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id)?.classList.add('active');}
 
 // ═══════════════════════════════════════════════
 // SIDEBAR
@@ -1403,63 +1234,114 @@ function filterChats(q){q=q.toLowerCase();document.querySelectorAll('.chat-item'
 function checkConfirmMatch(){const bar=document.getElementById('confirm-strength-bar');if(!bar)return;const pwd=document.getElementById('new-password')?.value||'';const confirm=document.getElementById('confirm-password')?.value||'';if(!confirm){bar.style.width='0%';return;}bar.style.width='100%';bar.style.background=pwd===confirm?'var(--green)':'var(--danger)';}
 function checkPasswordStrength(pwd){const bar=document.getElementById('strength-bar');if(!bar)return;let score=0;if(pwd.length>=6)score++;if(pwd.length>=10)score++;if(/[A-Z]/.test(pwd))score++;if(/[0-9]/.test(pwd))score++;if(/[^A-Za-z0-9]/.test(pwd))score++;const colors=['var(--danger)','#f0a030','#f0a030','var(--green)','var(--green)'];bar.style.width=(score*20)+'%';bar.style.background=colors[score-1]||'var(--border2)';}
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(sidebarOpen)closeSidebar();tryDismissLogin();forgotOverlay?.classList.remove('active');}
-});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sidebarOpen)closeSidebar();tryDismissLogin();forgotOverlay?.classList.remove('active');hideLogoutModal();}});
 chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatBox.scrollTop-chatBox.clientHeight<120;scrollBtn.classList.toggle('visible',!atBottom&&chatBox.scrollHeight>chatBox.clientHeight+200);});
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
 // ═══════════════════════════════════════════════
-// AUTH — fixed login state loading
+// BEAUTIFUL LOGOUT / ACCOUNT MODAL
 // ═══════════════════════════════════════════════
-let loggedInUser = null;
-
-function updateUserUI(userData) {
-  loggedInUser = userData;
-  const btn = document.getElementById('account-btn');
-  if (btn && userData) {
-    const initials = getInitials(userData.name || userData.email || 'U');
-    btn.textContent = '';
-    btn.style.background = 'var(--green)';
-    btn.style.color = '#0d1117';
-    btn.style.fontWeight = '700';
-    btn.style.fontSize = '11px';
-    btn.textContent = initials;
-    btn.title = userData.name || userData.email;
-  }
-}
-
 function getInitials(name){if(!name)return'?';return name.trim().split(/\s+/).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
 
-async function checkLoginState(){
-  try{
-    const res=await fetch('/me');
-    if (!res.ok) return;
-    const data=await res.json();
-    if(data.logged_in){
-      updateUserUI(data);
-      if(data.needs_verification&&data.email) showVerifyScreen(data.email);
-    }
-  }catch(e){}
+function showAccountModal(){
+  if(!loggedInUser){showLoginPrompt(false);return;}
+  // Populate modal
+  const initials=getInitials(loggedInUser.name||loggedInUser.email||'U');
+  document.getElementById('logout-avatar-initials').textContent=initials;
+  document.getElementById('logout-display-name').textContent=loggedInUser.name||'User';
+  document.getElementById('logout-display-email').textContent=loggedInUser.email||'—';
+  document.getElementById('logout-plan-label').textContent=loggedInUser.plan==='pro'?'Pro Plan':'Free Plan · 10/day';
+  logoutOverlay.classList.add('active');
 }
 
-async function handleLogout(){
+function hideLogoutModal(){logoutOverlay?.classList.remove('active');}
+
+function handleLogoutOverlayClick(e){if(e.target===logoutOverlay)hideLogoutModal();}
+
+async function confirmLogout(){
+  // Animate card away
+  const card=document.getElementById('logout-card');
+  card.style.transition='opacity .2s, transform .2s';
+  card.style.opacity='0';card.style.transform='scale(.9)';
+  await new Promise(r=>setTimeout(r,200));
   try{await fetch('/logout',{method:'POST'});}catch(e){}
-  loggedInUser = null;
-  localStorage.removeItem('sheelbi_history_v1');
+  loggedInUser=null;
+  localStorage.removeItem('sheelbi_history_v2');
   sessionStorage.removeItem('guest_msg_count');
-  const btn = document.getElementById('account-btn');
-  if (btn) { btn.textContent = '👤'; btn.style.background = ''; btn.style.color = ''; }
+  const btn=document.getElementById('account-btn');
+  if(btn){btn.textContent='👤';btn.style.background='';btn.style.color='';btn.style.fontWeight='';}
+  hideLogoutModal();
+  card.style.opacity='';card.style.transform='';
   window.location.href='/';
 }
 
-function showLoginPrompt(isLimitReached=false){
-  // If already logged in, show account info or logout option
-  if (loggedInUser) {
-    const doLogout = confirm(`Logged in as ${loggedInUser.name || loggedInUser.email}.\n\nLog out?`);
-    if (doLogout) handleLogout();
+function updateUserUI(userData){
+  loggedInUser=userData;
+  const btn=document.getElementById('account-btn');
+  if(btn&&userData){
+    const initials=getInitials(userData.name||userData.email||'U');
+    btn.textContent=initials;
+    btn.style.background='var(--green)';
+    btn.style.color='#0d1117';
+    btn.style.fontWeight='700';
+    btn.style.fontSize='11px';
+    btn.title=userData.name||userData.email;
+  }
+  // Update leaderboard with real user if available
+  renderLeaderboard();
+}
+
+// ═══════════════════════════════════════════════
+// LEADERBOARD — real users only
+// ═══════════════════════════════════════════════
+function renderLeaderboard(){
+  // This will be populated from real /leaderboard API endpoint
+  // For now show empty state or current user if logged in
+  const container=document.getElementById('leaderboard-container');
+  if(!container)return;
+
+  if(!loggedInUser){
+    container.innerHTML=`<div class="lb-empty"><div class="lb-empty-icon">🏆</div><div class="lb-empty-text"><strong>Log in to see rankings</strong>Study daily to climb the leaderboard!</div></div>`;
     return;
   }
+
+  // Show current user's rank placeholder + empty board
+  container.innerHTML=`
+    <div class="lb-empty">
+      <div class="lb-empty-icon">🏆</div>
+      <div class="lb-empty-text"><strong>Leaderboard launching soon</strong>Rankings will appear as more students join Sheelbi.</div>
+    </div>
+    <div class="lb-you-row">
+      <span style="font-size:20px;">👤</span>
+      <span class="lb-you-label">You — ${escapeHtml(loggedInUser.name||'User')}</span>
+      <span class="lb-you-score">—</span>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════
+async function checkLoginState(){
+  try{
+    const res=await fetch('/me');
+    if(!res.ok)return;
+    const data=await res.json();
+    if(data.logged_in){updateUserUI(data);if(data.needs_verification&&data.email)showVerifyScreen(data.email);}
+    else if(data.kicked){showKickedMessage();}
+  }catch(e){}
+}
+
+function showKickedMessage(){
+  // Show a non-intrusive toast or use login modal
+  showLoginPrompt(false);
+  setTimeout(()=>{
+    const sub=document.getElementById('login-modal-sub');
+    if(sub)sub.innerHTML=`⚠️ You were logged out because your account signed in on another device.`;
+  },100);
+}
+
+function showLoginPrompt(isLimitReached=false){
+  if(loggedInUser){showAccountModal();return;}
   const sub=document.getElementById('login-modal-sub');const card=document.getElementById('login-card');
   if(isLimitReached&&sub)sub.innerHTML=`You've used your free messages! Login to continue.<br><strong>10 questions/day</strong> at no cost.`;
   else if(sub)sub.innerHTML=`Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.`;
@@ -1488,21 +1370,14 @@ async function handleCardSubmit(){
     const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
     const data=await res.json();
     if(data.success){
-      if(data.needs_verification){
-        hideLoginPrompt();showVerifyScreen(email);
-      } else {
-        showCardSuccess(`Welcome${data.name ? ', '+data.name : ''}! 👋`);
+      if(data.needs_verification){hideLoginPrompt();showVerifyScreen(email);}
+      else{
+        showCardSuccess(`Welcome${data.name?', '+data.name:''}! 👋`);
         sessionStorage.removeItem('guest_msg_count');
-        // Update UI immediately with returned user data
-        updateUserUI({ name: data.name, email: email });
-        setTimeout(()=>{
-          hideLoginPrompt();
-          input.focus();
-        },1200);
+        updateUserUI({name:data.name,email:email,plan:data.plan||'free'});
+        setTimeout(()=>{hideLoginPrompt();input.focus();},1200);
       }
-    } else {
-      showCardError(data.error||'Something went wrong.');
-    }
+    }else{showCardError(data.error||'Something went wrong.');}
   }catch(e){showCardError('Server error. Please try again.');}
   finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}
 }
@@ -1526,7 +1401,6 @@ async function submitResetPassword(){if(resetSubmitting)return;const code=['r1',
 // ═══════════════════════════════════════════════
 // MATH / MARKDOWN
 // ═══════════════════════════════════════════════
-const highlightExtMd={name:'highlight',level:'inline',start(src){return src.indexOf('==');},tokenizer(src){const m=src.match(/^==([^=]+)==/);if(m)return{type:'highlight',raw:m[0],text:m[1]};},renderer(token){return`<mark>${token.text}</mark>`;}};
 function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false,trust:true});}catch(e){}}
 function extractSuggestions(text){const lines=text.split('\n');let idx=-1;for(let i=lines.length-1;i>=0;i--){if(/^\s*\[.+\]/.test(lines[i])){idx=i;break;}}if(idx===-1)return{cleanText:text,buttons:[]};const buttons=[];const re=/\[([^\]]+)\]/g;let m2;while((m2=re.exec(lines[idx]))!==null)buttons.push(m2[1]);return{cleanText:lines.filter((_,i)=>i!==idx).join('\n').trimEnd(),buttons};}
 
@@ -1534,47 +1408,28 @@ function extractSuggestions(text){const lines=text.split('\n');let idx=-1;for(le
 // MESSAGES
 // ═══════════════════════════════════════════════
 function escapeHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function getUserAvatar(){if(loggedInUser&&loggedInUser.name)return getInitials(loggedInUser.name);return'U';}
 
-// User avatar initials
-function getUserAvatar() {
-  if (loggedInUser && loggedInUser.name) return getInitials(loggedInUser.name);
-  return 'U';
-}
-
-function addUserBubble(text, imageDataUrl=null){
+function addUserBubble(text,imageDataUrl=null){
   document.getElementById('welcome-screen')?.remove();
   const div=document.createElement('div');div.className='message user';
   const bubble=document.createElement('div');bubble.className='bubble';
   if(imageDataUrl){const img=document.createElement('img');img.src=imageDataUrl;img.className='sent-image';bubble.appendChild(img);}
   const span=document.createElement('span');span.textContent=text;bubble.appendChild(span);
   div.innerHTML=`<div class="avatar">${getUserAvatar()}</div>`;
-  div.appendChild(bubble);
-  chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
+  div.appendChild(bubble);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
 function createBotWrapper(htmlContent){
   const div=document.createElement('div');div.className='message bot';
-  // Bot avatar: Sheelbi mini SVG
-  div.innerHTML=`<div class="avatar" title="Disha AI">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
-      <line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/>
-      <line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/>
-      <line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/>
-      <line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/>
-      <line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/>
-      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
-    </svg>
-  </div>`;
+  div.innerHTML=`<div class="avatar" title="Disha AI"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="50" cy="50" r="8" fill="#f0a030"/><line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/><line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/><circle cx="50" cy="50" r="8" fill="#f0a030"/></svg></div>`;
   const col=document.createElement('div');col.className='bot-col';
-  const bubble=document.createElement('div');bubble.className='bubble';
-  bubble.innerHTML=htmlContent;
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=htmlContent;
   col.appendChild(bubble);
   const actions=document.createElement('div');actions.className='message-actions';
   const copyBtn=document.createElement('button');copyBtn.className='action-btn';copyBtn.textContent='📋 Copy';
   copyBtn.onclick=()=>{navigator.clipboard.writeText(bubble.innerText).then(()=>{copyBtn.textContent='✓ Copied';copyBtn.classList.add('ok');setTimeout(()=>{copyBtn.textContent='📋 Copy';copyBtn.classList.remove('ok');},1800);});};
-  actions.appendChild(copyBtn);col.appendChild(actions);div.appendChild(col);
-  return div;
+  actions.appendChild(copyBtn);col.appendChild(actions);div.appendChild(col);return div;
 }
 
 function addMessage(text,role,imageDataUrl=null){
@@ -1601,19 +1456,9 @@ function addErrorMessage(msg,retryFn){
 }
 
 function showTyping(){
-  document.getElementById('welcome-screen')?.remove();
-  setDishaTyping(true);
+  document.getElementById('welcome-screen')?.remove();setDishaTyping(true);
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
-  div.innerHTML=`<div class="avatar" title="Disha AI">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/>
-      <line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/>
-      <line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/>
-      <line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/>
-      <line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/>
-      <circle cx="50" cy="50" r="8" fill="#f0a030"/>
-    </svg>
-  </div>`;
+  div.innerHTML=`<div class="avatar" title="Disha AI"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/><line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/><circle cx="50" cy="50" r="8" fill="#f0a030"/></svg></div>`;
   const col=document.createElement('div');col.className='bot-col';
   const bubble=document.createElement('div');bubble.className='bubble';bubble.style.padding='10px 14px';
   const typing=document.createElement('div');typing.className='typing-bubble';
@@ -1622,10 +1467,7 @@ function showTyping(){
   chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-function removeTyping(){
-  setDishaTyping(false);
-  document.getElementById('typing-indicator')?.remove();
-}
+function removeTyping(){setDishaTyping(false);document.getElementById('typing-indicator')?.remove();}
 
 function sendSuggestion(cardEl){const q=cardEl.dataset?.q||cardEl.textContent;input.value=q;sendMessage();}
 
@@ -1642,8 +1484,7 @@ async function sendMessage(){
   document.getElementById('char-count').textContent='';
   openChatView();
   addMessage(displayText,'user',imageSnapshot);
-  showTyping();
-  setTimeout(()=>chatBox.scrollTop=chatBox.scrollHeight,50);
+  showTyping();setTimeout(()=>chatBox.scrollTop=chatBox.scrollHeight,50);
 
   const doRequest=async()=>{
     try{
@@ -1659,20 +1500,13 @@ async function sendMessage(){
         if(data.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
         reply=data.reply||'দুঃখিত, সমস্যা হয়েছে।';if(data.chat_id)currentChatId=data.chat_id;
       }
-      removeTyping();
-      addMessage(reply,'bot');
-
-      // Save to history with auto-generated title from first message
-      if (currentChatId) {
-        const chatTitle = displayText.length > 40 ? displayText.slice(0, 40) + '…' : displayText;
-        addHistoryEntry(currentChatId, chatTitle);
-        // Update topic bar
-        const titleEl = document.getElementById('topic-bar-title');
-        const tagEl = document.getElementById('topic-bar-tag');
-        if (titleEl) titleEl.textContent = chatTitle;
-        if (tagEl) tagEl.style.display = '';
+      removeTyping();addMessage(reply,'bot');
+      if(currentChatId){
+        const chatTitle=displayText.length>40?displayText.slice(0,40)+'…':displayText;
+        addHistoryEntry(currentChatId,chatTitle);
+        const titleEl=document.getElementById('topic-bar-title');const tagEl=document.getElementById('topic-bar-tag');
+        if(titleEl)titleEl.textContent=chatTitle;if(tagEl)tagEl.style.display='';
       }
-
       setTimeout(()=>chatBox.scrollTop=chatBox.scrollHeight,100);
     }catch(err){removeTyping();addErrorMessage('সংযোগে সমস্যা হয়েছে।',doRequest);}
     sendBtn.disabled=false;input.focus();
@@ -1692,7 +1526,6 @@ input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({b
 // INIT
 // ═══════════════════════════════════════════════
 renderFolders();
-renderHistory();
 checkLoginState();
 if(isGuestLimitReached())showLoginPrompt(true);
 </script>

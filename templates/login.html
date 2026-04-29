@@ -4,38 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sheelbi — Login</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg:        #0e0f11;
-      --bg2:       #16181c;
-      --bg3:       #1c1f24;
-      --bg4:       #22262d;
-      --input-bg:  #191c21;
-      --border:    #252930;
-      --border2:   #2e333d;
-      --border3:   #3a404d;
-      --text:      #e2e6ef;
-      --text2:     #7a8499;
-      --text3:     #4a5266;
-      --accent:    #6c7fff;
-      --accent2:   #8a9bff;
-      --amber:     #f0a855;
-      --danger:    #e05a6a;
+      --bg:        #0d1117;
+      --bg2:       #161b22;
+      --bg3:       #1e2530;
+      --bg4:       #252d3a;
+      --input-bg:  #161b22;
+      --border:    #21262d;
+      --border2:   #30363d;
+      --text:      #e6edf3;
+      --text2:     #8b949e;
+      --text3:     #484f58;
+      --green:     #0de4a0;
+      --green2:    #0ac48a;
+      --green-bg:  rgba(13,228,160,.08);
+      --amber:     #f0a030;
+      --blue:      #4d7fff;
+      --danger:    #f85149;
       --radius:    14px;
       --radius-sm: 10px;
       --radius-xs: 7px;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
-      background: #0e0f11;
-      color: #e2e6ef;
+      font-family: 'Sora', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -45,7 +45,7 @@
 
     .container {
       width: 100%;
-      max-width: 420px;
+      max-width: 400px;
       padding: 2rem 1.5rem;
     }
 
@@ -56,25 +56,33 @@
     }
 
     .logo-icon {
-      width: 64px; height: 64px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, var(--accent), var(--amber));
+      width: 80px; height: 80px;
+      border-radius: 22px;
+      background: #000;
       display: flex; align-items: center; justify-content: center;
-      font-size: 30px;
       margin: 0 auto 14px;
-      box-shadow: 0 6px 28px rgba(108,127,255,.28);
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.6);
+    }
+
+    .logo-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 22px;
     }
 
     .logo h1 {
-      font-size: 1.4rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 800;
       color: var(--text);
+      letter-spacing: -.5px;
     }
 
     .logo p {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text2);
-      margin-top: 4px;
+      margin-top: 5px;
     }
 
     /* TABS */
@@ -84,7 +92,7 @@
       border: 1px solid var(--border2);
       border-radius: var(--radius-sm);
       padding: 4px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.4rem;
     }
 
     .tab {
@@ -93,10 +101,11 @@
       text-align: center;
       border-radius: var(--radius-xs);
       cursor: pointer;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: var(--text2);
-      font-family: 'Hind Siliguri', sans-serif;
-      transition: all 0.2s;
+      font-family: 'Sora', sans-serif;
+      font-weight: 500;
+      transition: all 0.18s;
       border: none;
       background: transparent;
     }
@@ -104,8 +113,7 @@
     .tab.active {
       background: var(--bg3);
       color: var(--text);
-      font-weight: 500;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      font-weight: 600;
     }
 
     /* FORM */
@@ -113,169 +121,234 @@
 
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: var(--text2);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
+      font-weight: 500;
     }
 
     input {
       width: 100%;
-      padding: 12px 14px;
-      background: var(--input-bg);
+      padding: 11px 13px;
+      background: var(--bg3);
       border: 1px solid var(--border2);
       border-radius: var(--radius-sm);
       color: var(--text);
-      font-size: 0.95rem;
-      font-family: 'Hind Siliguri', sans-serif;
+      font-size: 0.93rem;
+      font-family: 'Sora', sans-serif;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.18s, box-shadow 0.18s;
     }
 
     input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(108,127,255,.12);
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(13,228,160,.1);
     }
 
     input::placeholder { color: var(--text3); }
+
+    /* FORGOT */
+    .forgot-row {
+      text-align: right;
+      margin-top: -5px;
+      margin-bottom: 12px;
+    }
+    .forgot-row button {
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+    }
 
     /* BUTTON */
     .btn {
       width: 100%;
       padding: 13px;
-      background: linear-gradient(135deg, var(--accent), #5060ee);
-      color: #fff;
+      background: var(--green);
+      color: #0d1117;
       border: none;
       border-radius: var(--radius-sm);
-      font-size: 1rem;
-      font-weight: 600;
-      font-family: 'Hind Siliguri', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: 'Sora', sans-serif;
       cursor: pointer;
-      margin-top: 0.5rem;
-      transition: all 0.2s;
-      box-shadow: 0 3px 14px rgba(108,127,255,.32);
+      margin-top: 4px;
+      transition: all 0.15s;
     }
 
     .btn:hover {
+      background: var(--green2);
       transform: translateY(-1px);
-      box-shadow: 0 5px 20px rgba(108,127,255,.44);
     }
 
     .btn:disabled {
-      background: var(--border);
+      background: var(--border2);
       cursor: not-allowed;
       transform: none;
-      box-shadow: none;
+      color: var(--text3);
     }
 
     /* MESSAGES */
     .error {
-      background: rgba(224,90,106,.1);
-      border: 1px solid rgba(224,90,106,.25);
+      background: rgba(248,81,73,.08);
+      border: 1px solid rgba(248,81,73,.2);
       color: var(--danger);
-      padding: 10px 14px;
+      padding: 9px 13px;
       border-radius: var(--radius-xs);
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+      font-size: 0.83rem;
+      margin-bottom: 12px;
       display: none;
     }
 
     .success {
-      background: rgba(76,222,154,.08);
-      border: 1px solid rgba(76,222,154,.2);
-      color: #4cde9a;
-      padding: 10px 14px;
+      background: var(--green-bg);
+      border: 1px solid rgba(13,228,160,.2);
+      color: var(--green);
+      padding: 9px 13px;
       border-radius: var(--radius-xs);
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+      font-size: 0.83rem;
+      margin-bottom: 12px;
       display: none;
     }
 
     /* FREE BADGE */
     .free-badge {
       text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
+      margin-top: 1.4rem;
+      font-size: 0.78rem;
       color: var(--text3);
     }
 
-    .free-badge span { color: var(--accent2); }
+    .free-badge span { color: var(--green); }
+
+    /* VERIFY SCREEN */
+    #verify-screen { display: none; text-align: center; }
+    .verify-icon { font-size: 40px; margin-bottom: 14px; }
+    #verify-screen h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 6px; }
+    #verify-screen p { font-size: 0.85rem; color: var(--text2); line-height: 1.8; margin-bottom: 18px; }
+    #verify-screen p strong { color: var(--blue); }
+    .code-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+    .code-input {
+      width: 42px; height: 50px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 20px; font-weight: 700;
+      text-align: center;
+      font-family: monospace;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .code-input:focus { border-color: var(--green); }
+    .resend-row { margin-top: 10px; font-size: 0.8rem; color: var(--text3); }
+    .resend-row button { background: none; border: none; color: var(--blue); cursor: pointer; font-size: 0.8rem; font-family: 'Sora', sans-serif; }
+    .back-link { margin-top: 10px; }
+    .back-link button { background: none; border: none; color: var(--text2); font-size: 0.8rem; cursor: pointer; font-family: 'Sora', sans-serif; }
   </style>
 </head>
 <body>
   <div class="container">
 
-    <div class="logo">
-      <div class="logo-icon">🎓</div>
-      <h1>Sheelbi</h1>
-      <p>NCTB · ক্লাস ১–১২ · বাংলা অথবা Englis</p>
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+      <div class="logo">
+        <!-- ── SHEELBI LOGO ── -->
+        <div class="logo-icon">
+          <img src="/static/sheelbi-logo.png" alt="Sheelbi logo" />
+        </div>
+        <h1>Sheelbi</h1>
+        <p>NCTB AI Tutor · Class 1–12 · বাংলা & English</p>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <div id="error-box" class="error"></div>
+      <div id="success-box" class="success"></div>
+
+      <!-- NAME (register only) -->
+      <div class="form-group" id="register-name" style="display:none;">
+        <label>Your Name</label>
+        <input type="text" id="name" placeholder="e.g. Tasnim Zara" />
+      </div>
+
+      <!-- EMAIL -->
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="example@gmail.com" onkeydown="if(event.key==='Enter')handleSubmit()" />
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')handleSubmit()" />
+      </div>
+
+      <div class="forgot-row" id="forgot-row">
+        <button onclick="window.location.href='/?forgot=1'">Forgot password?</button>
+      </div>
+
+      <button class="btn" id="submit-btn" onclick="handleSubmit()">Login</button>
+
+      <div class="free-badge">
+        Start free — <span>10 questions/day</span> at no cost
+      </div>
     </div>
 
-    <!-- ── TABS (English) ── -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('login')">Login</button>
-      <button class="tab" onclick="switchTab('register')">Register</button>
-    </div>
-
-    <div id="error-box" class="error"></div>
-    <div id="success-box" class="success"></div>
-
-    <!-- ── NAME (register only) ── -->
-    <div class="form-group" id="register-name" style="display:none;">
-      <label>Your Name</label>
-      <input type="text" id="name" placeholder="e.g. Tasnim Zara" />
-    </div>
-
-    <!-- ── EMAIL ── -->
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="email" placeholder="example@gmail.com" />
-    </div>
-
-    <!-- ── PASSWORD ── -->
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="At least 6 characters" />
-    </div>
-
-    <button class="btn" id="submit-btn" onclick="handleSubmit()">Login</button>
-
-    <div class="free-badge">
-      Start free — <span>10 questions/day</span> at no cost
+    <!-- VERIFY EMAIL SCREEN -->
+    <div id="verify-screen">
+      <div class="verify-icon">📧</div>
+      <h2>Check your email!</h2>
+      <p>We sent a 6-digit code to<br><strong id="verify-email-label">your email</strong><br>Enter it below to verify.</p>
+      <div id="verify-error" class="error"></div>
+      <div id="verify-success" class="success"></div>
+      <div class="code-inputs">
+        <input class="code-input" maxlength="1" id="c1" oninput="codeIn(this,null,'c2')" onkeydown="codeKey(event,this,null,'c2')">
+        <input class="code-input" maxlength="1" id="c2" oninput="codeIn(this,'c1','c3')" onkeydown="codeKey(event,this,'c1','c3')">
+        <input class="code-input" maxlength="1" id="c3" oninput="codeIn(this,'c2','c4')" onkeydown="codeKey(event,this,'c2','c4')">
+        <input class="code-input" maxlength="1" id="c4" oninput="codeIn(this,'c3','c5')" onkeydown="codeKey(event,this,'c3','c5')">
+        <input class="code-input" maxlength="1" id="c5" oninput="codeIn(this,'c4','c6')" onkeydown="codeKey(event,this,'c4','c6')">
+        <input class="code-input" maxlength="1" id="c6" oninput="codeIn(this,'c5',null)" onkeydown="codeKey(event,this,'c5',null)">
+      </div>
+      <button class="btn" id="verify-btn" onclick="submitVerify()">Verify Email ✓</button>
+      <div class="resend-row">Didn't get it? <button id="resend-btn" onclick="resendCode()">Resend code</button></div>
+      <div class="back-link"><button onclick="backToAuth()">← Back</button></div>
     </div>
 
   </div>
 
   <script>
     let currentTab = 'login';
+    let verifyEmail = '';
+    let verifySubmitting = false;
 
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab').forEach((t, i) => {
-        t.classList.toggle('active',
-          (i === 0 && tab === 'login') || (i === 1 && tab === 'register')
-        );
+        t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
       });
-      document.getElementById('register-name').style.display =
-        tab === 'register' ? 'block' : 'none';
-      document.getElementById('submit-btn').textContent =
-        tab === 'login' ? 'Login' : 'Create Account';
+      document.getElementById('register-name').style.display = tab === 'register' ? 'block' : 'none';
+      document.getElementById('forgot-row').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('submit-btn').textContent = tab === 'login' ? 'Login' : 'Create Account';
       clearMessages();
     }
 
     function showError(msg) {
       const box = document.getElementById('error-box');
-      box.textContent = msg;
-      box.style.display = 'block';
+      box.textContent = msg; box.style.display = 'block';
       document.getElementById('success-box').style.display = 'none';
     }
-
     function showSuccess(msg) {
       const box = document.getElementById('success-box');
-      box.textContent = msg;
-      box.style.display = 'block';
+      box.textContent = msg; box.style.display = 'block';
       document.getElementById('error-box').style.display = 'none';
     }
-
     function clearMessages() {
       document.getElementById('error-box').style.display = 'none';
       document.getElementById('success-box').style.display = 'none';
@@ -295,9 +368,7 @@
       btn.textContent = 'Please wait...';
 
       const url = currentTab === 'login' ? '/login' : '/register';
-      const body = currentTab === 'login'
-        ? { email, password }
-        : { name, email, password };
+      const body = currentTab === 'login' ? { email, password } : { name, email, password };
 
       try {
         const res = await fetch(url, {
@@ -308,24 +379,116 @@
         const data = await res.json();
 
         if (data.success) {
-          showSuccess(currentTab === 'login'
-            ? `Welcome back, ${data.name}! 👋`
-            : 'Account created successfully! ✓');
-          setTimeout(() => window.location.href = '/', 1200);
+          if (data.needs_verification) {
+            verifyEmail = email;
+            showVerifyScreen(email);
+          } else {
+            showSuccess(currentTab === 'login'
+              ? `Welcome back, ${data.name}! 👋`
+              : 'Account created! ✓ Redirecting...');
+            setTimeout(() => window.location.href = '/', 1200);
+          }
         } else {
           showError(data.error || 'Something went wrong. Please try again.');
         }
       } catch (e) {
-        showError('Server error. Please try again.');
+        showError('Network error. Please check your connection.');
       } finally {
         btn.disabled = false;
         btn.textContent = currentTab === 'login' ? 'Login' : 'Create Account';
       }
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleSubmit();
-    });
+    function showVerifyScreen(email) {
+      verifyEmail = email; verifySubmitting = false;
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('verify-screen').style.display = 'block';
+      const label = document.getElementById('verify-email-label');
+      if (label) label.textContent = email;
+      document.getElementById('verify-error').style.display = 'none';
+      document.getElementById('verify-success').style.display = 'none';
+      ['c1','c2','c3','c4','c5','c6'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+      const vBtn = document.getElementById('verify-btn');
+      if (vBtn) { vBtn.disabled = false; vBtn.textContent = 'Verify Email ✓'; }
+      setTimeout(() => document.getElementById('c1')?.focus(), 200);
+    }
+
+    function backToAuth() {
+      document.getElementById('auth-screen').style.display = 'block';
+      document.getElementById('verify-screen').style.display = 'none';
+    }
+
+    function codeIn(el, prevId, nextId) {
+      el.value = el.value.replace(/[^0-9]/g, '');
+      if (el.value && nextId) document.getElementById(nextId)?.focus();
+      const code = ['c1','c2','c3','c4','c5','c6'].map(id => document.getElementById(id)?.value || '').join('');
+      if (code.length === 6 && !verifySubmitting) submitVerify();
+    }
+    function codeKey(e, el, prevId, nextId) {
+      if (e.key === 'Backspace' && !el.value && prevId) document.getElementById(prevId)?.focus();
+      if (e.key === 'ArrowLeft' && prevId) document.getElementById(prevId)?.focus();
+      if (e.key === 'ArrowRight' && nextId) document.getElementById(nextId)?.focus();
+    }
+
+    async function submitVerify() {
+      if (verifySubmitting) return;
+      const code = ['c1','c2','c3','c4','c5','c6'].map(id => document.getElementById(id)?.value || '').join('');
+      if (code.length < 6) return;
+      verifySubmitting = true;
+      const btn = document.getElementById('verify-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+      document.getElementById('verify-error').style.display = 'none';
+      document.getElementById('verify-success').style.display = 'none';
+      try {
+        const res = await fetch('/verify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: verifyEmail, code })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const box = document.getElementById('verify-success');
+          if (box) { box.textContent = '✓ Email verified! Redirecting...'; box.style.display = 'block'; }
+          setTimeout(() => window.location.href = '/', 1400);
+        } else {
+          const box = document.getElementById('verify-error');
+          if (box) { box.textContent = data.error || 'Invalid code.'; box.style.display = 'block'; }
+          if (btn) { btn.disabled = false; btn.textContent = 'Verify Email ✓'; }
+          verifySubmitting = false;
+        }
+      } catch (e) {
+        const box = document.getElementById('verify-error');
+        if (box) { box.textContent = 'Server error. Please try again.'; box.style.display = 'block'; }
+        if (btn) { btn.disabled = false; btn.textContent = 'Verify Email ✓'; }
+        verifySubmitting = false;
+      }
+    }
+
+    async function resendCode() {
+      const btn = document.getElementById('resend-btn');
+      if (!btn) return;
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const res = await fetch('/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: verifyEmail })
+        });
+        const data = await res.json();
+        if (data.success) {
+          verifySubmitting = false;
+          const vBtn = document.getElementById('verify-btn');
+          if (vBtn) { vBtn.disabled = false; vBtn.textContent = 'Verify Email ✓'; }
+          btn.textContent = '✓ Sent!';
+          setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend code'; }, 3000);
+        } else {
+          btn.textContent = 'Failed';
+          setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend code'; }, 2000);
+        }
+      } catch (e) {
+        btn.disabled = false; btn.textContent = 'Resend code';
+      }
+    }
   </script>
 </body>
 </html>

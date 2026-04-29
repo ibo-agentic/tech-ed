@@ -18,6 +18,17 @@ APP_NAME = "Sheelbi"
 
 
 # ──────────────────────────────────────────
+#  ADMIN CLIENT (bypasses RLS)
+# ──────────────────────────────────────────
+
+def get_admin_client():
+    return create_client(
+        os.getenv("SUPABASE_URL"),
+        os.getenv("SUPABASE_SERVICE_KEY")
+    )
+
+
+# ──────────────────────────────────────────
 #  DEVICE FINGERPRINT
 # ──────────────────────────────────────────
 
@@ -35,16 +46,16 @@ def generate_session_token():
 
 
 def set_active_session(user_id, token, device_fp):
-    supabase.table('profiles').update({
-        'active_session_token':  token,
-        'active_device_fp':      device_fp,
-        'session_created_at':    datetime.utcnow().isoformat()
+    get_admin_client().table('profiles').update({
+        'active_session_token': token,
+        'active_device_fp':     device_fp,
+        'session_created_at':   datetime.utcnow().isoformat()
     }).eq('id', user_id).execute()
 
 
 def validate_session(user_id, token):
     try:
-        res = supabase.table('profiles').select(
+        res = get_admin_client().table('profiles').select(
             'active_session_token, active_device_fp, session_created_at'
         ).eq('id', user_id).execute()
 
@@ -75,15 +86,14 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 def send_email(to_email, subject, html_body):
     try:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From']    = f"Sheelbi <{os.getenv('GMAIL_USER')}>"
         msg['To']      = to_email
-
         msg.attach(MIMEText(html_body, 'html'))
-
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(os.getenv('GMAIL_USER'), os.getenv('GMAIL_APP_PASS'))
             server.sendmail(os.getenv('GMAIL_USER'), to_email, msg.as_string())
@@ -91,6 +101,7 @@ def send_email(to_email, subject, html_body):
     except Exception as e:
         print(f"[EMAIL ERROR] {e}")
         return False
+
 
 def send_email_async(to_email, subject, html_body):
     t = threading.Thread(target=send_email, args=(to_email, subject, html_body), daemon=True)
@@ -143,11 +154,6 @@ def email_template(title, body_html, code=None, footer=""):
         <div style="color:#7a8499;font-size:12px;">
           NCTB AI Tutor &middot; Class 1&ndash;12
         </div>
-        <div style="margin-top:12px;">
-          <span style="color:#7B8FFF;font-size:16px;">&#9646;</span>&nbsp;
-          <span style="color:#E8A855;font-size:16px;">&#9646;</span>&nbsp;
-          <span style="color:#C08FD0;font-size:16px;">&#9646;</span>
-        </div>
       </td></tr>
       <tr><td style="padding:32px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -188,14 +194,15 @@ def email_template(title, body_html, code=None, footer=""):
 
 
 def save_code(email, code, code_type):
+    admin = get_admin_client()
     try:
-        supabase.table('verification_codes').delete()\
+        admin.table('verification_codes').delete()\
             .eq('email', email).eq('type', code_type).execute()
     except Exception as e:
         print(f"[SAVE CODE DELETE ERROR] {e}")
 
     expires_at = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
-    result = supabase.table('verification_codes').insert({
+    result = admin.table('verification_codes').insert({
         'email':      email,
         'code':       code,
         'type':       code_type,
@@ -210,7 +217,7 @@ def verify_code(email, code, code_type):
     if not ok:
         return False, msg
     try:
-        supabase.table('verification_codes').update({'used': True}).eq('id', row_id).execute()
+        get_admin_client().table('verification_codes').update({'used': True}).eq('id', row_id).execute()
     except Exception as e:
         print(f"[MARK USED ERROR] {e}")
     return True, "OK"
@@ -223,14 +230,14 @@ def verify_code_peek(email, code, code_type):
 
 def mark_code_used(row_id):
     try:
-        supabase.table('verification_codes').update({'used': True}).eq('id', row_id).execute()
+        get_admin_client().table('verification_codes').update({'used': True}).eq('id', row_id).execute()
     except Exception as e:
         print(f"[MARK USED ERROR] {e}")
 
 
 def _check_code(email, code, code_type):
     try:
-        res = supabase.table('verification_codes')\
+        res = get_admin_client().table('verification_codes')\
             .select('*')\
             .eq('email', email)\
             .eq('code', code)\
@@ -243,7 +250,6 @@ def _check_code(email, code, code_type):
 
         row = res.data[0]
 
-        # ── TIMEZONE-SAFE EXPIRY CHECK ──
         expires_str = row['expires_at']
         if expires_str.endswith('Z'):
             expires_str = expires_str[:-1] + '+00:00'
@@ -275,17 +281,18 @@ def check_message_limit(user_id, plan):
         return True
     try:
         from datetime import date
-        today = str(date.today())
-        profile = supabase.table('profiles').select(
+        today   = str(date.today())
+        admin   = get_admin_client()
+        profile = admin.table('profiles').select(
             'message_count_today, last_message_date'
         ).eq('id', user_id).execute()
         if not profile.data:
             return True
         user = profile.data[0]
         if user.get('last_message_date', '') != today:
-            supabase.table('profiles').update({
+            admin.table('profiles').update({
                 'message_count_today': 0,
-                'last_message_date': today
+                'last_message_date':   today
             }).eq('id', user_id).execute()
             return True
         return user.get('message_count_today', 0) < 10
@@ -296,18 +303,19 @@ def check_message_limit(user_id, plan):
 def increment_message_count(user_id):
     try:
         from datetime import date
-        today = str(date.today())
-        profile = supabase.table('profiles').select(
+        today   = str(date.today())
+        admin   = get_admin_client()
+        profile = admin.table('profiles').select(
             'message_count_today, last_message_date'
         ).eq('id', user_id).execute()
         if not profile.data:
             return
-        user = profile.data[0]
+        user  = profile.data[0]
         count = 1 if user.get('last_message_date', '') != today \
                   else user.get('message_count_today', 0) + 1
-        supabase.table('profiles').update({
+        admin.table('profiles').update({
             'message_count_today': count,
-            'last_message_date': today
+            'last_message_date':   today
         }).eq('id', user_id).execute()
     except:
         pass
@@ -341,19 +349,29 @@ def register():
         user_id       = res.user.id
         device_fp     = get_device_fingerprint(request)
         session_token = generate_session_token()
+        admin         = get_admin_client()
 
-        supabase.table('profiles').insert({
-            'id':                    user_id,
-            'name':                  name,
-            'email':                 email,
-            'device_fingerprint':    device_fp,
-            'active_session_token':  session_token,
-            'active_device_fp':      device_fp,
-            'session_created_at':    datetime.utcnow().isoformat(),
-            'message_count_today':   0,
-            'plan':                  'free',
-            'email_verified':        False
-        }).execute()
+        # Check if profile already exists before inserting
+        existing = admin.table('profiles').select('id').eq('id', user_id).execute()
+        if not existing.data:
+            admin.table('profiles').insert({
+                'id':                   user_id,
+                'name':                 name,
+                'email':                email,
+                'device_fingerprint':   device_fp,
+                'active_session_token': session_token,
+                'active_device_fp':     device_fp,
+                'session_created_at':   datetime.utcnow().isoformat(),
+                'message_count_today':  0,
+                'plan':                 'free',
+                'email_verified':       False
+            }).execute()
+        else:
+            admin.table('profiles').update({
+                'active_session_token': session_token,
+                'active_device_fp':     device_fp,
+                'session_created_at':   datetime.utcnow().isoformat(),
+            }).eq('id', user_id).execute()
 
         code = generate_code()
         save_code(email, code, 'verify')
@@ -383,6 +401,7 @@ def register():
 
     except Exception as e:
         err = str(e)
+        print(f"[REGISTER ERROR] {err}")
         if 'already registered' in err or 'already exists' in err:
             return jsonify({'error': 'This email is already registered.'}), 400
         return jsonify({'error': 'Registration failed. Please try again.'}), 500
@@ -409,15 +428,50 @@ def login():
         if res.user is None:
             return jsonify({'error': 'Incorrect email or password.'}), 401
 
-        user_id   = res.user.id
-        device_fp = get_device_fingerprint(request)
-
+        user_id       = res.user.id
+        device_fp     = get_device_fingerprint(request)
         session_token = generate_session_token()
-        set_active_session(user_id, session_token, device_fp)
+        admin         = get_admin_client()
 
-        profile      = supabase.table('profiles').select('*').eq('id', user_id).execute()
-        user_profile = profile.data[0]
-        is_verified  = user_profile.get('email_verified', False)
+        # ── Guard: fetch profile, auto-create with admin client if missing ──
+        profile_res = admin.table('profiles').select('*').eq('id', user_id).execute()
+
+        if not profile_res.data:
+            print(f"[LOGIN] No profile found for {user_id}, auto-creating...")
+            auth_name = res.user.user_metadata.get('name', email.split('@')[0])
+            try:
+                admin.table('profiles').insert({
+                    'id':                   user_id,
+                    'name':                 auth_name,
+                    'email':                email,
+                    'device_fingerprint':   device_fp,
+                    'active_session_token': session_token,
+                    'active_device_fp':     device_fp,
+                    'session_created_at':   datetime.utcnow().isoformat(),
+                    'message_count_today':  0,
+                    'plan':                 'free',
+                    'email_verified':       False
+                }).execute()
+                print(f"[LOGIN] Profile auto-created for {user_id}")
+            except Exception as insert_err:
+                print(f"[LOGIN] Auto-create failed: {insert_err}")
+                return jsonify({'error': 'Account setup failed. Please contact support.'}), 500
+
+            user_profile = {
+                'name':           auth_name,
+                'plan':           'free',
+                'email_verified': False
+            }
+        else:
+            user_profile = profile_res.data[0]
+            # Update session on existing profile
+            admin.table('profiles').update({
+                'active_session_token': session_token,
+                'active_device_fp':     device_fp,
+                'session_created_at':   datetime.utcnow().isoformat()
+            }).eq('id', user_id).execute()
+
+        is_verified = user_profile.get('email_verified', False)
 
         session.permanent = True
         session['user_id']       = user_id
@@ -457,13 +511,15 @@ def login():
         })
 
     except Exception as e:
-        print(f"LOGIN ERROR: {e}")
+        print(f"[LOGIN ERROR] {e}")
         import traceback
         traceback.print_exc()
         err = str(e)
+        if 'Invalid login credentials' in err:
+            return jsonify({'error': 'Incorrect email or password.'}), 401
         if 'already registered' in err or 'already exists' in err:
             return jsonify({'error': 'This email is already registered.'}), 400
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Login failed. Please try again.'}), 500
 
 
 # ──────────────────────────────────────────
@@ -483,7 +539,10 @@ def verify_email():
     if not ok:
         return jsonify({'error': msg}), 400
 
-    supabase.table('profiles').update({'email_verified': True}).eq('email', email).execute()
+    get_admin_client().table('profiles').update(
+        {'email_verified': True}
+    ).eq('email', email).execute()
+
     if 'user_id' in session:
         session['verified'] = True
 
@@ -502,7 +561,9 @@ def resend_verification():
     if not email:
         return jsonify({'error': 'Email is required.'}), 400
 
-    profile = supabase.table('profiles').select('name, email_verified').eq('email', email).execute()
+    admin   = get_admin_client()
+    profile = admin.table('profiles').select('name, email_verified').eq('email', email).execute()
+
     if not profile.data:
         return jsonify({'error': 'No account found with that email.'}), 404
     if profile.data[0].get('email_verified'):
@@ -537,7 +598,8 @@ def forgot_password():
     if not email:
         return jsonify({'error': 'Please enter your email address.'}), 400
 
-    profile = supabase.table('profiles').select('name').eq('email', email).execute()
+    admin   = get_admin_client()
+    profile = admin.table('profiles').select('name').eq('email', email).execute()
     if profile.data:
         name = profile.data[0].get('name', 'there')
         code = generate_code()
@@ -576,23 +638,20 @@ def reset_password():
         return jsonify({'error': msg}), 400
 
     try:
-        admin_client = create_client(
-            os.getenv("SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_KEY")
-        )
-        users = admin_client.auth.admin.list_users()
+        admin       = get_admin_client()
+        users       = admin.auth.admin.list_users()
         target_user = next((u for u in users if u.email == email), None)
         if not target_user:
             return jsonify({'error': 'Account not found.'}), 404
 
-        admin_client.auth.admin.update_user_by_id(target_user.id, {"password": new_password})
+        admin.auth.admin.update_user_by_id(target_user.id, {"password": new_password})
         mark_code_used(code_row_id)
 
         new_token = generate_session_token()
-        supabase.table('profiles').update({
+        admin.table('profiles').update({
             'active_session_token': new_token,
-            'active_device_fp': None,
-            'session_created_at': datetime.utcnow().isoformat()
+            'active_device_fp':     None,
+            'session_created_at':   datetime.utcnow().isoformat()
         }).eq('email', email).execute()
 
         send_email_async(
@@ -625,9 +684,9 @@ def logout():
     user_id = session.get('user_id')
     if user_id:
         try:
-            supabase.table('profiles').update({
+            get_admin_client().table('profiles').update({
                 'active_session_token': None,
-                'active_device_fp': None
+                'active_device_fp':     None
             }).eq('id', user_id).execute()
         except:
             pass

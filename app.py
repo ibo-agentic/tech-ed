@@ -1,18 +1,17 @@
 from flask import Flask, render_template, request, jsonify, session
 from dotenv import load_dotenv
 from chain import get_answer
-from auth import auth_bp, login_required, check_message_limit, increment_message_count
+from auth import auth_bp, login_required, check_message_limit, increment_message_count, get_admin_client
 from image_chain import get_answer_with_image
-from supabase import create_client
 import base64
 import os
-import uuid
+from datetime import datetime, timedelta
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET", "bangla-edtech_2026")
-from datetime import timedelta
+
 app.config.update(
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_HTTPONLY=True,
@@ -21,36 +20,40 @@ app.config.update(
 )
 app.register_blueprint(auth_bp)
 
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_ANON_KEY"))
-
 # ── CHAT HELPERS ──
 
 def get_or_create_chat(user_id, chat_id=None):
+    admin = get_admin_client()  # bypasses RLS
+
     if chat_id:
-        res = supabase.table('chats').select('*').eq('id', chat_id).eq('user_id', user_id).execute()
+        res = admin.table('chats').select('*').eq('id', chat_id).eq('user_id', user_id).execute()
         if res.data:
             return res.data[0]
+
     # Create new chat
-    new_chat = supabase.table('chats').insert({
+    new_chat = admin.table('chats').insert({
         'user_id': user_id,
         'title': 'New Chat',
-        'messages': []
+        'messages': [],
+        'created_at': datetime.utcnow().isoformat()
     }).execute()
     return new_chat.data[0]
 
 def save_messages(chat_id, messages):
-    supabase.table('chats').update({
+    admin = get_admin_client()  # bypasses RLS
+    admin.table('chats').update({
         'messages': messages,
-        'updated_at': 'now()'
+        'updated_at': datetime.utcnow().isoformat()
     }).eq('id', chat_id).execute()
 
 def auto_title(chat_id, user_message, answer):
     try:
+        admin = get_admin_client()  # bypasses RLS
         title = user_message[:50].strip()
         if len(user_message) > 50:
             title += '...'
-        supabase.table('chats').update({'title': title}).eq('id', chat_id).execute()
-    except:
+        admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
+    except Exception:
         pass
 
 # ── ROUTES ──
@@ -70,8 +73,9 @@ def login_page():
 @app.route("/chats", methods=["GET"])
 @login_required
 def get_chats():
+    admin = get_admin_client()
     user_id = session['user_id']
-    res = supabase.table('chats')\
+    res = admin.table('chats')\
         .select('id, title, updated_at')\
         .eq('user_id', user_id)\
         .order('updated_at', desc=True)\
@@ -82,8 +86,9 @@ def get_chats():
 @app.route("/chats/<chat_id>", methods=["GET"])
 @login_required
 def get_chat(chat_id):
+    admin = get_admin_client()
     user_id = session['user_id']
-    res = supabase.table('chats').select('*').eq('id', chat_id).eq('user_id', user_id).execute()
+    res = admin.table('chats').select('*').eq('id', chat_id).eq('user_id', user_id).execute()
     if not res.data:
         return jsonify({'error': 'Chat not found'}), 404
     return jsonify({'chat': res.data[0]})
@@ -91,8 +96,9 @@ def get_chat(chat_id):
 @app.route("/chats/<chat_id>", methods=["DELETE"])
 @login_required
 def delete_chat(chat_id):
+    admin = get_admin_client()
     user_id = session['user_id']
-    supabase.table('chats').delete().eq('id', chat_id).eq('user_id', user_id).execute()
+    admin.table('chats').delete().eq('id', chat_id).eq('user_id', user_id).execute()
     return jsonify({'success': True})
 
 @app.route("/ask", methods=["POST"])
@@ -108,8 +114,10 @@ def ask():
     if 'user_id' not in session:
         count = session.get('guest_messages', 0)
         if count >= 5:
-            return jsonify({"login_required": True,
-                "error": "You've used your 5 free messages. Please login to continue!"}), 401
+            return jsonify({
+                "login_required": True,
+                "error": "You've used your 5 free messages. Please login to continue!"
+            }), 401
         session['guest_messages'] = count + 1
         if "history" not in session:
             session["history"] = []
@@ -119,7 +127,7 @@ def ask():
         session.modified = True
         return jsonify({"reply": answer})
 
-    # Logged in user
+    # Logged-in user
     if not check_message_limit(session['user_id'], session.get('plan', 'free')):
         return jsonify({"error": "Daily free limit reached."}), 429
 
