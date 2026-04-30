@@ -13,9 +13,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    /* ══════════════════════════════════════════
-       CSS VARIABLES
-    ══════════════════════════════════════════ */
     :root {
       --bg:         #0d1117;
       --bg2:        #161b22;
@@ -69,19 +66,11 @@
       -webkit-font-smoothing:antialiased; overflow:hidden; width:100%;
     }
 
-    /* ══════════════════════════════════════════
-       SHEELBI LOGO SVG
-    ══════════════════════════════════════════ */
-    .sheelbi-logo-svg { width:28px;height:28px;flex-shrink:0; }
+    .disha-avatar-svg { width:100%; height:100%; display:block; }
 
-    /* ══════════════════════════════════════════
-       APP LAYOUT
-    ══════════════════════════════════════════ */
     .app-layout{flex:1;min-height:0;display:flex;overflow:hidden;}
 
-    /* ══════════════════════════════════════════
-       LEFT SIDEBAR
-    ══════════════════════════════════════════ */
+    /* LEFT SIDEBAR */
     .left-sidebar{
       width:var(--left-w);
       background:var(--bg2);
@@ -105,7 +94,6 @@
     .sb-search-inner input{flex:1;background:transparent;border:none;outline:none;font-size:12px;color:var(--text);font-family:'Sora',sans-serif;}
     .sb-search-inner input::placeholder{color:var(--text3);}
 
-    /* ── FOLDERS ── */
     .sb-folders-section{flex-shrink:0;}
     .sb-folders-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 6px;}
     .sb-folders-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;}
@@ -113,7 +101,6 @@
     .sb-folder-add-btn:hover{color:var(--green);}
     .sb-folders-list{padding:0 8px 8px;display:flex;flex-direction:column;gap:2px;}
 
-    /* Folder item */
     .folder-item{
       display:flex;align-items:center;gap:8px;
       padding:7px 10px;border-radius:var(--radius-sm);
@@ -136,7 +123,6 @@
     .folder-input-confirm{background:var(--blue);border:none;border-radius:var(--radius-xs);color:#fff;font-size:11px;padding:4px 9px;cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap;}
     .sb-empty-hint{padding:10px 14px;font-size:11px;color:var(--text3);font-style:italic;}
 
-    /* ── HISTORY IN SIDEBAR ── */
     .sb-history-section{flex:1;min-height:0;overflow-y:auto;padding-bottom:8px;}
     .sb-history-section::-webkit-scrollbar{width:3px;}
     .sb-history-section::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
@@ -155,18 +141,14 @@
     .chat-item:hover .chat-delete-btn{opacity:1;}
     .chat-delete-btn:hover{color:var(--danger);}
 
-    /* Study time footer */
     .sb-footer{border-top:1px solid var(--border);padding:10px 12px;flex-shrink:0;background:var(--bg3);}
     .sb-study-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:4px;}
     .sb-study-time{font-size:22px;font-weight:800;color:var(--text);font-family:'Sora',sans-serif;letter-spacing:.5px;line-height:1;}
 
-    /* Sidebar overlay */
     .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:39;backdrop-filter:blur(3px);}
     .sidebar-overlay.visible{display:block;}
 
-    /* ══════════════════════════════════════════
-       MAIN CONTENT
-    ══════════════════════════════════════════ */
+    /* MAIN CONTENT */
     .main-content{flex:1;min-width:0;display:flex;flex-direction:column;height:100%;overflow:hidden;position:relative;}
     .chat-topic-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
     .chat-topic-bar-title{font-size:14px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -175,35 +157,26 @@
     .chat-topic-action{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
     .chat-topic-action:hover{border-color:var(--blue);color:var(--blue);}
 
-    /* Mobile search bar */
     .main-search-bar{display:none;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
     .main-search-inner{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;}
     .main-search-inner svg{color:var(--text3);flex-shrink:0;}
     .main-search-inner input{flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text);font-family:'Sora',sans-serif;}
     .main-search-inner input::placeholder{color:var(--text3);}
 
-    /* Chat box */
     #chat-box{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 16px 12px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
     #chat-box::-webkit-scrollbar{width:4px;}
     #chat-box::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
-    /* Welcome */
     .welcome{text-align:center;margin:0 auto;padding:28px 20px 16px;animation:fadeUp .5s ease both;display:flex;flex-direction:column;align-items:center;max-width:580px;width:100%;}
     .welcome h2{font-size:20px;font-weight:700;margin-bottom:7px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .welcome .welcome-sub{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.9;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .welcome .welcome-img-note{font-size:11px;color:var(--green);margin-bottom:22px;}
 
-    /* Subject grid — 3 col, Math centered in middle */
     .subject-grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:7px;max-width:520px;width:100%;margin-bottom:16px;
     }
-    .subject-grid .subj-card:nth-child(1){ /* Finance — col 1 row 1 */}
-    .subject-grid .subj-card.math-center{
-      grid-column:2; /* center */
-    }
-
     .subj-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 10px;cursor:pointer;transition:all .18s;text-align:left;}
     .subj-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-2px);}
     .subj-card.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;}
@@ -212,12 +185,61 @@
     .subj-card-title{font-size:11.5px;font-weight:600;color:var(--text);margin-bottom:2px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .subj-card-example{font-size:10px;color:var(--text2);line-height:1.5;font-family:'Noto Sans Bengali','Sora',sans-serif;}
 
-    /* Messages */
+    /* MESSAGES */
     .message{display:flex;gap:9px;align-items:flex-start;animation:fadeUp .3s ease both;}
     .message.user{flex-direction:row-reverse;}
-    .avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+
+    .avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
     .user .avatar{background:linear-gradient(135deg,var(--blue),var(--purple));font-size:10px;font-weight:700;color:#fff;}
-    .bot .avatar{background:var(--bg3);border:1px solid var(--border2);font-size:14px;overflow:hidden;}
+
+    /* ── BEAUTIFUL DISHA AVATAR ── */
+    .disha-avatar-wrap{
+      width:38px;height:38px;flex-shrink:0;
+      border-radius:50%;
+      background:linear-gradient(145deg,#1a2a3a,#0d1a2a);
+      border:2px solid rgba(13,228,160,.35);
+      box-shadow:0 0 12px rgba(13,228,160,.15), 0 2px 8px rgba(0,0,0,.4);
+      overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+      position:relative;
+    }
+    .disha-avatar-wrap.thinking{
+      animation:disha-pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes disha-pulse{
+      0%,100%{box-shadow:0 0 8px rgba(13,228,160,.2), 0 2px 8px rgba(0,0,0,.4);}
+      50%{box-shadow:0 0 20px rgba(13,228,160,.6), 0 2px 8px rgba(0,0,0,.4);}
+    }
+
+    /* ── DISHA NAME ROW ── */
+    .disha-name-row{
+      display:flex;align-items:center;gap:6px;
+      margin-bottom:4px;
+    }
+    .disha-name-label{
+      font-size:11px;font-weight:700;color:var(--green);
+      letter-spacing:.02em;font-family:'Sora',sans-serif;
+    }
+    .disha-online-dot{
+      width:5px;height:5px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 4px var(--green);
+    }
+
+    /* Typing dots — only inside bot bubble, NOT in hint bar */
+    .bubble-typing-dots{
+      display:flex;align-items:center;gap:4px;padding:4px 2px;
+    }
+    .bubble-typing-dots .dot{
+      width:7px;height:7px;border-radius:50%;background:var(--green);
+      animation:bounce-dot .9s ease-in-out infinite;
+    }
+    .bubble-typing-dots .dot:nth-child(2){animation-delay:.18s;}
+    .bubble-typing-dots .dot:nth-child(3){animation-delay:.36s;}
+    @keyframes bounce-dot{
+      0%,80%,100%{transform:translateY(0);opacity:.5;}
+      40%{transform:translateY(-5px);opacity:1;}
+    }
+
     .bot-col{flex:1;min-width:0;display:flex;flex-direction:column;}
     .bot .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);padding:12px 16px;font-size:14px;line-height:1.95;word-break:break-word;}
     [data-theme="light"] .bot .bubble{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);}
@@ -239,14 +261,6 @@
     .ai-suggestion-btn:hover{background:var(--green);border-color:var(--green);color:#0d1117;}
     mark{background:rgba(77,127,255,.1);color:var(--blue);border-radius:3px;padding:1px 5px;font-weight:600;}
     .katex-display{margin:.7em auto;text-align:center;overflow-x:auto;}
-
-    /* Typing indicator */
-    .typing-bubble{display:flex;align-items:center;gap:9px;padding:10px 14px;}
-    .typing-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--green);box-shadow:0 0 6px var(--green);transition:background .4s,box-shadow .4s;}
-    .typing-status-dot.idle{background:var(--text3);box-shadow:none;}
-    @keyframes pulseActive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
-    .typing-status-dot:not(.idle){animation:pulseActive 1.2s ease-in-out infinite;}
-    .typing-text{font-size:13px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
 
     /* Scroll btn */
     #scroll-btn{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:16px;padding:5px 14px;font-size:11px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;font-family:'Sora',sans-serif;font-weight:600;z-index:20;white-space:nowrap;}
@@ -270,15 +284,15 @@
     #send-btn{width:38px;height:38px;flex-shrink:0;min-width:38px;background:var(--green);border:none;border-radius:var(--radius-sm);color:#0d1117;font-size:15px;cursor:pointer;transition:all .13s;display:flex;align-items:center;justify-content:center;}
     #send-btn:hover{background:var(--green2);transform:translateY(-1px);}
     #send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none;color:var(--text3);}
+
+    /* Clean hint bar — NO typing indicator here */
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
     .disclaimer-bar{text-align:center;padding:4px 14px 6px;font-size:9.5px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
     .error-bubble{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius-sm);padding:9px 13px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;justify-content:space-between;gap:9px;}
 
-    /* ══════════════════════════════════════════
-       RIGHT SIDEBAR
-    ══════════════════════════════════════════ */
+    /* RIGHT SIDEBAR */
     .right-sidebar{width:var(--right-w);background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden;}
     .right-sidebar::-webkit-scrollbar{width:3px;}
     .right-sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
@@ -287,24 +301,29 @@
     .rs-title{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
     .rs-title-link{font-size:10px;color:var(--blue);cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;}
 
-    /* Leaderboard — empty state */
-    .lb-empty{padding:20px 8px;text-align:center;}
-    .lb-empty-icon{font-size:28px;margin-bottom:8px;}
+    /* Leaderboard */
+    .lb-empty{padding:16px 8px;text-align:center;}
+    .lb-empty-icon{font-size:26px;margin-bottom:8px;}
     .lb-empty-text{font-size:11px;color:var(--text3);line-height:1.6;}
     .lb-empty-text strong{color:var(--text2);display:block;margin-bottom:3px;}
     .leaderboard-list{display:flex;flex-direction:column;gap:5px;}
     .lb-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);}
-    .lb-item.you{border-color:rgba(13,228,160,.25);background:rgba(13,228,160,.05);}
+    .lb-item.you{border-color:rgba(13,228,160,.35);background:rgba(13,228,160,.07);box-shadow:0 0 0 1px rgba(13,228,160,.1);}
     .lb-rank{font-size:11px;font-weight:700;color:var(--text3);width:14px;text-align:center;flex-shrink:0;}
     .lb-item.you .lb-rank{color:var(--green);}
-    .lb-avatar{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
+    .lb-avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;}
     .lb-name{flex:1;font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .lb-item.you .lb-name{color:var(--green);}
     .lb-score{font-size:11px;font-weight:700;color:var(--text2);flex-shrink:0;}
     .lb-item.you .lb-score{color:var(--green);}
-    .lb-you-row{background:rgba(13,228,160,.05);border:1px dashed rgba(13,228,160,.2);border-radius:var(--radius-sm);padding:8px 9px;display:flex;align-items:center;gap:8px;margin-top:4px;}
+    .lb-you-row{background:rgba(13,228,160,.06);border:1px dashed rgba(13,228,160,.25);border-radius:var(--radius-sm);padding:8px 9px;display:flex;align-items:center;gap:8px;margin-top:6px;}
     .lb-you-label{font-size:11px;color:var(--green);flex:1;}
     .lb-you-score{font-size:11px;font-weight:700;color:var(--green);}
+    /* Login CTA for leaderboard */
+    .lb-login-cta{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 10px;text-align:center;cursor:pointer;transition:all .15s;}
+    .lb-login-cta:hover{border-color:var(--green);background:var(--green-bg);}
+    .lb-login-cta-text{font-size:11px;color:var(--text2);margin-bottom:5px;}
+    .lb-login-cta-btn{font-size:11px;font-weight:700;color:var(--green);}
 
     /* Progress bars */
     .progress-list{display:flex;flex-direction:column;gap:8px;}
@@ -337,73 +356,29 @@
     .battle-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);animation:pulse-dot 2s ease-in-out infinite;flex-shrink:0;}
     @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.75)}}
 
-    /* ══════════════════════════════════════════
-       MODALS — SHARED
-    ══════════════════════════════════════════ */
+    /* MODALS */
     @keyframes fadeOverlay{from{opacity:0}to{opacity:1}}
     @keyframes popCard{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ══════════════════════════════════════════
-       BEAUTIFUL LOGOUT MODAL
-    ══════════════════════════════════════════ */
-    #logout-overlay{
-      display:none;position:fixed;inset:0;z-index:998;
-      align-items:center;justify-content:center;
-      background:rgba(8,9,12,.75);backdrop-filter:blur(10px);
-    }
+    /* LOGOUT MODAL */
+    #logout-overlay{display:none;position:fixed;inset:0;z-index:998;align-items:center;justify-content:center;background:rgba(8,9,12,.75);backdrop-filter:blur(10px);}
     #logout-overlay.active{display:flex;animation:fadeOverlay .2s ease both;}
-    .logout-card{
-      background:var(--bg2);
-      border:1px solid var(--border2);
-      border-radius:20px;
-      padding:28px 28px 22px;
-      max-width:320px;width:calc(100% - 32px);
-      text-align:center;
-      box-shadow:0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
-      animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;
-      position:relative;
-    }
-    .logout-avatar{
-      width:56px;height:56px;border-radius:16px;
-      background:linear-gradient(135deg, var(--green), var(--blue));
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;font-weight:800;color:#fff;
-      margin:0 auto 14px;
-      box-shadow:0 8px 24px rgba(13,228,160,.25);
-    }
+    .logout-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px 28px 22px;max-width:320px;width:calc(100% - 32px);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;position:relative;}
+    .logout-avatar{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg, var(--green), var(--blue));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;margin:0 auto 14px;box-shadow:0 8px 24px rgba(13,228,160,.25);}
     .logout-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
     .logout-email{font-size:12px;color:var(--text3);margin-bottom:6px;}
-    .logout-plan-badge{
-      display:inline-flex;align-items:center;gap:5px;
-      background:var(--green-bg);border:1px solid rgba(13,228,160,.2);
-      color:var(--green);border-radius:20px;padding:3px 10px;
-      font-size:10.5px;font-weight:600;margin-bottom:22px;
-    }
+    .logout-plan-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid rgba(13,228,160,.2);color:var(--green);border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:600;margin-bottom:22px;}
     .logout-divider{height:1px;background:var(--border);margin:0 -28px 18px;}
     .logout-btn-group{display:flex;flex-direction:column;gap:8px;}
-    .logout-btn{
-      width:100%;padding:11px;border-radius:var(--radius-sm);
-      font-size:13.5px;font-weight:600;font-family:'Sora',sans-serif;
-      cursor:pointer;transition:all .15s;border:none;
-    }
-    .logout-btn.danger{
-      background:rgba(248,81,73,.1);
-      border:1px solid rgba(248,81,73,.25);
-      color:var(--danger);
-    }
+    .logout-btn{width:100%;padding:11px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;border:none;}
+    .logout-btn.danger{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.25);color:var(--danger);}
     .logout-btn.danger:hover{background:rgba(248,81,73,.18);border-color:var(--danger);}
-    .logout-btn.cancel{
-      background:var(--bg3);
-      border:1px solid var(--border2);
-      color:var(--text2);
-    }
+    .logout-btn.cancel{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);}
     .logout-btn.cancel:hover{background:var(--bg4);color:var(--text);}
 
-    /* ══════════════════════════════════════════
-       LOGIN OVERLAY
-    ══════════════════════════════════════════ */
+    /* LOGIN OVERLAY */
     #login-overlay{display:none;position:fixed;inset:0;z-index:999;align-items:center;justify-content:center;background:rgba(8,9,12,.78);backdrop-filter:blur(8px);}
     #login-overlay.active{display:flex;animation:fadeOverlay .22s ease both;}
     .login-card{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px 24px 20px;max-width:360px;width:calc(100% - 28px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.7);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;position:relative;}
@@ -474,9 +449,7 @@
     .back-link{text-align:center;margin-top:9px;}
     .back-link button{background:none;border:none;color:var(--text2);font-size:11px;cursor:pointer;font-family:'Sora',sans-serif;}
 
-    /* ══════════════════════════════════════════
-       MOBILE BOTTOM NAV
-    ══════════════════════════════════════════ */
+    /* MOBILE BOTTOM NAV */
     .mobile-bottom-nav{display:none;height:56px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;align-items:stretch;padding-bottom:var(--safe-bottom);}
     .mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;transition:color .15s;padding:4px 0;}
     .mob-nav-btn.active{color:var(--green);}
@@ -491,7 +464,7 @@
     .mob-rank-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);font-weight:600;}
     .mob-rank-val{font-size:17px;font-weight:800;color:var(--green);line-height:1.2;}
 
-    /* Mobile folders view */
+    /* Mobile projects/folders view */
     #folders-view{display:none;flex:1;min-height:0;flex-direction:column;overflow:hidden;}
     #folders-view.active{display:flex;}
     .fv-search{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -522,9 +495,7 @@
     .fv-history-title{font-size:13px;font-weight:600;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .fv-history-meta{font-size:10.5px;color:var(--text3);margin-left:14px;}
 
-    /* ══════════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════════ */
+    /* RESPONSIVE */
     @media(max-width:1100px){:root{--right-w:220px;}}
     @media(max-width:900px){.right-sidebar{display:none;}}
     @media(max-width:700px){
@@ -546,13 +517,87 @@
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════
+     BEAUTIFUL DISHA TEACHER SVG — emoji-style, polished
+═══════════════════════════════════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" id="disha-svg-defs">
+  <symbol id="disha-girl" viewBox="0 0 80 80">
+    <!-- Warm skin face -->
+    <circle cx="40" cy="36" r="20" fill="#FFCC99"/>
+    <!-- Rich dark hair — top cap -->
+    <ellipse cx="40" cy="21" rx="20" ry="13" fill="#1C1108"/>
+    <!-- Hair side locks -->
+    <path d="M20 30 Q16 42 18 52 Q22 46 24 38Z" fill="#1C1108"/>
+    <path d="M60 30 Q64 42 62 52 Q58 46 56 38Z" fill="#1C1108"/>
+    <!-- Hair highlight shine -->
+    <ellipse cx="34" cy="19" rx="7" ry="3.5" fill="#3D2B1A" opacity=".55"/>
+    <!-- Ears -->
+    <ellipse cx="20" cy="37" rx="3" ry="4" fill="#FFBB88"/>
+    <ellipse cx="60" cy="37" rx="3" ry="4" fill="#FFBB88"/>
+    <!-- Cute earring studs -->
+    <circle cx="20" cy="36" r="2" fill="#0de4a0"/>
+    <circle cx="60" cy="36" r="2" fill="#0de4a0"/>
+
+    <!-- Eyes — large, friendly -->
+    <ellipse cx="33" cy="36" rx="4.5" ry="5" fill="#fff"/>
+    <ellipse cx="47" cy="36" rx="4.5" ry="5" fill="#fff"/>
+    <!-- Iris -->
+    <circle cx="33" cy="37" r="3" fill="#3D1F00"/>
+    <circle cx="47" cy="37" r="3" fill="#3D1F00"/>
+    <!-- Pupil shine -->
+    <circle cx="34.2" cy="35.8" r="1" fill="#fff"/>
+    <circle cx="48.2" cy="35.8" r="1" fill="#fff"/>
+    <!-- Eyelashes top -->
+    <path d="M28.5 31.5 Q33 29 37.5 31.5" stroke="#1C1108" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M42.5 31.5 Q47 29 51.5 31.5" stroke="#1C1108" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+    <!-- Brows — arched, expressive -->
+    <path d="M29 30 Q33 28 37 29.5" stroke="#3D2B1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M43 29.5 Q47 28 51 30" stroke="#3D2B1A" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- Nose — subtle -->
+    <path d="M38.5 41 Q40 43.5 41.5 41" stroke="#E8A078" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+    <!-- Smile — warm, wide -->
+    <path d="M33 47 Q40 53 47 47" stroke="#D46050" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Teeth hint -->
+    <path d="M35 47.5 Q40 50 45 47.5" fill="#fff" opacity=".8"/>
+
+    <!-- Blush cheeks -->
+    <ellipse cx="25" cy="43" rx="5" ry="3" fill="#FF9090" opacity=".25"/>
+    <ellipse cx="55" cy="43" rx="5" ry="3" fill="#FF9090" opacity=".25"/>
+
+    <!-- Neck -->
+    <rect x="36" y="55" width="8" height="7" rx="4" fill="#FFBB88"/>
+
+    <!-- Body — teacher blazer/sari style -->
+    <ellipse cx="40" cy="73" rx="20" ry="12" fill="#1a3a5c"/>
+    <!-- Collar shape -->
+    <path d="M34 62 Q40 67 46 62 L44 74 Q40 77 36 74Z" fill="#154070"/>
+    <!-- Dupatta / scarf accent on shoulder -->
+    <path d="M20 65 Q28 60 36 62 L32 75 Q24 72 18 68Z" fill="#0de4a0" opacity=".75"/>
+    <!-- Book / clipboard in hand -->
+    <rect x="52" y="58" width="10" height="14" rx="2" fill="#f0a030" opacity=".9"/>
+    <rect x="53" y="60" width="8" height="1.5" rx=".75" fill="#fff" opacity=".8"/>
+    <rect x="53" y="63" width="8" height="1.5" rx=".75" fill="#fff" opacity=".6"/>
+    <rect x="53" y="66" width="5" height="1.5" rx=".75" fill="#fff" opacity=".5"/>
+    <!-- Pen / pointer in other hand -->
+    <rect x="17" y="60" width="3" height="11" rx="1.5" fill="#4d7fff" opacity=".9"/>
+    <polygon points="17,71 20,71 18.5,75" fill="#4d7fff" opacity=".9"/>
+
+    <!-- Name badge on blazer -->
+    <rect x="29" y="67" width="22" height="8" rx="3" fill="#0de4a0" opacity=".9"/>
+    <text x="40" y="73.5" text-anchor="middle" font-size="5" font-family="Sora,sans-serif" font-weight="700" fill="#0d1117">Disha</text>
+  </symbol>
+</svg>
+
 <div class="app-layout">
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
   <!-- ═══ LEFT SIDEBAR ═══ -->
   <div class="left-sidebar" id="sidebar">
     <div class="sb-logo-row">
-      <svg class="sheelbi-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
         <circle cx="50" cy="50" r="7" fill="#f0a030" stroke="#1a1a1a" stroke-width="3"/>
         <line x1="50" y1="43" x2="50" y2="8" stroke="#4d7fff" stroke-width="11" stroke-linecap="round"/>
         <line x1="43" y1="50" x2="8" y2="50" stroke="#f0a030" stroke-width="11" stroke-linecap="round"/>
@@ -567,24 +612,22 @@
     <div class="sb-search">
       <div class="sb-search-inner">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input type="text" placeholder="Search chats, topic..." oninput="filterChats(this.value)">
+        <input type="text" placeholder="Search chats, projects..." oninput="filterChats(this.value)">
       </div>
     </div>
 
-    <!-- FOLDERS — real user-created only -->
     <div class="sb-folders-section">
       <div class="sb-folders-header">
-        <span class="sb-folders-label">FOLDERS</span>
-        <button class="sb-folder-add-btn" onclick="showFolderInput()" title="New folder">+</button>
+        <span class="sb-folders-label">PROJECTS</span>
+        <button class="sb-folder-add-btn" onclick="showFolderInput()" title="New project">+</button>
       </div>
       <div class="sb-folders-list" id="folders-list"></div>
       <div class="folder-input-row" id="folder-input-row">
-        <input type="text" class="folder-input" id="folder-name-input" placeholder="Folder name..." maxlength="24" onkeydown="folderInputKey(event)">
+        <input type="text" class="folder-input" id="folder-name-input" placeholder="Project name..." maxlength="24" onkeydown="folderInputKey(event)">
         <button class="folder-input-confirm" onclick="confirmNewFolder()">Add</button>
       </div>
     </div>
 
-    <!-- HISTORY -->
     <div class="sb-history-section">
       <div class="sb-section-label" id="history-section-label">RECENT HISTORY</div>
       <div id="sidebar-chat-list"></div>
@@ -622,7 +665,7 @@
       </div>
     </div>
 
-    <!-- Mobile study time bar -->
+    <!-- Mobile study bar -->
     <div class="mob-study-bar" id="mob-study-bar">
       <div class="mob-study-time-col">
         <div class="mob-study-label">Study time today</div>
@@ -637,16 +680,14 @@
     <!-- Chat topic bar (desktop) -->
     <div class="chat-topic-bar" id="chat-topic-bar">
       <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
-      <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Sheelbi AI</span>
+      <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Disha AI</span>
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
       <button class="chat-topic-action" title="Account" onclick="showAccountModal()" id="account-btn">👤</button>
     </div>
 
-    <!-- ════════════════════════════════
-         BEAUTIFUL LOGOUT / ACCOUNT MODAL
-    ════════════════════════════════ -->
+    <!-- LOGOUT MODAL -->
     <div id="logout-overlay" onclick="handleLogoutOverlayClick(event)">
       <div class="logout-card" id="logout-card">
         <div class="logout-avatar" id="logout-avatar-initials">U</div>
@@ -658,12 +699,8 @@
         </div>
         <div class="logout-divider"></div>
         <div class="logout-btn-group">
-          <button class="logout-btn danger" onclick="confirmLogout()">
-            🚪 Log out
-          </button>
-          <button class="logout-btn cancel" onclick="hideLogoutModal()">
-            Stay logged in
-          </button>
+          <button class="logout-btn danger" onclick="confirmLogout()">🚪 Log out</button>
+          <button class="logout-btn cancel" onclick="hideLogoutModal()">Stay logged in</button>
         </div>
       </div>
     </div>
@@ -764,13 +801,12 @@
         <p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p>
         <p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>
         <div class="subject-grid">
-          <!-- Row 1: Finance | Math (center, coming soon) | Biology -->
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="Personal finance basics: budgeting, saving and investing explained">
             <div class="subj-card-icon">💰</div>
             <div class="subj-card-title">Finance</div>
-            <div class="subj-card-example">Budgeting & investing</div>
+            <div class="subj-card-example">Budgeting &amp; investing</div>
           </div>
-          <div class="subj-card disabled math-center">
+          <div class="subj-card disabled" style="grid-column:2;">
             <div class="subj-card-icon">🔢</div>
             <div class="subj-card-title">Math</div>
             <div class="subj-card-example">Solve step-by-step</div>
@@ -781,12 +817,10 @@
             <div class="subj-card-title">Biology</div>
             <div class="subj-card-example">What is osmosis?</div>
           </div>
-
-          <!-- Row 2: English | Chemistry | Physics -->
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="How do I write a perfect paragraph in English?">
             <div class="subj-card-icon">🗣️</div>
             <div class="subj-card-title">English</div>
-            <div class="subj-card-example">Writing & grammar</div>
+            <div class="subj-card-example">Writing &amp; grammar</div>
           </div>
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="এসিড ও ক্ষারের পার্থক্য কী?">
             <div class="subj-card-icon">⚗️</div>
@@ -804,17 +838,17 @@
 
     <button id="scroll-btn" onclick="scrollToBottom()">↓ নিচে যাও</button>
 
-    <!-- Mobile Folders View -->
+    <!-- Mobile Projects View -->
     <div id="folders-view">
       <div class="fv-search">
         <div class="main-search-inner">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-          <input type="text" placeholder="Search folders...">
+          <input type="text" placeholder="Search projects...">
         </div>
       </div>
       <div class="fv-inner">
         <div class="fv-section-header">
-          <span class="fv-section-label">MY FOLDERS</span>
+          <span class="fv-section-label">MY PROJECTS</span>
           <button class="fv-add-btn" onclick="showFolderInput()">+</button>
         </div>
         <div class="fv-folder-list" id="fv-folder-list"></div>
@@ -825,7 +859,7 @@
       </div>
     </div>
 
-    <!-- Input area -->
+    <!-- Input area — NO Disha typing text here -->
     <div id="input-area">
       <div id="image-preview-strip">
         <img id="preview-thumb" src="" alt="preview">
@@ -841,17 +875,16 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
       </div>
+      <!-- Clean hint bar — just "Sheelbi AI" branding, no typing indicator -->
       <div class="hint-bar">
-        <span class="hint">
-          <span style="display:inline-flex;align-items:center;gap:4px;">
-            <span id="disha-dot" class="typing-status-dot idle" style="display:inline-block;width:7px;height:7px;border-radius:50%;"></span>
-            <span id="disha-status-text" style="font-size:9.5px;color:var(--text3);">Disha AI</span>
-          </span>
+        <span class="hint" style="display:inline-flex;align-items:center;gap:5px;">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);display:inline-block;"></span>
+          <span style="color:var(--text3);font-size:9.5px;">Disha AI · Ready</span>
         </span>
         <span class="char-count" id="char-count"></span>
       </div>
       <div class="disclaimer-bar">
-        AI can sometimes make mistakes, so it's always good to double-check. ✦ Sheelbi
+        AI can sometimes make mistakes — always double-check. ✦ Sheelbi
       </div>
     </div>
 
@@ -859,43 +892,25 @@
 
   <!-- ═══ RIGHT SIDEBAR ═══ -->
   <div class="right-sidebar" id="right-sidebar">
-
-    <!-- Leaderboard — real users only -->
     <div class="rs-section">
-      <div class="rs-title">LEADERBOARD</div>
-      <div id="leaderboard-container">
-        <div class="lb-empty">
-          <div class="lb-empty-icon">🏆</div>
-          <div class="lb-empty-text">
-            <strong>Coming soon</strong>
-            Leaderboard will show real users ranked by study activity.
-          </div>
-        </div>
+      <div class="rs-title">
+        LEADERBOARD
+        <span class="rs-title-link" onclick="renderLeaderboard()">↻</span>
       </div>
+      <div id="leaderboard-container"></div>
     </div>
 
-    <!-- HSC Countdown -->
     <div class="rs-section">
       <div class="rs-title">HSC COUNTDOWN</div>
       <div class="hsc-countdown-card">
-        <div>
-          <div class="hsc-val" id="hsc-days">—</div>
-          <div class="hsc-val-label">days</div>
-        </div>
+        <div><div class="hsc-val" id="hsc-days">—</div><div class="hsc-val-label">days</div></div>
         <div class="hsc-val-divider"></div>
-        <div>
-          <div class="hsc-val">12</div>
-          <div class="hsc-val-label">chapters</div>
-        </div>
+        <div><div class="hsc-val">12</div><div class="hsc-val-label">chapters</div></div>
         <div class="hsc-val-divider"></div>
-        <div class="hsc-predicted">
-          <div class="hsc-predicted-grade">A+</div>
-          <div class="hsc-predicted-label">predicted</div>
-        </div>
+        <div class="hsc-predicted"><div class="hsc-predicted-grade">A+</div><div class="hsc-predicted-label">predicted</div></div>
       </div>
     </div>
 
-    <!-- Battle mode -->
     <div class="rs-section">
       <button class="battle-btn" onclick="showLoginPrompt(false)">
         <div class="battle-btn-icon">⚔️</div>
@@ -906,7 +921,6 @@
         <div class="battle-live-dot"></div>
       </button>
     </div>
-
   </div>
 
 </div><!-- end .app-layout -->
@@ -919,7 +933,7 @@
   </button>
   <button class="mob-nav-btn" id="mob-folders" onclick="showFoldersView(); setMobNav('mob-folders')">
     <span class="mob-nav-icon">📁</span>
-    <span class="mob-nav-label">Folders</span>
+    <span class="mob-nav-label">Projects</span>
   </button>
   <button class="mob-nav-btn" id="mob-ranks" onclick="showLoginPrompt(false)">
     <span class="mob-nav-icon">📊</span>
@@ -970,18 +984,6 @@ function fmtTime(s){const h=Math.floor(s/3600);const m=Math.floor((s%3600)/60);c
 setInterval(()=>{const str=fmtTime(getStudySeconds());const el=document.getElementById('sb-study-time');const mob=document.getElementById('mob-timer');if(el)el.textContent=str;if(mob)mob.textContent=str;},1000);
 
 // ═══════════════════════════════════════════════
-// DISHA AI STATUS
-// ═══════════════════════════════════════════════
-const TYPING_PHRASES=['Disha AI লিখছে...','আমি উত্তর লিখছি...','একটু ভাবছি...','তৈরি হচ্ছে...'];
-let dishaStatusInterval=null;
-function setDishaTyping(active){
-  isAiTyping=active;
-  const dot=document.getElementById('disha-dot');const txt=document.getElementById('disha-status-text');if(!dot||!txt)return;
-  if(active){dot.classList.remove('idle');let pi=0;txt.textContent=TYPING_PHRASES[0];if(dishaStatusInterval)clearInterval(dishaStatusInterval);dishaStatusInterval=setInterval(()=>{pi=(pi+1)%TYPING_PHRASES.length;txt.textContent=TYPING_PHRASES[pi];},1800);}
-  else{dot.classList.add('idle');if(dishaStatusInterval){clearInterval(dishaStatusInterval);dishaStatusInterval=null;}txt.textContent='Disha AI';}
-}
-
-// ═══════════════════════════════════════════════
 // HSC COUNTDOWN
 // ═══════════════════════════════════════════════
 function updateHscDays(){
@@ -993,7 +995,7 @@ function updateHscDays(){
 updateHscDays();
 
 // ═══════════════════════════════════════════════
-// FOLDERS — real user-created, with chats inside
+// PROJECTS (Folders)
 // ═══════════════════════════════════════════════
 const FOLDER_STORAGE_KEY='sheelbi_folders_v2';
 let folders=loadFolders();
@@ -1010,16 +1012,14 @@ function renderFolders(){
   const list=document.getElementById('folders-list');
   const fvList=document.getElementById('fv-folder-list');
 
-  // Update counts from actual chats
   folders=folders.map(f=>({...f,count:getFolderChatCount(f.id)}));
   saveFolders();
 
   if(list){
     list.innerHTML='';
     if(folders.length===0){
-      list.innerHTML='<div class="sb-empty-hint">No folders yet. Press + to create one.</div>';
+      list.innerHTML='<div class="sb-empty-hint">No projects yet. Press + to create one.</div>';
     }else{
-      // "All chats" pseudo-folder
       const allItem=document.createElement('div');
       allItem.className='folder-item'+(activeFolderId===null?' active':'');
       allItem.innerHTML=`<span class="folder-icon">💬</span><span class="folder-name">All Chats</span><span class="folder-count">${loadHistoryMeta().length}</span>`;
@@ -1029,7 +1029,7 @@ function renderFolders(){
       folders.forEach(f=>{
         const item=document.createElement('div');
         item.className='folder-item'+(f.id===activeFolderId?' active':'');
-        item.innerHTML=`<span class="folder-icon">📁</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
+        item.innerHTML=`<span class="folder-icon">📂</span><span class="folder-name">${escapeHtml(f.name)}</span><span class="folder-count">${f.count||0}</span><button class="folder-delete-btn" onclick="deleteFolder(event,'${f.id}')" title="Delete">✕</button>`;
         item.addEventListener('click',e=>{if(e.target.classList.contains('folder-delete-btn'))return;activeFolderId=f.id;renderFolders();renderHistory();});
         list.appendChild(item);
       });
@@ -1039,12 +1039,12 @@ function renderFolders(){
   if(fvList){
     fvList.innerHTML='';
     if(folders.length===0){
-      fvList.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No folders yet. Press + to create one.</div>';
+      fvList.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--text3);">No projects yet. Press + to create one.</div>';
     }else{
       folders.forEach(f=>{
         const item=document.createElement('div');
         item.className='fv-folder-item'+(f.id===activeFolderId?' active':'');
-        item.innerHTML=`<div class="fv-folder-left"><span class="fv-folder-icon">📁</span><span class="fv-folder-name">${escapeHtml(f.name)}</span></div><span class="fv-folder-count">${f.count||0}</span>`;
+        item.innerHTML=`<div class="fv-folder-left"><span class="fv-folder-icon">📂</span><span class="fv-folder-name">${escapeHtml(f.name)}</span></div><span class="fv-folder-count">${f.count||0}</span>`;
         item.addEventListener('click',()=>{activeFolderId=f.id;renderFolders();renderHistory();openChat();setMobNav('mob-chat');});
         fvList.appendChild(item);
       });
@@ -1065,19 +1065,12 @@ function confirmNewFolder(){
 }
 function deleteFolder(e,folderId){
   e.stopPropagation();
-  // Move chats from this folder back to "unfiled"
   const arr=loadHistoryMeta().map(h=>h.folderId===folderId?{...h,folderId:null}:h);
   saveHistoryMeta(arr);
   folders=folders.filter(f=>f.id!==folderId);
   saveFolders();
   if(activeFolderId===folderId)activeFolderId=null;
   renderFolders();
-}
-
-// Move chat to folder (context menu or drag-drop placeholder)
-function moveChatToFolder(chatId,folderId){
-  const arr=loadHistoryMeta().map(h=>h.id===chatId?{...h,folderId:folderId||null}:h);
-  saveHistoryMeta(arr);renderFolders();
 }
 
 // ═══════════════════════════════════════════════
@@ -1097,7 +1090,6 @@ function addHistoryEntry(chatId,title){
 
 function renderHistory(){
   let arr=loadHistoryMeta();
-  // Filter by active folder
   if(activeFolderId){arr=arr.filter(h=>h.folderId===activeFolderId);}
 
   const list=document.getElementById('sidebar-chat-list');
@@ -1105,7 +1097,7 @@ function renderHistory(){
   const label=document.getElementById('history-section-label');
   if(label){
     const folder=folders.find(f=>f.id===activeFolderId);
-    label.textContent=folder?`📁 ${folder.name.toUpperCase()}`:'RECENT HISTORY';
+    label.textContent=folder?`📂 ${folder.name.toUpperCase()}`:'RECENT HISTORY';
   }
 
   function timeAgo(ts){const diff=Math.floor((Date.now()-ts)/1000);if(diff<60)return'just now';if(diff<3600)return Math.floor(diff/60)+'m ago';if(diff<86400)return Math.floor(diff/3600)+'h ago';if(diff<172800)return'Yesterday';return Math.floor(diff/86400)+'d ago';}
@@ -1113,7 +1105,7 @@ function renderHistory(){
   if(list){
     list.innerHTML='';
     if(arr.length===0){
-      list.innerHTML='<div class="sb-empty-hint">'+(activeFolderId?'No chats in this folder.':'No chats yet. Start a conversation!')+'</div>';
+      list.innerHTML='<div class="sb-empty-hint">'+(activeFolderId?'No chats in this project.':'No chats yet. Start a conversation!')+'</div>';
     }else{
       arr.forEach((h,i)=>{
         const item=document.createElement('div');
@@ -1181,7 +1173,7 @@ function saveChatMessages(){
         msgs.push({role:'user',text:span?.textContent||'',imageUrl:img?.src||null});
       }else{
         const bubble=div.querySelector('.bubble');
-        if(bubble&&!bubble.querySelector('.typing-text'))msgs.push({role:'bot',html:bubble.innerHTML});
+        if(bubble&&!bubble.querySelector('.bubble-typing-dots'))msgs.push({role:'bot',html:bubble.innerHTML});
       }
     });
     localStorage.setItem('sheelbi_chat_msgs_'+currentChatId,JSON.stringify(msgs.slice(-60)));
@@ -1211,7 +1203,6 @@ function newChat(){
   input.value='';input.focus();
   const title=document.getElementById('topic-bar-title');const tag=document.getElementById('topic-bar-tag');
   if(title)title.textContent='New Chat';if(tag)tag.style.display='none';
-  setDishaTyping(false);
 }
 function showFoldersView(){currentView='folders';const fv=document.getElementById('folders-view');if(fv)fv.classList.add('active');chatBox.style.display='none';const ia=document.getElementById('input-area');if(ia)ia.style.display='none';}
 function setMobNav(id){document.querySelectorAll('.mob-nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id)?.classList.add('active');}
@@ -1239,13 +1230,12 @@ chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatB
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
 // ═══════════════════════════════════════════════
-// BEAUTIFUL LOGOUT / ACCOUNT MODAL
+// ACCOUNT / LOGOUT MODAL
 // ═══════════════════════════════════════════════
 function getInitials(name){if(!name)return'?';return name.trim().split(/\s+/).map(w=>w[0].toUpperCase()).slice(0,2).join('');}
 
 function showAccountModal(){
   if(!loggedInUser){showLoginPrompt(false);return;}
-  // Populate modal
   const initials=getInitials(loggedInUser.name||loggedInUser.email||'U');
   document.getElementById('logout-avatar-initials').textContent=initials;
   document.getElementById('logout-display-name').textContent=loggedInUser.name||'User';
@@ -1253,13 +1243,9 @@ function showAccountModal(){
   document.getElementById('logout-plan-label').textContent=loggedInUser.plan==='pro'?'Pro Plan':'Free Plan · 10/day';
   logoutOverlay.classList.add('active');
 }
-
 function hideLogoutModal(){logoutOverlay?.classList.remove('active');}
-
 function handleLogoutOverlayClick(e){if(e.target===logoutOverlay)hideLogoutModal();}
-
 async function confirmLogout(){
-  // Animate card away
   const card=document.getElementById('logout-card');
   card.style.transition='opacity .2s, transform .2s';
   card.style.opacity='0';card.style.transform='scale(.9)';
@@ -1272,6 +1258,7 @@ async function confirmLogout(){
   if(btn){btn.textContent='👤';btn.style.background='';btn.style.color='';btn.style.fontWeight='';}
   hideLogoutModal();
   card.style.opacity='';card.style.transform='';
+  renderLeaderboard();
   window.location.href='/';
 }
 
@@ -1287,35 +1274,84 @@ function updateUserUI(userData){
     btn.style.fontSize='11px';
     btn.title=userData.name||userData.email;
   }
-  // Update leaderboard with real user if available
   renderLeaderboard();
 }
 
 // ═══════════════════════════════════════════════
-// LEADERBOARD — real users only
+// LEADERBOARD — shows real logged-in user
 // ═══════════════════════════════════════════════
+// Gradient palettes for avatars
+const AVATAR_COLORS=[
+  ['#0de4a0','#0a8a60'],['#4d7fff','#2a4fc0'],['#f0a030','#c07020'],
+  ['#9b6fd4','#6a3fa0'],['#f85149','#b02020'],['#00c8ff','#0080c0']
+];
+
+function getAvatarColor(index){
+  const c=AVATAR_COLORS[index%AVATAR_COLORS.length];
+  return `background:linear-gradient(135deg,${c[0]},${c[1]});`;
+}
+
 function renderLeaderboard(){
-  // This will be populated from real /leaderboard API endpoint
-  // For now show empty state or current user if logged in
   const container=document.getElementById('leaderboard-container');
   if(!container)return;
 
   if(!loggedInUser){
-    container.innerHTML=`<div class="lb-empty"><div class="lb-empty-icon">🏆</div><div class="lb-empty-text"><strong>Log in to see rankings</strong>Study daily to climb the leaderboard!</div></div>`;
+    // Not logged in — show login CTA
+    container.innerHTML=`
+      <div class="lb-empty">
+        <div class="lb-empty-icon">🏆</div>
+        <div class="lb-empty-text">
+          <strong>Log in to join the board</strong>
+          Study daily and climb the rankings!
+        </div>
+      </div>
+      <div class="lb-login-cta" onclick="showLoginPrompt(false)">
+        <div class="lb-login-cta-text">Join thousands of students</div>
+        <div class="lb-login-cta-btn">→ Login / Register</div>
+      </div>`;
     return;
   }
 
-  // Show current user's rank placeholder + empty board
-  container.innerHTML=`
-    <div class="lb-empty">
-      <div class="lb-empty-icon">🏆</div>
-      <div class="lb-empty-text"><strong>Leaderboard launching soon</strong>Rankings will appear as more students join Sheelbi.</div>
-    </div>
+  // Logged in — show user's real entry + placeholder spots
+  const userInitials=getInitials(loggedInUser.name||loggedInUser.email||'?');
+  const studyMins=Math.floor(getStudySeconds()/60);
+  const studyScore=studyMins>0?`${studyMins}m today`:'Just joined';
+
+  // Placeholder top spots (will be replaced by real API data)
+  const placeholders=[
+    {rank:1,name:'—',score:'—',color:0},
+    {rank:2,name:'—',score:'—',color:1},
+    {rank:3,name:'—',score:'—',color:2},
+  ];
+
+  let html=`<div class="leaderboard-list">`;
+
+  placeholders.forEach(p=>{
+    html+=`
+      <div class="lb-item">
+        <div class="lb-rank">${p.rank}</div>
+        <div class="lb-avatar" style="${getAvatarColor(p.color)}opacity:.4;">?</div>
+        <div class="lb-name" style="color:var(--text3);">Awaiting data</div>
+        <div class="lb-score" style="color:var(--text3);">—</div>
+      </div>`;
+  });
+
+  html+=`</div>`;
+
+  // User's own row at bottom
+  html+=`
     <div class="lb-you-row">
-      <span style="font-size:20px;">👤</span>
-      <span class="lb-you-label">You — ${escapeHtml(loggedInUser.name||'User')}</span>
-      <span class="lb-you-score">—</span>
+      <div class="lb-avatar" style="${getAvatarColor(0)}width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0d1117;flex-shrink:0;">
+        ${escapeHtml(userInitials)}
+      </div>
+      <span class="lb-you-label">You · ${escapeHtml(loggedInUser.name||'User')}</span>
+      <span class="lb-you-score">${studyScore}</span>
+    </div>
+    <div style="text-align:center;padding:8px 4px 0;font-size:10px;color:var(--text3);">
+      Rankings go live as more students join 🚀
     </div>`;
+
+  container.innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════
@@ -1330,16 +1366,7 @@ async function checkLoginState(){
     else if(data.kicked){showKickedMessage();}
   }catch(e){}
 }
-
-function showKickedMessage(){
-  // Show a non-intrusive toast or use login modal
-  showLoginPrompt(false);
-  setTimeout(()=>{
-    const sub=document.getElementById('login-modal-sub');
-    if(sub)sub.innerHTML=`⚠️ You were logged out because your account signed in on another device.`;
-  },100);
-}
-
+function showKickedMessage(){showLoginPrompt(false);setTimeout(()=>{const sub=document.getElementById('login-modal-sub');if(sub)sub.innerHTML=`⚠️ You were logged out because your account signed in on another device.`;},100);}
 function showLoginPrompt(isLimitReached=false){
   if(loggedInUser){showAccountModal();return;}
   const sub=document.getElementById('login-modal-sub');const card=document.getElementById('login-card');
@@ -1371,12 +1398,7 @@ async function handleCardSubmit(){
     const data=await res.json();
     if(data.success){
       if(data.needs_verification){hideLoginPrompt();showVerifyScreen(email);}
-      else{
-        showCardSuccess(`Welcome${data.name?', '+data.name:''}! 👋`);
-        sessionStorage.removeItem('guest_msg_count');
-        updateUserUI({name:data.name,email:email,plan:data.plan||'free'});
-        setTimeout(()=>{hideLoginPrompt();input.focus();},1200);
-      }
+      else{showCardSuccess(`Welcome${data.name?', '+data.name:''}! 👋`);sessionStorage.removeItem('guest_msg_count');updateUserUI({name:data.name,email:email,plan:data.plan||'free'});setTimeout(()=>{hideLoginPrompt();input.focus();},1200);}
     }else{showCardError(data.error||'Something went wrong.');}
   }catch(e){showCardError('Server error. Please try again.');}
   finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}
@@ -1405,6 +1427,13 @@ function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right
 function extractSuggestions(text){const lines=text.split('\n');let idx=-1;for(let i=lines.length-1;i>=0;i--){if(/^\s*\[.+\]/.test(lines[i])){idx=i;break;}}if(idx===-1)return{cleanText:text,buttons:[]};const buttons=[];const re=/\[([^\]]+)\]/g;let m2;while((m2=re.exec(lines[idx]))!==null)buttons.push(m2[1]);return{cleanText:lines.filter((_,i)=>i!==idx).join('\n').trimEnd(),buttons};}
 
 // ═══════════════════════════════════════════════
+// DISHA SVG helper
+// ═══════════════════════════════════════════════
+function makeDishaSVG(size=38){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><use href="#disha-girl"/></svg>`;
+}
+
+// ═══════════════════════════════════════════════
 // MESSAGES
 // ═══════════════════════════════════════════════
 function escapeHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1420,16 +1449,28 @@ function addUserBubble(text,imageDataUrl=null){
   div.appendChild(bubble);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
+/* ── BOT WRAPPER — beautiful Disha teacher avatar ── */
 function createBotWrapper(htmlContent){
   const div=document.createElement('div');div.className='message bot';
-  div.innerHTML=`<div class="avatar" title="Disha AI"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="50" cy="50" r="8" fill="#f0a030"/><line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/><line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/><circle cx="50" cy="50" r="8" fill="#f0a030"/></svg></div>`;
+
+  const avatarWrap=document.createElement('div');avatarWrap.className='disha-avatar-wrap';
+  avatarWrap.innerHTML=makeDishaSVG(38);
+  div.appendChild(avatarWrap);
+
   const col=document.createElement('div');col.className='bot-col';
+
+  const nameRow=document.createElement('div');nameRow.className='disha-name-row';
+  nameRow.innerHTML=`<span class="disha-name-label">Disha</span><span class="disha-online-dot"></span>`;
+  col.appendChild(nameRow);
+
   const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=htmlContent;
   col.appendChild(bubble);
+
   const actions=document.createElement('div');actions.className='message-actions';
   const copyBtn=document.createElement('button');copyBtn.className='action-btn';copyBtn.textContent='📋 Copy';
   copyBtn.onclick=()=>{navigator.clipboard.writeText(bubble.innerText).then(()=>{copyBtn.textContent='✓ Copied';copyBtn.classList.add('ok');setTimeout(()=>{copyBtn.textContent='📋 Copy';copyBtn.classList.remove('ok');},1800);});};
-  actions.appendChild(copyBtn);col.appendChild(actions);div.appendChild(col);return div;
+  actions.appendChild(copyBtn);col.appendChild(actions);div.appendChild(col);
+  return div;
 }
 
 function addMessage(text,role,imageDataUrl=null){
@@ -1447,7 +1488,9 @@ function addMessage(text,role,imageDataUrl=null){
 
 function addErrorMessage(msg,retryFn){
   const div=document.createElement('div');div.className='message bot';
-  div.innerHTML=`<div class="avatar">⚠️</div>`;
+  const avatarWrap=document.createElement('div');avatarWrap.className='disha-avatar-wrap';
+  avatarWrap.innerHTML=makeDishaSVG(38);
+  div.appendChild(avatarWrap);
   const col=document.createElement('div');col.className='bot-col';
   const err=document.createElement('div');err.className='error-bubble';
   err.innerHTML=`<span>⚠️ ${msg}</span>`;
@@ -1455,19 +1498,38 @@ function addErrorMessage(msg,retryFn){
   col.appendChild(err);div.appendChild(col);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
+/* ── TYPING INDICATOR — clean, only animated dots in bubble ── */
 function showTyping(){
-  document.getElementById('welcome-screen')?.remove();setDishaTyping(true);
+  document.getElementById('welcome-screen')?.remove();
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
-  div.innerHTML=`<div class="avatar" title="Disha AI"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><line x1="50" y1="42" x2="50" y2="10" stroke="#4d7fff" stroke-width="12" stroke-linecap="round"/><line x1="42" y1="50" x2="10" y2="50" stroke="#f0a030" stroke-width="12" stroke-linecap="round"/><line x1="44" y1="56" x2="18" y2="82" stroke="#c07020" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="44" x2="82" y2="18" stroke="#7b8fff" stroke-width="12" stroke-linecap="round"/><line x1="56" y1="56" x2="82" y2="82" stroke="#9b6fd4" stroke-width="12" stroke-linecap="round"/><circle cx="50" cy="50" r="8" fill="#f0a030"/></svg></div>`;
+
+  const avatarWrap=document.createElement('div');
+  avatarWrap.className='disha-avatar-wrap thinking';
+  avatarWrap.innerHTML=makeDishaSVG(38);
+  div.appendChild(avatarWrap);
+
   const col=document.createElement('div');col.className='bot-col';
-  const bubble=document.createElement('div');bubble.className='bubble';bubble.style.padding='10px 14px';
-  const typing=document.createElement('div');typing.className='typing-bubble';
-  typing.innerHTML=`<div class="typing-status-dot"></div><span class="typing-text" id="thinking-text">আমি উত্তর লিখছি...</span>`;
-  bubble.appendChild(typing);col.appendChild(bubble);div.appendChild(col);
+
+  const nameRow=document.createElement('div');nameRow.className='disha-name-row';
+  nameRow.innerHTML=`<span class="disha-name-label">Disha</span><span class="disha-online-dot"></span>`;
+  col.appendChild(nameRow);
+
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.style.padding='12px 16px';
+
+  // Just three clean bouncing dots — no text label
+  const dots=document.createElement('div');
+  dots.className='bubble-typing-dots';
+  dots.innerHTML=`<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+  bubble.appendChild(dots);
+
+  col.appendChild(bubble);div.appendChild(col);
   chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-function removeTyping(){setDishaTyping(false);document.getElementById('typing-indicator')?.remove();}
+function removeTyping(){
+  const indicator=document.getElementById('typing-indicator');
+  if(indicator)indicator.remove();
+}
 
 function sendSuggestion(cardEl){const q=cardEl.dataset?.q||cardEl.textContent;input.value=q;sendMessage();}
 
@@ -1526,6 +1588,7 @@ input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({b
 // INIT
 // ═══════════════════════════════════════════════
 renderFolders();
+renderLeaderboard();
 checkLoginState();
 if(isGuestLimitReached())showLoginPrompt(true);
 </script>
