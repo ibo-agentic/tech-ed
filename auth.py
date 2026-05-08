@@ -5,6 +5,7 @@ import hashlib
 import random
 import secrets
 import threading
+import resend
 from datetime import datetime, timedelta, timezone
 
 auth_bp = Blueprint('auth', __name__)
@@ -13,6 +14,8 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_ANON_KEY")
 )
+
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 APP_NAME = "Sheelbi"
 
@@ -82,21 +85,18 @@ def generate_code():
     return str(random.randint(100000, 999999))
 
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-
 def send_email(to_email, subject, html_body):
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From']    = f"Sheelbi <{os.getenv('GMAIL_USER')}>"
-        msg['To']      = to_email
-        msg.attach(MIMEText(html_body, 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(os.getenv('GMAIL_USER'), os.getenv('GMAIL_APP_PASS'))
-            server.sendmail(os.getenv('GMAIL_USER'), to_email, msg.as_string())
+        from_address = os.getenv("EMAIL_FROM", "Dipti <onboarding@resend.dev>")
+        params = {
+            "from": from_address,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_body
+        }
+        result = resend.Emails.send(params)
+        email_id = result.get('id', 'unknown') if isinstance(result, dict) else 'sent'
+        print(f"[EMAIL SENT] to={to_email}, id={email_id}")
         return True
     except Exception as e:
         print(f"[EMAIL ERROR] {e}")
