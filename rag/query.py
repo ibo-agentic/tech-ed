@@ -1,73 +1,44 @@
-"""
-query.py — Called at runtime for every student message.
-Retrieves the 3 most relevant NCTB chunks and returns them
-as a string to inject into your system prompt.
-"""
-
 import os
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
 import chromadb
-from openai import OpenAI
 from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Reuse the same persistent DB
+# Lazy-load: model only loads on first use
+_embedding_model = None
+
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        print("Loading embedding model (first use)...")
+        _embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+        print("Embedding model ready.")
+    return _embedding_model
+
+# ChromaDB still loads at startup (it's fast)
 chroma = chromadb.PersistentClient(path="./chroma_db")
 collection = chroma.get_or_create_collection(
     name="biology_nctb",
     metadata={"hnsw:space": "cosine"}
 )
 
-def get_relevant_chunks(student_question: str, top_k: int = 3) -> str:
-    """
-    Takes a student question, finds the top_k most relevant
-    NCTB Biology chunks, returns them as a single string
-    ready to inject into the system prompt.
-    """
-    # Embed the student's question
-    response = client.embeddings.create(
-        input=student_question,
-        model="text-embedding-3-small"
-    )
-    q_embedding = response.data[0].embedding
 
-    # Search ChromaDB
+def get_relevant_chunks(student_question: str, top_k: int = 3) -> str:
+    model = get_embedding_model()  # Loads here on first call
+    q_embedding = model.encode(student_question).tolist()
+
     results = collection.query(
         query_embeddings=[q_embedding],
         n_results=top_k
     )
 
-    chunks = results["documents"][0]  # list of top_k matching texts
+    chunks = results["documents"][0] if results["documents"] else []
 
     if not chunks:
         return "এই প্রশ্নের সম্পর্কিত তথ্য NCTB বইয়ে পাওয়া যায়নি।"
 
     return "\n\n---\n\n".join(chunks)
-
-
-def build_system_prompt(student_question: str, base_prompt: str) -> str:
-    """
-    Fetches relevant chunks and injects into system prompt.
-    Call this before every GPT-4o mini API call.
-    """
-    context = get_relevant_chunks(student_question)
-
-    return base_prompt + f"""
-
-## NCTB জীববিজ্ঞান বই থেকে প্রাসঙ্গিক তথ্য:
-
-{context}
-
----
-শুধুমাত্র উপরের context ব্যবহার করে উত্তর দাও।
-Context-এ না থাকলে বলো: "এই প্রশ্নের তথ্য বইয়ে পাওয়া যায়নি।"
-"""
-
-
-# Quick test
-if __name__ == "__main__":
-    test_q = "সালোকসংশ্লেষণ কী?"
-    print("Question:", test_q)
-    print("\nRetrieved context:")
-    print(get_relevant_chunks(test_q))
