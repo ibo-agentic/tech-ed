@@ -1,25 +1,12 @@
 import os
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
 import chromadb
 from dotenv import load_dotenv
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 load_dotenv()
 
-# Lazy-load: model only loads on first use
-_embedding_model = None
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def get_embedding_model():
-    global _embedding_model
-    if _embedding_model is None:
-        print("Loading embedding model (first use)...")
-        _embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-        print("Embedding model ready.")
-    return _embedding_model
-
-# ChromaDB still loads at startup (it's fast)
 chroma = chromadb.PersistentClient(path="./chroma_db")
 collection = chroma.get_or_create_collection(
     name="biology_nctb",
@@ -28,8 +15,11 @@ collection = chroma.get_or_create_collection(
 
 
 def get_relevant_chunks(student_question: str, top_k: int = 3) -> str:
-    model = get_embedding_model()  # Loads here on first call
-    q_embedding = model.encode(student_question).tolist()
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=student_question
+    )
+    q_embedding = response.data[0].embedding
 
     results = collection.query(
         query_embeddings=[q_embedding],
