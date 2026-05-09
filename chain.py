@@ -68,7 +68,8 @@ def get_answer(user_input, history, project_instructions: str = ""):
     t0 = time.time()
     
     # 1. Fetch relevant NCTB Biology chunks
-    nctb_context = get_relevant_chunks(user_input)
+    nctb_context = get_relevant_chunks(user_input, subject="biology")
+
     t1 = time.time()
     
     # 2. Build system prompt (with project instructions if provided)

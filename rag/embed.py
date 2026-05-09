@@ -1,71 +1,88 @@
-"""
-embed.py — Run this ONCE after extract.py finishes.
-Reads all chunks from biology_chapters/chunks/
-Embeds them locally with sentence-transformers and stores in ChromaDB.
-"""
-
 import os
-import glob
-import chromadb
-from sentence_transformers import SentenceTransformer
+import shutil
+from pathlib import Path
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_chroma import Chroma
+from dotenv import load_dotenv
 
-# Local embedding model — free, no API needed, supports Bangla
-# Downloads ~120MB on first run, cached afterwards
-embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+load_dotenv()
 
-# ChromaDB stored locally in your project folder
-chroma = chromadb.PersistentClient(path="./chroma_db")
-collection = chroma.get_or_create_collection(
-    name="biology_nctb",
-    metadata={"hnsw:space": "cosine"}
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800,
+    chunk_overlap=100,
+    separators=["\n\n", "\n", "।", ".", " "]
 )
 
+all_documents = []
+ssc_dir = Path("books/ssc")
 
-def get_embedding(text: str) -> list:
-    """Generate embedding locally — no API call."""
-    return embedding_model.encode(text).tolist()
+if not ssc_dir.exists():
+    print("ERROR: books/ssc/ folder not found!")
+    exit(1)
 
+# Walk: books/ssc/{subject}/*.txt
+for subject_folder in sorted(ssc_dir.iterdir()):
+    if not subject_folder.is_dir():
+        continue
+    
+    subject = subject_folder.name  # "biology", "physics", etc.
+    print(f"\nProcessing {subject}...")
+    
+    # Find .txt files (use chunks/ if it exists)
+    txt_files = list(subject_folder.glob("*.txt"))
+    chunks_dir = subject_folder / "chunks"
+    if chunks_dir.exists():
+        txt_files = list(chunks_dir.glob("*.txt"))
+        print(f"  Using chunks folder")
+    
+    if not txt_files:
+        print(f"  No .txt files found")
+        continue
+    
+    print(f"  Found {len(txt_files)} files")
+    
+    for txt_file in txt_files:
+        try:
+            loader = TextLoader(str(txt_file), encoding="utf-8")
+            docs = loader.load()
+            chunks = splitter.split_documents(docs)
+            
+            chapter_name = txt_file.stem
+            for chunk in chunks:
+                chunk.metadata.update({
+                    "level": "ssc",
+                    "subject": subject,
+                    "chapter": chapter_name,
+                    "source_file": str(txt_file)
+                })
+            
+            all_documents.extend(chunks)
+            print(f"     {chapter_name}: {len(chunks)} chunks")
+        except Exception as e:
+            print(f"     Error in {txt_file}: {e}")
 
-def index_all_chunks():
-    chunk_files = glob.glob("biology_chapters/chunks/*.txt")
+print(f"\nTotal chunks: {len(all_documents)}")
 
-    if not chunk_files:
-        print("ERROR: No chunk files found.")
-        print("Make sure you ran extract.py first and biology_chapters/chunks/ exists.")
-        return
+if not all_documents:
+    print("No documents to embed.")
+    exit(1)
 
-    print(f"Found {len(chunk_files)} chunks to embed...")
-    print("Running locally — no API cost. Takes ~30 seconds to 2 minutes.\n")
+if os.path.exists("chroma_db"):
+    shutil.rmtree("chroma_db")
+    print("Old chroma_db deleted")
 
-    for i, filepath in enumerate(chunk_files):
-        chunk_id = os.path.basename(filepath).replace(".txt", "")
+print("Embedding...")
+vectorstore = Chroma.from_documents(
+    documents=all_documents,
+    embedding=embeddings,
+    persist_directory="chroma_db"
+)
 
-        # Skip if already indexed (safe to re-run)
-        existing = collection.get(ids=[chunk_id])
-        if existing["ids"]:
-            print(f"  [{i+1}/{len(chunk_files)}] Already indexed: {chunk_id}")
-            continue
-
-        with open(filepath, encoding="utf-8") as f:
-            text = f.read().strip()
-
-        if not text:
-            continue
-
-        embedding = get_embedding(text)
-
-        collection.add(
-            documents=[text],
-            embeddings=[embedding],
-            ids=[chunk_id],
-            metadatas=[{"source": filepath}]
-        )
-        print(f"  [{i+1}/{len(chunk_files)}] Indexed: {chunk_id}")
-
-    total = collection.count()
-    print(f"\nDone! Total chunks in ChromaDB: {total}")
-    print("Your biology_nctb collection is ready.")
-
-
-if __name__ == "__main__":
-    index_all_chunks()
+subjects = sorted(set(d.metadata['subject'] for d in all_documents))
+print(f"\nDone!")
+print(f"Subjects: {subjects}")
+print(f"Total chunks: {len(all_documents)}")
