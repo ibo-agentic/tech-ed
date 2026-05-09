@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context
+from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context, send_from_directory
 from dotenv import load_dotenv
 from chain import get_answer
 from auth import auth_bp, login_required, check_message_limit, increment_message_count, get_admin_client
@@ -551,6 +551,10 @@ def ask_image():
         "image_url": image_url,
     })
 
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml')
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=True, use_reloader=False)
