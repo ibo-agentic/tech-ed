@@ -1147,7 +1147,7 @@ function addUserBubble(text, imgUrl=null){
 
   // If only an image (no caption or trivial caption), make bubble transparent
   const trivialCaptions = ['(ছবি পাঠানো হয়েছে)', 'এই ছবিটি দেখে বুঝিয়ে দাও।', ''];
-  const isImageOnly = imgUrl && trivialCaptions.includes((text || '').trim());
+  const isImageOnly = !!imgUrl && trivialCaptions.includes((text || '').trim());
 
   if(isImageOnly){
     bubble.classList.add('image-only');
