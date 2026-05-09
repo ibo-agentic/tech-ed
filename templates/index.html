@@ -194,9 +194,9 @@
     .avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
     .user .avatar{background:linear-gradient(135deg,var(--blue),var(--purple));font-size:10px;font-weight:700;color:#fff;}
 
-    .disha-avatar-wrap{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:linear-gradient(145deg,#1a2a3a,#0d1a2a);border:2px solid rgba(13,228,160,.35);box-shadow:0 0 12px rgba(13,228,160,.15),0 2px 8px rgba(0,0,0,.4);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
+    .disha-avatar-wrap{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:#fff;border:2px solid rgba(255,143,184,.5);box-shadow:0 0 12px rgba(255,143,184,.25),0 2px 8px rgba(0,0,0,.4);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
     .disha-avatar-wrap.thinking{animation:disha-pulse 1.6s ease-in-out infinite;}
-    @keyframes disha-pulse{0%,100%{box-shadow:0 0 8px rgba(13,228,160,.2),0 2px 8px rgba(0,0,0,.4);}50%{box-shadow:0 0 20px rgba(13,228,160,.6),0 2px 8px rgba(0,0,0,.4);}}
+    @keyframes disha-pulse{0%,100%{box-shadow:0 0 8px rgba(255,143,184,.3),0 2px 8px rgba(0,0,0,.4);}50%{box-shadow:0 0 20px rgba(255,143,184,.7),0 2px 8px rgba(0,0,0,.4);}}
 
     .disha-name-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
     .disha-name-label{font-size:11px;font-weight:700;color:var(--green);letter-spacing:.02em;font-family:'Sora',sans-serif;}
@@ -209,23 +209,37 @@
     @keyframes bounce-dot{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-5px);opacity:1;}}
 
     .bot-col{flex:1;min-width:0;display:flex;flex-direction:column;}
-    .bot .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);padding:12px 16px;font-size:14px;line-height:1.95;word-break:break-word;overflow-x:auto;}
+    .bot .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);padding:18px 22px;font-size:14.5px;line-height:1.75;word-break:break-word;overflow-x:auto;}
     [data-theme="light"] .bot .bubble{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);}
     .bot .bubble p{margin-bottom:9px;}
     .bot .bubble p:last-child{margin-bottom:0;}
-    .bot .bubble strong{color:var(--amber);font-weight:600;}
-    .bot .bubble h1,.bot .bubble h2,.bot .bubble h3{font-size:13px;font-weight:700;margin:10px 0 6px;color:var(--blue);}
-    .bot .bubble ul,.bot .bubble ol{padding-left:0;list-style:none;margin:8px 0;display:flex;flex-direction:column;gap:4px;}
-    .bot .bubble li{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:0 var(--radius-xs) var(--radius-xs) 0;padding:7px 11px;line-height:1.75;}
+    .bot .bubble strong{background:rgba(13,228,160,0.12);color:var(--green);padding:1px 7px;border-radius:5px;font-weight:500;border:1px solid rgba(13,228,160,0.2);}
+    .bot .bubble em{color:var(--text2);font-style:normal;font-size:0.92em;}
+    .bot .bubble h1,.bot .bubble h2,.bot .bubble h3{font-size:14px;font-weight:600;margin:18px 0 8px;color:var(--text);padding-bottom:6px;border-bottom:1px solid var(--border);}
+    .bot .bubble ol,.bot .bubble ul{padding-left:0;margin:10px 0 14px;list-style:none;counter-reset:step;}
+    .bot .bubble ol li,.bot .bubble ul li{counter-increment:step;padding:6px 0 6px 32px;position:relative;line-height:1.7;border:none;background:transparent;border-radius:0;}
+    .bot .bubble ol li:before,.bot .bubble ul li:before{content:counter(step);position:absolute;left:0;top:6px;width:22px;height:22px;background:rgba(13,228,160,0.1);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
     .bot .bubble table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:10px 0;font-size:12px;}
     .bot .bubble th,.bot .bubble td{padding:7px 10px;border:1px solid var(--border2);text-align:left;vertical-align:top;}
     .bot .bubble th{background:var(--bg3);font-weight:600;color:var(--blue);}
     .bot .bubble pre{overflow-x:auto;max-width:100%;background:var(--bg3);padding:9px 11px;border-radius:var(--radius-xs);margin:8px 0;}
     .bot .bubble code{background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:12px;}
     .bot .bubble pre code{padding:0;background:transparent;}
+    .bot .bubble blockquote{margin:14px 0 0;padding:12px 14px;background:rgba(240,160,48,0.06);border:1px solid rgba(240,160,48,0.18);border-radius:8px;border-left:none;color:var(--text);font-size:13.5px;line-height:1.7;display:flex;gap:10px;}
+    .bot .bubble blockquote:before{content:"★";color:var(--amber);font-size:16px;flex-shrink:0;}
 
-    .user .bubble{max-width:70%;background:var(--user-bubble);color:#fff;border-radius:var(--radius) 4px var(--radius) var(--radius);padding:10px 14px;white-space:pre-wrap;font-size:14px;line-height:1.7;word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;}
-    .user .bubble img.sent-image{display:block;width:100%;max-width:240px;max-height:200px;object-fit:cover;border-radius:var(--radius-sm);}
+    /* Image-only user message: transparent bubble, image floats clean */
+    .user .bubble.image-only{background:transparent;border:none;padding:0;}
+    .user .bubble img.sent-image{display:block;width:100%;max-width:280px;max-height:280px;object-fit:cover;border-radius:var(--radius-sm);cursor:zoom-in;transition:transform .15s,box-shadow .15s;border:1px solid var(--border2);}
+    .user .bubble img.sent-image:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(0,0,0,.4);}
+    .user .bubble.image-only img.sent-image{max-width:280px;max-height:300px;}
+
+    /* Lightbox */
+    .image-lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;animation:fadeOverlay .2s ease both;cursor:zoom-out;padding:20px;}
+    .image-lightbox.active{display:flex;}
+    .image-lightbox img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px;cursor:default;animation:popCard .25s cubic-bezier(.34,1.56,.64,1) both;}
+    .lightbox-close{position:absolute;top:16px;right:16px;width:38px;height:38px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+    .lightbox-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg);}
     .message-actions{display:flex;gap:4px;margin-top:5px;opacity:0;transition:opacity .15s;}
     .message:hover .message-actions{opacity:1;}
     .action-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-xs);padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif;transition:all .13s;}
@@ -258,7 +272,7 @@
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
-    .disclaimer-bar{text-align:center;padding:4px 14px 6px;font-size:9.5px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
+    .disclaimer-bar{text-align:center;padding:5px 14px 7px;font-size:10px;font-weight:400;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
     .error-bubble{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius-sm);padding:9px 13px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;justify-content:space-between;gap:9px;}
 
     /* MODALS */
@@ -395,11 +409,11 @@
     .shimmer-text{background:linear-gradient(90deg,var(--text3) 0%,var(--text) 50%,var(--text3) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer-text 2s linear infinite;font-size:12px;}
     .thinking-bubble{background:var(--bg2)!important;border:1px solid var(--border)!important;padding:10px 14px!important;}
     .thinking-stages{display:flex;flex-direction:column;gap:6px;}
-    .thinking-stage{display:flex;align-items:center;gap:7px;font-size:12px;animation:fadeUp .3s ease both;}
+    .thinking-stage{display:flex;align-items:center;gap:7px;font-size:12px;animation:fadeUp .3s ease both;padding:2px 0;}
     .stage-dot.loading{color:var(--green);display:inline-block;animation:spin 1.2s linear infinite;font-size:12px;width:14px;text-align:center;}
-    .stage-dot.done{color:var(--green);font-size:11px;width:14px;text-align:center;}
+    .stage-dot.done{color:var(--green);font-size:13px;width:14px;text-align:center;}
     .stage-text-done{color:var(--text2);font-size:12px;}
-    .stage-chapter{color:var(--green);font-weight:600;font-size:12px;}
+    .stage-chapter{color:var(--green);font-weight:600;font-size:12px;background:var(--green-bg);padding:1px 8px;border-radius:10px;border:1px solid rgba(13,228,160,.2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -409,74 +423,73 @@
   <symbol id="disha-girl" viewBox="0 0 100 100">
     <defs>
       <radialGradient id="dipti-skin" cx="50%" cy="40%">
-        <stop offset="0%" stop-color="#FFE0BC"/>
-        <stop offset="100%" stop-color="#F5C19A"/>
+        <stop offset="0%" stop-color="#FFE5D0"/>
+        <stop offset="100%" stop-color="#FFCDB0"/>
       </radialGradient>
       <linearGradient id="dipti-bg" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#1e2530"/>
-        <stop offset="100%" stop-color="#0d1117"/>
+        <stop offset="0%" stop-color="#FFF0F5"/>
+        <stop offset="100%" stop-color="#FFE0EC"/>
+      </linearGradient>
+      <linearGradient id="dipti-hair" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#FF8FB8"/>
+        <stop offset="100%" stop-color="#FF5D9E"/>
       </linearGradient>
     </defs>
-    
-    <!-- Background circle -->
+
+    <!-- Background circle (soft pink) -->
     <circle cx="50" cy="50" r="48" fill="url(#dipti-bg)"/>
-    
-    <!-- Hair (back layer - dark bob cut) -->
-    <path d="M22 42 Q22 22 38 16 Q44 12 50 12 Q56 12 62 16 Q78 22 78 42 Q78 60 75 70 L70 64 L60 66 L50 64 L40 66 L30 64 L25 70 Q22 60 22 42 Z" fill="#2A1810"/>
-    
-    <!-- Side hair tufts -->
-    <path d="M24 50 Q22 60 20 65 L26 60 Z" fill="#2A1810"/>
-    <path d="M76 50 Q78 60 80 65 L74 60 Z" fill="#2A1810"/>
-    
+
+    <!-- Sparkles -->
+    <text x="78" y="28" font-size="8" fill="#FFD700">★</text>
+    <text x="14" y="34" font-size="6" fill="#FF8FB8">✦</text>
+    <text x="82" y="60" font-size="5" fill="#A0E8FF">✧</text>
+
+    <!-- Long pink hair (back) -->
+    <path d="M22 40 Q22 22 38 14 Q44 10 50 10 Q56 10 62 14 Q78 22 78 40 L80 80 L72 78 L70 70 L62 72 L50 70 L38 72 L30 70 L28 78 L20 80 Z" fill="url(#dipti-hair)"/>
+
     <!-- Face -->
-    <ellipse cx="50" cy="50" rx="20" ry="22" fill="url(#dipti-skin)"/>
-    
-    <!-- Hair bangs (front fringe) -->
-    <path d="M30 38 Q35 32 42 36 Q44 35 46 36 L42 44 Q36 44 30 42 Z" fill="#2A1810"/>
-    <path d="M70 38 Q65 32 58 36 Q56 35 54 36 L58 44 Q64 44 70 42 Z" fill="#2A1810"/>
-    
-    <!-- Tiny middle bangs -->
-    <path d="M44 36 Q47 32 50 34 Q53 32 56 36 L53 42 Q50 41 47 42 Z" fill="#2A1810"/>
-    
-    <!-- GREEN HEADBAND (your brand color) -->
-    <path d="M28 38 Q50 30 72 38 L72 42 Q50 34 28 42 Z" fill="#0de4a0"/>
-    <circle cx="50" cy="35" r="2.5" fill="#0de4a0"/>
-    <circle cx="50" cy="35" r="1" fill="#fff"/>
-    
-    <!-- Eyes (cute Ghibli-style big oval) -->
-    <ellipse cx="42" cy="55" rx="3" ry="4" fill="#1C1108"/>
-    <ellipse cx="58" cy="55" rx="3" ry="4" fill="#1C1108"/>
-    
-    <!-- Eye highlights (cute shine) -->
-    <circle cx="43" cy="53.5" r="1.2" fill="#fff"/>
-    <circle cx="59" cy="53.5" r="1.2" fill="#fff"/>
-    <circle cx="42.5" cy="56" r="0.5" fill="#fff" opacity="0.7"/>
-    <circle cx="58.5" cy="56" r="0.5" fill="#fff" opacity="0.7"/>
-    
-    <!-- Eyebrows (small, cute) -->
-    <path d="M38 49 Q41 47 45 49" stroke="#2A1810" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    <path d="M55 49 Q59 47 62 49" stroke="#2A1810" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    
-    <!-- Cheeks (rosy blush) -->
-    <ellipse cx="33" cy="62" rx="3" ry="2" fill="#FF9090" opacity="0.55"/>
-    <ellipse cx="67" cy="62" rx="3" ry="2" fill="#FF9090" opacity="0.55"/>
-    
-    <!-- Nose (tiny) -->
-    <path d="M50 60 Q51 62 50 63" stroke="#E5A07A" stroke-width="0.7" fill="none" opacity="0.5"/>
-    
-    <!-- Smile (small cute) -->
-    <path d="M46 67 Q50 70 54 67" stroke="#A04030" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    
-    <!-- Body (simple uniform top) -->
-    <ellipse cx="50" cy="92" rx="24" ry="10" fill="#0de4a0"/>
-    <rect x="34" y="80" width="32" height="14" rx="4" fill="#0de4a0"/>
-    
-    <!-- Collar/shirt detail -->
-    <path d="M42 80 L50 86 L58 80" stroke="#fff" stroke-width="0.8" fill="none" opacity="0.6"/>
-    
-    <!-- Decorative sparkle (AI-feel) -->
-    <text x="78" y="28" font-size="7" fill="#0de4a0" opacity="0.7">✦</text>
-    <text x="22" y="80" font-size="5" fill="#0de4a0" opacity="0.5">✧</text>
+    <ellipse cx="50" cy="52" rx="20" ry="22" fill="url(#dipti-skin)"/>
+
+    <!-- Pink hair bangs (front) -->
+    <path d="M30 38 Q34 30 42 34 Q46 32 50 34 Q54 32 58 34 Q66 30 70 38 Q66 44 58 42 Q54 40 50 41 Q46 40 42 42 Q34 44 30 38 Z" fill="url(#dipti-hair)"/>
+
+    <!-- Side hair locks -->
+    <path d="M24 48 Q20 62 22 74 L28 70 L26 56 Z" fill="url(#dipti-hair)"/>
+    <path d="M76 48 Q80 62 78 74 L72 70 L74 56 Z" fill="url(#dipti-hair)"/>
+
+    <!-- Pink flower hair clip (left side) -->
+    <circle cx="30" cy="32" r="4" fill="#FF4F8F"/>
+    <circle cx="30" cy="32" r="1.5" fill="#FFD700"/>
+
+    <!-- Big purple anime eyes -->
+    <ellipse cx="42" cy="55" rx="3.5" ry="5" fill="#fff"/>
+    <ellipse cx="58" cy="55" rx="3.5" ry="5" fill="#fff"/>
+    <ellipse cx="42" cy="55" rx="3" ry="4.2" fill="#8B5FBF"/>
+    <ellipse cx="58" cy="55" rx="3" ry="4.2" fill="#8B5FBF"/>
+    <ellipse cx="42" cy="56" rx="2" ry="3" fill="#5B2C8F"/>
+    <ellipse cx="58" cy="56" rx="2" ry="3" fill="#5B2C8F"/>
+
+    <!-- Eye highlights (sparkly) -->
+    <circle cx="43" cy="53" r="1.3" fill="#fff"/>
+    <circle cx="59" cy="53" r="1.3" fill="#fff"/>
+    <circle cx="41" cy="57" r="0.6" fill="#fff" opacity="0.8"/>
+    <circle cx="57" cy="57" r="0.6" fill="#fff" opacity="0.8"/>
+
+    <!-- Eyebrows (thin pink) -->
+    <path d="M38 49 Q41 47 45 49" stroke="#D4537A" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M55 49 Q59 47 62 49" stroke="#D4537A" stroke-width="1" fill="none" stroke-linecap="round"/>
+
+    <!-- Pink cheek blush -->
+    <ellipse cx="33" cy="63" rx="3.5" ry="2.2" fill="#FF9FBF" opacity="0.6"/>
+    <ellipse cx="67" cy="63" rx="3.5" ry="2.2" fill="#FF9FBF" opacity="0.6"/>
+
+    <!-- Tiny smile (cute open mouth) -->
+    <ellipse cx="50" cy="68" rx="1.8" ry="1.2" fill="#D4537A"/>
+
+    <!-- Cyan/blue magical girl top -->
+    <path d="M30 86 Q30 78 38 76 L62 76 Q70 78 70 86 L70 100 L30 100 Z" fill="#4FC3E8"/>
+    <!-- White collar V -->
+    <path d="M42 76 L50 84 L58 76" stroke="#fff" stroke-width="1.5" fill="none"/>
   </symbol>
 </svg>
 
@@ -630,11 +643,7 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
       </div>
-      <div class="hint-bar">
-        <span class="hint" style="display:inline-flex;align-items:center;gap:5px;">
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);"></span>
-          <span style="color:var(--text3);font-size:9.5px;">Dipti AI · Ready</span>
-        </span>
+      <div class="hint-bar" style="justify-content:flex-end;">
         <span class="char-count" id="char-count"></span>
       </div>
       <div class="disclaimer-bar">AI can sometimes make mistakes — always double-check. ✦ Sheelbi</div>
@@ -767,6 +776,12 @@
     <button class="verify-btn" id="verify-btn" onclick="submitVerifyCode()">Verify Email ✓</button>
     <div class="resend-link">Didn't get it? <button id="resend-btn" onclick="resendCode()">Resend code</button></div>
   </div>
+</div>
+
+<!-- Image Lightbox -->
+<div id="image-lightbox" class="image-lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event,true)" aria-label="Close">✕</button>
+  <img id="lightbox-img" src="" alt="">
 </div>
 
 <div id="forgot-overlay" class="modal-overlay">
@@ -935,20 +950,38 @@ async function deleteChatById(chatId){
 
 async function loadChatById(chatId){
   try{
-    const r=await fetch('/chats/'+chatId);if(!r.ok)return;
-    const d=await r.json();const chat=d.chat;currentChatId=chat.id;
-    if(chat.project_id&&chat.project_id!==currentProjectId){currentProjectId=chat.project_id;updateProjectBanner();renderProjects();}
-    else if(!chat.project_id&&currentProjectId){currentProjectId=null;updateProjectBanner();renderProjects();}
-    chatBox.innerHTML='';
-    (chat.messages||[]).forEach(m=>{
-      if(m.role==='user')addUserBubble(m.content);
-      else if(m.role==='assistant'){const div=createBotWrapper(marked.parse(m.content));chatBox.appendChild(div);renderMath(div.querySelector('.bubble'));}
+    const r = await fetch('/chats/' + chatId);
+    if(!r.ok) return;
+    const d = await r.json();
+    const chat = d.chat;
+    currentChatId = chat.id;
+
+    if(chat.project_id && chat.project_id !== currentProjectId){
+      currentProjectId = chat.project_id; updateProjectBanner(); renderProjects();
+    } else if(!chat.project_id && currentProjectId){
+      currentProjectId = null; updateProjectBanner(); renderProjects();
+    }
+
+    chatBox.innerHTML = '';
+    (chat.messages || []).forEach(m => {
+      if(m.role === 'user'){
+        // Now reads image_url back from saved messages — image survives reload
+        addUserBubble(m.content, m.image_url || null);
+      } else if(m.role === 'assistant'){
+        const div = createBotWrapper(marked.parse(m.content));
+        chatBox.appendChild(div);
+        renderMath(div.querySelector('.bubble'));
+      }
     });
-    document.getElementById('topic-bar-title').textContent=chat.title||'Chat';
-    document.getElementById('topic-bar-tag').style.display='';
-    chatBox.scrollTop=chatBox.scrollHeight;
-    renderHistory();closeSidebar();
-  }catch(e){console.error(e);}
+
+    document.getElementById('topic-bar-title').textContent = chat.title || 'Chat';
+    document.getElementById('topic-bar-tag').style.display = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+    renderHistory();
+    closeSidebar();
+  } catch(e){
+    console.error(e);
+  }
 }
 
 function enterProject(id){currentProjectId=id;currentChatId=null;updateProjectBanner();renderProjects();loadAllChats();newChat();closeSidebar();}
@@ -1104,19 +1137,67 @@ chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatB
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
 function makeDiptiSVG(size=38){
-  const fontSize=Math.floor(size*0.65);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#0de4a0,#0ac48a);display:flex;align-items:center;justify-content:center;font-size:${fontSize}px;line-height:1;">👧🏽</div>`;
+  return `<svg width="${size}" height="${size}" style="display:block;border-radius:50%;"><use href="#disha-girl"/></svg>`;
 }
 
-function addUserBubble(text,imgUrl=null){
+function addUserBubble(text, imgUrl=null){
   document.getElementById('welcome-screen')?.remove();
-  const div=document.createElement('div');div.className='message user';
-  const bubble=document.createElement('div');bubble.className='bubble';
-  if(imgUrl){const img=document.createElement('img');img.src=imgUrl;img.className='sent-image';bubble.appendChild(img);}
-  const span=document.createElement('span');span.textContent=text;bubble.appendChild(span);
-  div.innerHTML=`<div class="avatar">${getUserAvatar()}</div>`;
-  div.appendChild(bubble);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
+  const div = document.createElement('div'); div.className = 'message user';
+  const bubble = document.createElement('div'); bubble.className = 'bubble';
+
+  // If only an image (no caption or trivial caption), make bubble transparent
+  const trivialCaptions = ['(ছবি পাঠানো হয়েছে)', 'এই ছবিটি দেখে বুঝিয়ে দাও।', ''];
+  const isImageOnly = imgUrl && trivialCaptions.includes((text || '').trim());
+
+  if(isImageOnly){
+    bubble.classList.add('image-only');
+  }
+
+  if(imgUrl){
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    img.className = 'sent-image';
+    img.onclick = () => openLightbox(imgUrl);
+    bubble.appendChild(img);
+  }
+
+  if(!isImageOnly){
+    const span = document.createElement('span');
+    span.textContent = text;
+    bubble.appendChild(span);
+  }
+
+  div.innerHTML = `<div class="avatar">${getUserAvatar()}</div>`;
+  div.appendChild(bubble);
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
+
+function openLightbox(url){
+  const lb = document.getElementById('image-lightbox');
+  const img = document.getElementById('lightbox-img');
+  if(!lb || !img) return;
+  img.src = url;
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e, force){
+  // Only close on backdrop click, close button, or Escape — not on image itself
+  if(!force && e && e.target.id !== 'image-lightbox') return;
+  const lb = document.getElementById('image-lightbox');
+  if(!lb) return;
+  lb.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Close lightbox on Escape
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape'){
+    const lb = document.getElementById('image-lightbox');
+    if(lb && lb.classList.contains('active')) closeLightbox(null, true);
+  }
+});
 
 function createBotWrapper(html){
   const div=document.createElement('div');div.className='message bot';
@@ -1144,35 +1225,57 @@ function addBotMessage(text){
 
 function showTyping(){
   document.getElementById('welcome-screen')?.remove();
+  resetThinking();
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
   const aw=document.createElement('div');aw.className='disha-avatar-wrap thinking';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
   const col=document.createElement('div');col.className='bot-col';
   const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
   const bub=document.createElement('div');bub.className='bubble thinking-bubble';
-  bub.innerHTML=`<div class="thinking-stages" id="thinking-stages"><div class="thinking-stage" id="stage-1"><span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Thinking...</span></div></div>`;
+  bub.innerHTML=`<div class="thinking-stages" id="thinking-stages"></div>`;
   col.appendChild(bub);div.appendChild(col);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
+
+  // Start with a generic "Thinking..." — will be replaced by first real stage from server
+  pushThinkingStage('Thinking...');
 }
 
-function updateTypingWithChapters(chapters){
-  const stage1=document.getElementById('stage-1');
-  const stages=document.getElementById('thinking-stages');
-  if(!stage1||!stages)return;
-  
-  // Only show RAG flow if actual chapters were found
-  if(chapters&&chapters.length>0){
-    const chapterText=chapters.length===1?chapters[0]:`${chapters[0]} +${chapters.length-1}`;
-    stage1.innerHTML=`<span class="stage-dot done">\u2713</span><span class="stage-text-done">Found in textbook:</span><span class="stage-chapter">${chapterText}</span>`;
-    
-    const stage2=document.createElement('div');
-    stage2.className='thinking-stage';
-    stage2.id='stage-2';
-    stage2.innerHTML=`<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Writing your answer...</span>`;
-    stages.appendChild(stage2);
-  } else {
-    // Casual chat or no biology match \u2014 just show writing
-    stage1.innerHTML=`<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Writing your answer...</span>`;
+// Tracks the currently-active loading stage so we can mark it "done" when the next stage arrives
+let activeStageEl = null;
+let stageCounter = 0;
+
+function resetThinking(){
+  activeStageEl = null;
+  stageCounter = 0;
+}
+
+function pushThinkingStage(text){
+  // Mark the previous loading stage as done
+  if(activeStageEl){
+    const dot = activeStageEl.querySelector('.stage-dot');
+    const txt = activeStageEl.querySelector('.shimmer-text');
+    if(dot){ dot.classList.remove('loading'); dot.classList.add('done'); dot.textContent='\u2713'; }
+    if(txt){ txt.classList.remove('shimmer-text'); txt.classList.add('stage-text-done'); }
   }
-  chatBox.scrollTop=chatBox.scrollHeight;
+
+  const stages = document.getElementById('thinking-stages');
+  if(!stages) return;
+
+  stageCounter++;
+  const stage = document.createElement('div');
+  stage.className = 'thinking-stage';
+  stage.id = 'stage-' + stageCounter;
+  stage.innerHTML = `<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">${escapeHtml(text)}</span>`;
+  stages.appendChild(stage);
+  activeStageEl = stage;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function pushChapterFound(chapters){
+  // Convert the currently-active "Searching..." stage into a "Found in: X" done stage
+  if(!activeStageEl || !chapters || chapters.length===0) return;
+  const chapterText = chapters.length === 1 ? chapters[0] : `${chapters[0]} +${chapters.length-1}`;
+  activeStageEl.innerHTML = `<span class="stage-dot done">\ud83d\udcd6</span><span class="stage-text-done">Found in textbook:</span><span class="stage-chapter">${escapeHtml(chapterText)}</span>`;
+  activeStageEl = null; // this stage is now "done", next pushThinkingStage will start fresh
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 function removeTyping(){document.getElementById('typing-indicator')?.remove();}
 function sendSuggestion(card){const q=card.dataset?.q||card.textContent;input.value=q;sendMessage();}
@@ -1186,33 +1289,130 @@ async function sendMessage(){
   input.value='';input.style.height='auto';sendBtn.disabled=true;
   document.getElementById('char-count').textContent='';
   addUserBubble(display,imgSnap);showTyping();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
+  // Clear preview immediately — don't wait for upload to finish
+  if(fileSnap) removeImage();
+
   try{
-    let reply;
     if(fileSnap){
-      const fd=new FormData();fd.append('image',fileSnap);fd.append('message',text||'এই ছবিটি দেখে বুঝিয়ে দাও।');
-      if(currentChatId)fd.append('chat_id',currentChatId);if(currentProjectId)fd.append('project_id',currentProjectId);
-      const r=await fetch('/ask-image',{method:'POST',body:fd});const d=await r.json();
+      // ── IMAGE PATH (unchanged — uses /ask-image, no streaming) ──
+      const fd=new FormData();
+      fd.append('image',fileSnap);
+      fd.append('message',text||'এই ছবিটি দেখে বুঝিয়ে দাও।');
+      if(currentChatId)fd.append('chat_id',currentChatId);
+      if(currentProjectId)fd.append('project_id',currentProjectId);
+      const r=await fetch('/ask-image',{method:'POST',body:fd});
+      const d=await r.json();
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
-      reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';if(d.chat_id)currentChatId=d.chat_id;
-      if(d.chapters_found)updateTypingWithChapters(d.chapters_found);
+      const reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';
+      if(d.chat_id)currentChatId=d.chat_id;
+      removeTyping();addBotMessage(reply);
       removeImage();
     }else{
-      const body={message:text};if(currentChatId)body.chat_id=currentChatId;if(currentProjectId)body.project_id=currentProjectId;
-      const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
-      if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
-      reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';if(d.chat_id)currentChatId=d.chat_id;
-      if(d.chapters_found)updateTypingWithChapters(d.chapters_found);
+      // ── TEXT PATH (streaming SSE via /ask-stream) ──
+      const body={message:text};
+      if(currentChatId)body.chat_id=currentChatId;
+      if(currentProjectId)body.project_id=currentProjectId;
+
+      const r=await fetch('/ask-stream',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(body)
+      });
+
+      // Handle non-streaming errors (401, 429)
+      if(!r.ok){
+        const errData = await r.json().catch(()=>({error:'Server error'}));
+        removeTyping();
+        if(errData.login_required){showLoginPrompt(true);sendBtn.disabled=false;return;}
+        addBotMessage('⚠️ '+(errData.error||'কিছু সমস্যা হয়েছে।'));
+        sendBtn.disabled=false;
+        return;
+      }
+
+      // Parse SSE stream
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalReply = null;
+      let firstStageReplaced = false;
+
+      while(true){
+        const {done, value} = await reader.read();
+        if(done) break;
+        buffer += decoder.decode(value, {stream:true});
+
+        // SSE messages are separated by double newlines
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop(); // last part may be incomplete
+
+        for(const part of parts){
+          if(!part.startsWith('data: ')) continue;
+          let evt;
+          try{ evt = JSON.parse(part.slice(6)); }catch(e){ continue; }
+
+          if(evt.type==='stage'){
+            // First server-sent stage replaces the placeholder "Thinking..."
+            if(!firstStageReplaced && activeStageEl){
+              const txt = activeStageEl.querySelector('.shimmer-text');
+              if(txt) txt.textContent = evt.text;
+              firstStageReplaced = true;
+            }else{
+              pushThinkingStage(evt.text);
+            }
+          }else if(evt.type==='chapters'){
+            pushChapterFound(evt.chapters);
+            firstStageReplaced = true; // chapter event acts as a stage transition too
+          }else if(evt.type==='reply'){
+            finalReply = evt;
+          }else if(evt.type==='error'){
+            finalReply = {reply:'⚠️ '+(evt.error||'সমস্যা হয়েছে।')};
+          }
+        }
+      }
+
+      removeTyping();
+      if(finalReply){
+        addBotMessage(finalReply.reply || 'দুঃখিত, সমস্যা হয়েছে।');
+        if(finalReply.chat_id) currentChatId = finalReply.chat_id;
+        if(currentChatId){
+          const title=display.length>40?display.slice(0,40)+'…':display;
+          document.getElementById('topic-bar-title').textContent=title;
+          document.getElementById('topic-bar-tag').style.display='';
+        }
+      }else{
+        addBotMessage('⚠️ সংযোগে সমস্যা হয়েছে।');
+      }
     }
-    removeTyping();addBotMessage(reply);
-    if(currentChatId){const title=display.length>40?display.slice(0,40)+'…':display;document.getElementById('topic-bar-title').textContent=title;document.getElementById('topic-bar-tag').style.display='';}
     loadAllChats();if(currentProjectId)loadProjects();
   }catch(e){
+    console.error(e);
     removeTyping();
-    const div=document.createElement('div');div.className='message bot';
-    const aw=document.createElement('div');aw.className='disha-avatar-wrap';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
-    const col=document.createElement('div');col.className='bot-col';
-    const err=document.createElement('div');err.className='error-bubble';err.innerHTML='<span>⚠️ সংযোগে সমস্যা হয়েছে।</span>';
-    col.appendChild(err);div.appendChild(col);chatBox.appendChild(div);
+    addBotMessage('⚠️ সংযোগে সমস্যা হয়েছে।');
   }
   sendBtn.disabled=false;input.focus();
 }
@@ -1315,6 +1515,38 @@ async function submitResetPassword(){if(resetSubmitting)return;const code=['r1',
 function checkPasswordStrength(p){const b=document.getElementById('strength-bar');if(!b)return;let s=0;if(p.length>=6)s++;if(p.length>=10)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;const c=['var(--danger)','#f0a030','#f0a030','var(--green)','var(--green)'];b.style.width=(s*20)+'%';b.style.background=c[s-1]||'var(--border2)';}
 
 input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({behavior:'smooth',block:'nearest'});},100);});
+
+// Paste image from clipboard (Ctrl+V) — like ChatGPT/Claude
+document.addEventListener('paste', (e) => {
+  const items = (e.clipboardData || window.clipboardData)?.items;
+  if(!items) return;
+
+  for(const item of items){
+    if(item.type && item.type.startsWith('image/')){
+      const file = item.getAsFile();
+      if(!file) continue;
+      e.preventDefault();
+
+      // Reuse existing file-select pipeline
+      selectedFile = file;
+      const r = new FileReader();
+      r.onload = ev => { document.getElementById('preview-thumb').src = ev.target.result; };
+      r.readAsDataURL(file);
+
+      // Pasted images don't have real names, so generate one
+      const ext = (file.type.split('/')[1] || 'png').toLowerCase();
+      const fakeName = `pasted-${Date.now()}.${ext}`;
+      document.getElementById('preview-name').textContent = fakeName;
+
+      strip.classList.add('visible');
+      attachBtn.classList.add('has-image');
+      input.placeholder = 'এই ছবি সম্পর্কে প্রশ্ন লেখো...';
+      input.focus();
+      break; // handle one image per paste
+    }
+  }
+});
+
 
 renderProjects();renderHistory();updateProfileSection();checkLoginState().then(()=>{
   const greet=getBDTGreeting();

@@ -25,10 +25,8 @@ chain = llm | parser
 
 def build_system_prompt(nctb_context: str, project_instructions: str = "") -> str:
     """Build the full system prompt with NCTB context + optional project instructions."""
-    
     prompt = SYSTEM_PROMPT
-    
-    # Inject project's custom instructions FIRST (highest priority)
+
     if project_instructions and project_instructions.strip():
         prompt += f"""
 
@@ -40,8 +38,7 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "") -> st
 
 ---
 """
-    
-    # Then NCTB context (only if we have some)
+
     if nctb_context and nctb_context.strip():
         prompt += f"""
 
@@ -52,77 +49,57 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "") -> st
 ---
 উপরের তথ্য ব্যবহার করে উত্তর দাও।
 """
-    
+
     return prompt
+
+
+def do_rag_lookup(user_input: str):
+    """
+    Step 1: Run RAG retrieval ONLY. Returns (nctb_context, chapters_found).
+    Separated so we can show progress to the user before the LLM call starts.
+    """
+    nctb_context = get_relevant_chunks(user_input, subject="biology")
+    chapters_found = get_chapters_for_question(user_input, subject="biology")
+    return nctb_context, chapters_found
+
+
+def run_llm(user_input, history, nctb_context, project_instructions=""):
+    """
+    Step 2: Run the LLM with already-retrieved context.
+    Returns the final reply string.
+    """
+    system_with_context = build_system_prompt(nctb_context, project_instructions)
+    messages = [SystemMessage(content=system_with_context)]
+    for msg in history:
+        if msg["role"] == "user":
+            messages.append(HumanMessage(content=msg["content"]))
+        elif msg["role"] == "assistant":
+            messages.append(AIMessage(content=msg["content"]))
+    messages.append(HumanMessage(content=user_input))
+    return chain.invoke(messages)
 
 
 def get_answer(user_input, history, project_instructions: str = ""):
     """
-    Get AI answer with optional project-specific instructions.
-    
-    Args:
-        user_input: Student's question
-        history: Last 10 messages [{"role": "user/assistant", "content": "..."}]
-        project_instructions: Optional custom instructions from a Project (default: "")
+    Non-streaming version (kept for backwards compat with /ask-image and tests).
     """
     t0 = time.time()
-    
-    # 1. Fetch relevant NCTB Biology chunks
-    nctb_context = get_relevant_chunks(user_input, subject="biology")
-    chapters_found = get_chapters_for_question(user_input, subject="biology")
+    nctb_context, chapters_found = do_rag_lookup(user_input)
 
-    # ── DEBUG LOGGING ──
     print(f"\n📚 [DEBUG] User asked: {user_input}")
     print(f"📚 [DEBUG] Chapters found: {chapters_found}")
-    print(f"📚 [DEBUG] Type: {type(chapters_found).__name__}")
     print(f"📚 [DEBUG] Context length: {len(nctb_context)} chars")
-    if nctb_context:
-        print(f"📚 [DEBUG] Context preview: {nctb_context[:150]}...")
-    else:
-        print(f"📚 [DEBUG] No context retrieved (empty)")
-    
+
     t1 = time.time()
-    
-    # 2. Build system prompt (with project instructions if provided)
-    system_with_context = build_system_prompt(nctb_context, project_instructions)
-    
-    # 3. Build messages
-    messages = [SystemMessage(content=system_with_context)]
-    for msg in history:
-        if msg["role"] == "user":
-            messages.append(HumanMessage(content=msg["content"]))
-        elif msg["role"] == "assistant":
-            messages.append(AIMessage(content=msg["content"]))
-    messages.append(HumanMessage(content=user_input))
+    reply = run_llm(user_input, history, nctb_context, project_instructions)
     t2 = time.time()
-    
-    # 4. Call LLM
-    result = chain.invoke(messages)
-    t3 = time.time()
-    
-    print(f"⏱️  RAG: {t1-t0:.2f}s | Build: {t2-t1:.2f}s | LLM: {t3-t2:.2f}s | TOTAL: {t3-t0:.2f}s\n")
-    
+
+    print(f"⏱️  RAG: {t1-t0:.2f}s | LLM: {t2-t1:.2f}s | TOTAL: {t2-t0:.2f}s\n")
+
     return {
-        "reply": result,
+        "reply": reply,
         "chapters_found": chapters_found
     }
-
-
-def get_answer_stream(user_input, history, project_instructions: str = ""):
-    """Streaming version with project instructions support."""
-    nctb_context = get_relevant_chunks(user_input, subject="biology")
-    system_with_context = build_system_prompt(nctb_context, project_instructions)
-    
-    messages = [SystemMessage(content=system_with_context)]
-    for msg in history:
-        if msg["role"] == "user":
-            messages.append(HumanMessage(content=msg["content"]))
-        elif msg["role"] == "assistant":
-            messages.append(AIMessage(content=msg["content"]))
-    messages.append(HumanMessage(content=user_input))
-    
-    for chunk in chain.stream(messages):
-        yield chunk
 
 
 # Quick test mode
@@ -134,10 +111,7 @@ if __name__ == "__main__":
         if user_input.lower() == "quit":
             break
         result = get_answer(user_input, history)
-        if isinstance(result, dict):
-            answer = result.get("reply", "")
-        else:
-            answer = result
+        answer = result["reply"] if isinstance(result, dict) else result
         print(f"Dipti: {answer}\n")
         history.append({"role": "user", "content": user_input})
         history.append({"role": "assistant", "content": answer})

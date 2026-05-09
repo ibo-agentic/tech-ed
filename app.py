@@ -6,6 +6,7 @@ from image_chain import get_answer_with_image
 import base64
 import os
 import threading
+import json
 from datetime import datetime, timedelta
 
 load_dotenv()
@@ -142,7 +143,7 @@ def create_project():
     """Create a new project."""
     data = request.json or {}
     name = (data.get('name') or '').strip()
-    icon = (data.get('icon') or '📁').strip()[:4]  # Limit icon to 4 chars (emoji)
+    icon = (data.get('icon') or '📁').strip()[:4]
     instructions = (data.get('custom_instructions') or '').strip()
 
     if not name:
@@ -207,7 +208,6 @@ def update_project(project_id):
     admin = get_admin_client()
     user_id = session['user_id']
 
-    # Verify ownership
     check = admin.table('projects').select('id').eq('id', project_id).eq('user_id', user_id).execute()
     if not check.data:
         return jsonify({'error': 'Project not found'}), 404
@@ -242,14 +242,11 @@ def delete_project(project_id):
     admin = get_admin_client()
     user_id = session['user_id']
 
-    # Verify ownership
     check = admin.table('projects').select('id').eq('id', project_id).eq('user_id', user_id).execute()
     if not check.data:
         return jsonify({'error': 'Project not found'}), 404
 
-    # Unassign chats
     admin.table('chats').update({'project_id': None}).eq('project_id', project_id).execute()
-    # Delete project
     admin.table('projects').delete().eq('id', project_id).execute()
 
     return jsonify({'success': True})
@@ -301,14 +298,15 @@ def delete_chat(chat_id):
     return jsonify({'success': True})
 
 
-# ─── ASK ROUTES (Modified to support projects) ───
+# ─── ASK ROUTES ───
 
 @app.route("/ask", methods=["POST"])
 def ask():
+    """Non-streaming endpoint. Kept for backwards compat / fallback."""
     data = request.json
     user_message = data.get("message", "")
     chat_id = data.get("chat_id")
-    project_id = data.get("project_id")  # Optional — if user is inside a project
+    project_id = data.get("project_id")
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -325,7 +323,6 @@ def ask():
         if "history" not in session:
             session["history"] = []
         recent = session["history"][-10:]
-        # Guests don't have projects
         result = get_answer(user_message, recent, project_instructions="")
         if isinstance(result, dict):
             reply = result.get("reply", "")
@@ -342,12 +339,10 @@ def ask():
 
     user_id = session['user_id']
 
-    # Get project context if applicable
     project_instructions = ""
     if project_id:
         project_instructions = get_project_instructions(project_id, user_id)
 
-    # Get or create chat (with project assignment if new chat)
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
     current_chat_id = chat['id']
     messages = chat.get('messages', [])
@@ -355,10 +350,8 @@ def ask():
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
-    # Pass project instructions to chain
     result = get_answer(user_message, history, project_instructions=project_instructions)
 
-    # Backwards compat: function might return string OR dict
     if isinstance(result, dict):
         reply = result.get("reply", "")
         chapters_found = result.get("chapters_found", [])
@@ -384,9 +377,122 @@ def ask():
     })
 
 
+@app.route("/ask-stream", methods=["POST"])
+def ask_stream():
+    """
+    Server-Sent Events endpoint that streams thinking stages + final reply.
+    Events emitted (in order):
+      - {type: "stage", text: "..."}                  (thinking message)
+      - {type: "chapters", chapters: [...]}            (only for biology questions)
+      - {type: "reply", reply: "...", chat_id: "..."}  (final answer)
+      - {type: "error", error: "..."}
+    """
+    data = request.json
+    user_message = data.get("message", "")
+    chat_id = data.get("chat_id")
+    project_id = data.get("project_id")
+
+    if not user_message:
+        return jsonify({"error": "No message"}), 400
+
+    # Capture session values BEFORE entering the generator
+    is_logged_in = 'user_id' in session
+    user_id = session.get('user_id')
+    plan = session.get('plan', 'free')
+    guest_count = session.get('guest_messages', 0)
+    history_session = session.get('history', [])
+
+    # Guest limit check
+    if not is_logged_in and guest_count >= 5:
+        return jsonify({
+            "login_required": True,
+            "error": "You've used your 5 free messages. Please login to continue!"
+        }), 401
+
+    # Logged-in limit check
+    if is_logged_in and not check_message_limit(user_id, plan):
+        return jsonify({"error": "Daily free limit reached."}), 429
+
+    # Bump guest counter immediately
+    if not is_logged_in:
+        session['guest_messages'] = guest_count + 1
+        session.modified = True
+
+    def event_stream():
+        from chain import do_rag_lookup, run_llm
+
+        def sse(payload):
+            return f"data: {json.dumps(payload)}\n\n"
+
+        try:
+            # ── STAGE 1: Generic thinking placeholder ──
+            yield sse({"type": "stage", "text": "Thinking..."})
+
+            # Run RAG silently — don't tell the user we're searching unless we actually find something
+            nctb_context, chapters_found = do_rag_lookup(user_message)
+            is_biology = bool(nctb_context and nctb_context.strip()) and bool(chapters_found)
+
+            # ── STAGE 2: Only show "found in textbook" if we actually found relevant content ──
+            if is_biology:
+                yield sse({"type": "stage", "text": "Searching NCTB Biology textbook..."})
+                yield sse({"type": "chapters", "chapters": chapters_found})
+
+            # ── STAGE 3: Writing answer ──
+            yield sse({"type": "stage", "text": "Writing your answer..."})
+
+            project_instructions = ""
+            current_chat_id = None
+            messages_list = []
+
+            if is_logged_in:
+                if project_id:
+                    project_instructions = get_project_instructions(project_id, user_id)
+                chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+                current_chat_id = chat['id']
+                messages_list = chat.get('messages', [])
+                recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
+                history = [{"role": m["role"], "content": m["content"]} for m in recent]
+            else:
+                history = history_session[-10:]
+
+            reply = run_llm(user_message, history, nctb_context, project_instructions)
+
+            if is_logged_in:
+                messages_list.append({"role": "user", "content": user_message})
+                messages_list.append({"role": "assistant", "content": reply})
+                is_first_exchange = len(messages_list) == 2
+                threading.Thread(
+                    target=background_save,
+                    args=(current_chat_id, messages_list, user_message, reply, user_id, is_first_exchange),
+                    daemon=True
+                ).start()
+
+            yield sse({
+                "type": "reply",
+                "reply": reply,
+                "chat_id": current_chat_id,
+                "chapters_found": chapters_found if is_biology else []
+            })
+
+        except Exception as e:
+            print(f"[ask-stream] error: {e}")
+            yield sse({"type": "error", "error": str(e)})
+
+    return Response(
+        stream_with_context(event_stream()),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+
 @app.route("/ask-image", methods=["POST"])
 @login_required
 def ask_image():
+    from storage import upload_image
+
     image_file = request.files.get("image")
     user_message = request.form.get("message", "")
     chat_id = request.form.get("chat_id")
@@ -406,15 +512,29 @@ def ask_image():
     messages = chat.get('messages', [])
 
     image_bytes = image_file.read()
+    image_type = image_file.content_type or "image/jpeg"
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-    image_type = image_file.content_type
+
+    # Upload to Supabase Storage so we can show it on chat reload
+    image_url = upload_image(image_bytes, image_type, user_id)
 
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
-    answer = get_answer_with_image(user_message, history, image_base64, image_type, project_instructions=project_instructions)
+    answer = get_answer_with_image(
+        user_message, history, image_base64, image_type,
+        project_instructions=project_instructions
+    )
 
-    messages.append({"role": "user", "content": f"[ছবি] {user_message}"})
+    # Persist message WITH image URL — this is the fix for "image disappears on reload"
+    user_msg = {
+        "role": "user",
+        "content": user_message or "এই ছবিটি দেখে বুঝিয়ে দাও।",
+    }
+    if image_url:
+        user_msg["image_url"] = image_url
+
+    messages.append(user_msg)
     messages.append({"role": "assistant", "content": answer})
 
     is_first_exchange = len(messages) == 2
@@ -425,7 +545,11 @@ def ask_image():
         daemon=True
     ).start()
 
-    return jsonify({"reply": answer, "chat_id": current_chat_id})
+    return jsonify({
+        "reply": answer,
+        "chat_id": current_chat_id,
+        "image_url": image_url,
+    })
 
 
 if __name__ == "__main__":
