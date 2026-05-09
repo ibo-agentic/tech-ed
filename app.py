@@ -326,11 +326,15 @@ def ask():
             session["history"] = []
         recent = session["history"][-10:]
         # Guests don't have projects
-        answer = get_answer(user_message, recent, project_instructions="")
+        result = get_answer(user_message, recent, project_instructions="")
+        if isinstance(result, dict):
+            reply = result.get("reply", "")
+        else:
+            reply = result
         session["history"].append({"role": "user", "content": user_message})
-        session["history"].append({"role": "assistant", "content": answer})
+        session["history"].append({"role": "assistant", "content": reply})
         session.modified = True
-        return jsonify({"reply": answer})
+        return jsonify({"reply": reply})
 
     # Logged-in user
     if not check_message_limit(session['user_id'], session.get('plan', 'free')):
@@ -352,20 +356,32 @@ def ask():
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
     # Pass project instructions to chain
-    answer = get_answer(user_message, history, project_instructions=project_instructions)
+    result = get_answer(user_message, history, project_instructions=project_instructions)
+
+    # Backwards compat: function might return string OR dict
+    if isinstance(result, dict):
+        reply = result.get("reply", "")
+        chapters_found = result.get("chapters_found", [])
+    else:
+        reply = result
+        chapters_found = []
 
     messages.append({"role": "user", "content": user_message})
-    messages.append({"role": "assistant", "content": answer})
+    messages.append({"role": "assistant", "content": reply})
 
     is_first_exchange = len(messages) == 2
 
     threading.Thread(
         target=background_save,
-        args=(current_chat_id, messages, user_message, answer, user_id, is_first_exchange),
+        args=(current_chat_id, messages, user_message, reply, user_id, is_first_exchange),
         daemon=True
     ).start()
 
-    return jsonify({"reply": answer, "chat_id": current_chat_id})
+    return jsonify({
+        "reply": reply,
+        "chat_id": current_chat_id,
+        "chapters_found": chapters_found
+    })
 
 
 @app.route("/ask-image", methods=["POST"])

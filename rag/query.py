@@ -56,3 +56,25 @@ def get_relevant_chunks(question, subject=None, top_k=3):
     except Exception as e:
         print(f"[RAG ERROR] {e}")
         return ""
+
+
+def get_chapters_for_question(question, subject="biology", top_k=3):
+    """Returns just the chapter names from RAG search, not the full text."""
+    if not subject:
+        return []
+    
+    filter_dict = {"subject": subject}
+    
+    try:
+        results = vectorstore.similarity_search(question, k=top_k, filter=filter_dict)
+        chapters = []
+        seen = set()
+        for doc in results:
+            ch = doc.metadata.get("chapter", "")
+            if ch and ch not in seen:
+                chapters.append(ch)
+                seen.add(ch)
+        return chapters
+    except Exception as e:
+        print(f"[CHAPTER ERROR] {e}")
+        return []

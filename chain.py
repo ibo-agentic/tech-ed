@@ -9,7 +9,7 @@ import time
 
 # Add rag/ folder to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "rag"))
-from query import get_relevant_chunks
+from query import get_relevant_chunks, get_chapters_for_question
 
 load_dotenv()
 
@@ -41,16 +41,16 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "") -> st
 ---
 """
     
-    # Then NCTB context
-    prompt += f"""
+    # Then NCTB context (only if we have some)
+    if nctb_context and nctb_context.strip():
+        prompt += f"""
 
 ## NCTB জীববিজ্ঞান বই থেকে প্রাসঙ্গিক তথ্য:
 
 {nctb_context}
 
 ---
-শুধুমাত্র উপরের তথ্য ব্যবহার করে উত্তর দাও।
-যদি উত্তর context-এ না থাকে, বলো: "এই প্রশ্নের তথ্য বইয়ে পাওয়া যায়নি।"
+উপরের তথ্য ব্যবহার করে উত্তর দাও।
 """
     
     return prompt
@@ -69,7 +69,18 @@ def get_answer(user_input, history, project_instructions: str = ""):
     
     # 1. Fetch relevant NCTB Biology chunks
     nctb_context = get_relevant_chunks(user_input, subject="biology")
+    chapters_found = get_chapters_for_question(user_input, subject="biology")
 
+    # ── DEBUG LOGGING ──
+    print(f"\n📚 [DEBUG] User asked: {user_input}")
+    print(f"📚 [DEBUG] Chapters found: {chapters_found}")
+    print(f"📚 [DEBUG] Type: {type(chapters_found).__name__}")
+    print(f"📚 [DEBUG] Context length: {len(nctb_context)} chars")
+    if nctb_context:
+        print(f"📚 [DEBUG] Context preview: {nctb_context[:150]}...")
+    else:
+        print(f"📚 [DEBUG] No context retrieved (empty)")
+    
     t1 = time.time()
     
     # 2. Build system prompt (with project instructions if provided)
@@ -89,14 +100,17 @@ def get_answer(user_input, history, project_instructions: str = ""):
     result = chain.invoke(messages)
     t3 = time.time()
     
-    print(f"⏱️  RAG: {t1-t0:.2f}s | Build: {t2-t1:.2f}s | LLM: {t3-t2:.2f}s | TOTAL: {t3-t0:.2f}s")
+    print(f"⏱️  RAG: {t1-t0:.2f}s | Build: {t2-t1:.2f}s | LLM: {t3-t2:.2f}s | TOTAL: {t3-t0:.2f}s\n")
     
-    return result
+    return {
+        "reply": result,
+        "chapters_found": chapters_found
+    }
 
 
 def get_answer_stream(user_input, history, project_instructions: str = ""):
     """Streaming version with project instructions support."""
-    nctb_context = get_relevant_chunks(user_input)
+    nctb_context = get_relevant_chunks(user_input, subject="biology")
     system_with_context = build_system_prompt(nctb_context, project_instructions)
     
     messages = [SystemMessage(content=system_with_context)]
@@ -119,7 +133,11 @@ if __name__ == "__main__":
         user_input = input("You: ")
         if user_input.lower() == "quit":
             break
-        answer = get_answer(user_input, history)
+        result = get_answer(user_input, history)
+        if isinstance(result, dict):
+            answer = result.get("reply", "")
+        else:
+            answer = result
         print(f"Dipti: {answer}\n")
         history.append({"role": "user", "content": user_input})
         history.append({"role": "assistant", "content": answer})

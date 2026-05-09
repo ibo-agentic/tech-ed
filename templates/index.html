@@ -57,6 +57,9 @@
     .left-sidebar.collapsed .sb-section-label,
     .left-sidebar.collapsed .sb-section-add,
     .left-sidebar.collapsed .sb-history-section,
+    .left-sidebar.collapsed .sb-empty-hint,
+    .left-sidebar.collapsed .sb-projects-list,
+    .left-sidebar.collapsed #sidebar-chat-list,
     .left-sidebar.collapsed #new-chat-btn-label,
     .left-sidebar.collapsed .profile-info{display:none;}
     .left-sidebar.collapsed .sb-logo-row{justify-content:center;padding:14px 8px;}
@@ -387,42 +390,93 @@
       .project-banner{padding:10px 14px;}
       .project-banner-name{font-size:14px;}
     }
+
+    @keyframes shimmer-text{0%{background-position:-200% 0}100%{background-position:200% 0}}
+    .shimmer-text{background:linear-gradient(90deg,var(--text3) 0%,var(--text) 50%,var(--text3) 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer-text 2s linear infinite;font-size:12px;}
+    .thinking-bubble{background:var(--bg2)!important;border:1px solid var(--border)!important;padding:10px 14px!important;}
+    .thinking-stages{display:flex;flex-direction:column;gap:6px;}
+    .thinking-stage{display:flex;align-items:center;gap:7px;font-size:12px;animation:fadeUp .3s ease both;}
+    .stage-dot.loading{color:var(--green);display:inline-block;animation:spin 1.2s linear infinite;font-size:12px;width:14px;text-align:center;}
+    .stage-dot.done{color:var(--green);font-size:11px;width:14px;text-align:center;}
+    .stage-text-done{color:var(--text2);font-size:12px;}
+    .stage-chapter{color:var(--green);font-weight:600;font-size:12px;}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" id="disha-svg-defs">
-  <symbol id="disha-girl" viewBox="0 0 80 80">
-    <circle cx="40" cy="36" r="20" fill="#FFCC99"/>
-    <ellipse cx="40" cy="21" rx="20" ry="13" fill="#1C1108"/>
-    <path d="M20 30 Q16 42 18 52 Q22 46 24 38Z" fill="#1C1108"/>
-    <path d="M60 30 Q64 42 62 52 Q58 46 56 38Z" fill="#1C1108"/>
-    <ellipse cx="34" cy="19" rx="7" ry="3.5" fill="#3D2B1A" opacity=".55"/>
-    <ellipse cx="20" cy="37" rx="3" ry="4" fill="#FFBB88"/>
-    <ellipse cx="60" cy="37" rx="3" ry="4" fill="#FFBB88"/>
-    <circle cx="20" cy="36" r="2" fill="#0de4a0"/>
-    <circle cx="60" cy="36" r="2" fill="#0de4a0"/>
-    <ellipse cx="33" cy="36" rx="4.5" ry="5" fill="#fff"/>
-    <ellipse cx="47" cy="36" rx="4.5" ry="5" fill="#fff"/>
-    <circle cx="33" cy="37" r="3" fill="#3D1F00"/>
-    <circle cx="47" cy="37" r="3" fill="#3D1F00"/>
-    <circle cx="34.2" cy="35.8" r="1" fill="#fff"/>
-    <circle cx="48.2" cy="35.8" r="1" fill="#fff"/>
-    <path d="M28.5 31.5 Q33 29 37.5 31.5" stroke="#1C1108" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <path d="M42.5 31.5 Q47 29 51.5 31.5" stroke="#1C1108" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <path d="M29 30 Q33 28 37 29.5" stroke="#3D2B1A" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M43 29.5 Q47 28 51 30" stroke="#3D2B1A" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M38.5 41 Q40 43.5 41.5 41" stroke="#E8A078" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    <path d="M33 47 Q40 53 47 47" stroke="#D46050" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M35 47.5 Q40 50 45 47.5" fill="#fff" opacity=".8"/>
-    <ellipse cx="25" cy="43" rx="5" ry="3" fill="#FF9090" opacity=".25"/>
-    <ellipse cx="55" cy="43" rx="5" ry="3" fill="#FF9090" opacity=".25"/>
-    <rect x="36" y="55" width="8" height="7" rx="4" fill="#FFBB88"/>
-    <ellipse cx="40" cy="73" rx="20" ry="12" fill="#1a3a5c"/>
-    <path d="M34 62 Q40 67 46 62 L44 74 Q40 77 36 74Z" fill="#154070"/>
-    <path d="M20 65 Q28 60 36 62 L32 75 Q24 72 18 68Z" fill="#0de4a0" opacity=".75"/>
-    <rect x="29" y="67" width="22" height="8" rx="3" fill="#0de4a0" opacity=".9"/>
-    <text x="40" y="73.5" text-anchor="middle" font-size="5" font-family="Sora,sans-serif" font-weight="700" fill="#0d1117">Disha</text>
+  <symbol id="disha-girl" viewBox="0 0 100 100">
+    <defs>
+      <radialGradient id="dipti-skin" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="#FFE0BC"/>
+        <stop offset="100%" stop-color="#F5C19A"/>
+      </radialGradient>
+      <linearGradient id="dipti-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1e2530"/>
+        <stop offset="100%" stop-color="#0d1117"/>
+      </linearGradient>
+    </defs>
+    
+    <!-- Background circle -->
+    <circle cx="50" cy="50" r="48" fill="url(#dipti-bg)"/>
+    
+    <!-- Hair (back layer - dark bob cut) -->
+    <path d="M22 42 Q22 22 38 16 Q44 12 50 12 Q56 12 62 16 Q78 22 78 42 Q78 60 75 70 L70 64 L60 66 L50 64 L40 66 L30 64 L25 70 Q22 60 22 42 Z" fill="#2A1810"/>
+    
+    <!-- Side hair tufts -->
+    <path d="M24 50 Q22 60 20 65 L26 60 Z" fill="#2A1810"/>
+    <path d="M76 50 Q78 60 80 65 L74 60 Z" fill="#2A1810"/>
+    
+    <!-- Face -->
+    <ellipse cx="50" cy="50" rx="20" ry="22" fill="url(#dipti-skin)"/>
+    
+    <!-- Hair bangs (front fringe) -->
+    <path d="M30 38 Q35 32 42 36 Q44 35 46 36 L42 44 Q36 44 30 42 Z" fill="#2A1810"/>
+    <path d="M70 38 Q65 32 58 36 Q56 35 54 36 L58 44 Q64 44 70 42 Z" fill="#2A1810"/>
+    
+    <!-- Tiny middle bangs -->
+    <path d="M44 36 Q47 32 50 34 Q53 32 56 36 L53 42 Q50 41 47 42 Z" fill="#2A1810"/>
+    
+    <!-- GREEN HEADBAND (your brand color) -->
+    <path d="M28 38 Q50 30 72 38 L72 42 Q50 34 28 42 Z" fill="#0de4a0"/>
+    <circle cx="50" cy="35" r="2.5" fill="#0de4a0"/>
+    <circle cx="50" cy="35" r="1" fill="#fff"/>
+    
+    <!-- Eyes (cute Ghibli-style big oval) -->
+    <ellipse cx="42" cy="55" rx="3" ry="4" fill="#1C1108"/>
+    <ellipse cx="58" cy="55" rx="3" ry="4" fill="#1C1108"/>
+    
+    <!-- Eye highlights (cute shine) -->
+    <circle cx="43" cy="53.5" r="1.2" fill="#fff"/>
+    <circle cx="59" cy="53.5" r="1.2" fill="#fff"/>
+    <circle cx="42.5" cy="56" r="0.5" fill="#fff" opacity="0.7"/>
+    <circle cx="58.5" cy="56" r="0.5" fill="#fff" opacity="0.7"/>
+    
+    <!-- Eyebrows (small, cute) -->
+    <path d="M38 49 Q41 47 45 49" stroke="#2A1810" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M55 49 Q59 47 62 49" stroke="#2A1810" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    
+    <!-- Cheeks (rosy blush) -->
+    <ellipse cx="33" cy="62" rx="3" ry="2" fill="#FF9090" opacity="0.55"/>
+    <ellipse cx="67" cy="62" rx="3" ry="2" fill="#FF9090" opacity="0.55"/>
+    
+    <!-- Nose (tiny) -->
+    <path d="M50 60 Q51 62 50 63" stroke="#E5A07A" stroke-width="0.7" fill="none" opacity="0.5"/>
+    
+    <!-- Smile (small cute) -->
+    <path d="M46 67 Q50 70 54 67" stroke="#A04030" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    
+    <!-- Body (simple uniform top) -->
+    <ellipse cx="50" cy="92" rx="24" ry="10" fill="#0de4a0"/>
+    <rect x="34" y="80" width="32" height="14" rx="4" fill="#0de4a0"/>
+    
+    <!-- Collar/shirt detail -->
+    <path d="M42 80 L50 86 L58 80" stroke="#fff" stroke-width="0.8" fill="none" opacity="0.6"/>
+    
+    <!-- Decorative sparkle (AI-feel) -->
+    <text x="78" y="28" font-size="7" fill="#0de4a0" opacity="0.7">✦</text>
+    <text x="22" y="80" font-size="5" fill="#0de4a0" opacity="0.5">✧</text>
   </symbol>
 </svg>
 
@@ -498,7 +552,7 @@
 
     <div class="chat-topic-bar" id="chat-topic-bar">
       <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
-      <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Disha AI</span>
+      <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Dipti AI</span>
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
@@ -517,25 +571,44 @@
 
     <div id="chat-box">
       <div class="welcome" id="welcome-screen">
-        <h2>নতুন চ্যাট শুরু করো 👋</h2>
-        <p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p>
+        <h2 id="initial-greeting">Welcome 👋</h2>
+        <p class="welcome-sub" id="initial-subtext">আজ কী শিখতে চাও?<br><span style="color:var(--text3);font-size:11px;">I'll help you with NCTB Biology — chapters, definitions, and exam-style answers.</span></p>
         <p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>
         <div class="subject-grid">
           <div class="subj-card" onclick="sendSuggestion(this)" data-q="What is osmosis? Explain with example">
-            <div class="subj-card-icon">🔬</div>
+            <div class="subj-card-icon">🧬</div>
             <div class="subj-card-title">Biology</div>
-            <div class="subj-card-example">What is osmosis?</div>
+            <div class="subj-card-example">15 chapters · ready</div>
           </div>
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="How do I write a perfect paragraph in English?">
-            <div class="subj-card-icon">🗣️</div>
-            <div class="subj-card-title">English</div>
-            <div class="subj-card-example">Writing &amp; grammar</div>
+          <div class="subj-card disabled">
+            <div class="subj-card-icon">⚛️</div>
+            <div class="subj-card-title">Physics</div>
+            <div class="subj-card-example">Coming soon</div>
+            <span class="coming-soon-tag">Soon</span>
+          </div>
+          <div class="subj-card disabled">
+            <div class="subj-card-icon">⚗️</div>
+            <div class="subj-card-title">Chemistry</div>
+            <div class="subj-card-example">Coming soon</div>
+            <span class="coming-soon-tag">Soon</span>
           </div>
           <div class="subj-card disabled">
             <div class="subj-card-icon">🔢</div>
             <div class="subj-card-title">Math</div>
-            <div class="subj-card-example">Solve step-by-step</div>
-            <span class="coming-soon-tag">Coming Soon</span>
+            <div class="subj-card-example">Coming soon</div>
+            <span class="coming-soon-tag">Soon</span>
+          </div>
+          <div class="subj-card disabled">
+            <div class="subj-card-icon">🗣️</div>
+            <div class="subj-card-title">English</div>
+            <div class="subj-card-example">Coming soon</div>
+            <span class="coming-soon-tag">Soon</span>
+          </div>
+          <div class="subj-card disabled">
+            <div class="subj-card-icon">🇧🇩</div>
+            <div class="subj-card-title">Bangla</div>
+            <div class="subj-card-example">Coming soon</div>
+            <span class="coming-soon-tag">Soon</span>
           </div>
         </div>
       </div>
@@ -560,7 +633,7 @@
       <div class="hint-bar">
         <span class="hint" style="display:inline-flex;align-items:center;gap:5px;">
           <span style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green);"></span>
-          <span style="color:var(--text3);font-size:9.5px;">Disha AI · Ready</span>
+          <span style="color:var(--text3);font-size:9.5px;">Dipti AI · Ready</span>
         </span>
         <span class="char-count" id="char-count"></span>
       </div>
@@ -744,7 +817,18 @@ const scrollBtn=document.getElementById('scroll-btn');
 const sidebar=document.getElementById('sidebar');
 const sidebarOverlay=document.getElementById('sidebar-overlay');
 
-const highlightExt={name:'highlight',level:'inline',start(src){return src.indexOf('==');},tokenizer(src){const m=src.match(/^==([^=]+)==/);if(m)return{type:'highlight',raw:m[0],text:m[1]};},renderer(token){return`<mark>${token.text}</mark>`;}};
+const highlightExt={name:'highlight',level:'inline',start(src){return src.indexOf('==');},tokenizer(src){const m=src.match(/^==([^=]+)==/);if(m)return{type:'highlight',raw:m[0],text:m[1]};},renderer(token){return`<mark>${token.text}</mark>`;}};marked.use({extensions:[highlightExt],breaks:true,gfm:true});
+
+function getBDTGreeting(){
+  const now=new Date();
+  const utcHours=now.getUTCHours();
+  const bdtHours=(utcHours+6)%24;
+  const firstName=loggedInUser&&loggedInUser.name?loggedInUser.name.split(' ')[0]:'there';
+  if(bdtHours>=5&&bdtHours<12)return{text:'Good morning, '+firstName,emoji:'☀️'};
+  if(bdtHours>=12&&bdtHours<17)return{text:'Good afternoon, '+firstName,emoji:'🌤️'};
+  if(bdtHours>=17&&bdtHours<21)return{text:'Good evening, '+firstName,emoji:'🌅'};
+  return{text:'Good night, '+firstName,emoji:'🌙'};
+}
 marked.use({extensions:[highlightExt],breaks:true,gfm:true});
 
 let selectedFile=null,isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,loggedInUser=null;
@@ -996,7 +1080,9 @@ function newChat(){
   const projectName=currentProjectId?(projects.find(x=>x.id===currentProjectId)||{}).name:'';
   const headerText=projectName?`নতুন চ্যাট — ${escapeHtml(projectName)} 📂`:'নতুন চ্যাট শুরু করো 👋';
   const welcome=document.createElement('div');welcome.id='welcome-screen';welcome.className='welcome';
-  welcome.innerHTML=`<h2>${headerText}</h2><p class="welcome-sub">আমি তোমার <strong style="color:var(--green)">Disha AI</strong> — তোমার AI টিউটর।<br>বাংলা বা English যেকোনো ভাষায় প্রশ্ন করো!</p><p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>`;
+  const greet=getBDTGreeting();
+  const projectHeader=projectName?`📂 ${escapeHtml(projectName)} — New Chat`:'';
+  welcome.innerHTML=`<h2>${greet.text} ${greet.emoji}</h2><p class="welcome-sub">${projectHeader||'আজ কী শিখতে চাও?'}<br><span style="color:var(--text3);font-size:11px;">I'll help you with NCTB Biology — chapters, definitions, and exam-style answers.</span></p><p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>`;
   chatBox.appendChild(welcome);
   input.value='';input.focus();
   document.getElementById('topic-bar-title').textContent=projectName?`📂 ${projectName} — New Chat`:'New Chat';
@@ -1017,7 +1103,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sidebarOpen)clos
 chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatBox.scrollTop-chatBox.clientHeight<120;scrollBtn.classList.toggle('visible',!atBottom&&chatBox.scrollHeight>chatBox.clientHeight+200);});
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
-function makeDishaSVG(size=38){return `<svg width="${size}" height="${size}" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><use href="#disha-girl"/></svg>`;}
+function makeDiptiSVG(size=38){
+  const fontSize=Math.floor(size*0.65);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#0de4a0,#0ac48a);display:flex;align-items:center;justify-content:center;font-size:${fontSize}px;line-height:1;">👧🏽</div>`;
+}
 
 function addUserBubble(text,imgUrl=null){
   document.getElementById('welcome-screen')?.remove();
@@ -1031,9 +1120,9 @@ function addUserBubble(text,imgUrl=null){
 
 function createBotWrapper(html){
   const div=document.createElement('div');div.className='message bot';
-  const aw=document.createElement('div');aw.className='disha-avatar-wrap';aw.innerHTML=makeDishaSVG(38);div.appendChild(aw);
+  const aw=document.createElement('div');aw.className='disha-avatar-wrap';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
   const col=document.createElement('div');col.className='bot-col';
-  const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Disha</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
+  const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
   const bub=document.createElement('div');bub.className='bubble';bub.innerHTML=html;col.appendChild(bub);
   const acts=document.createElement('div');acts.className='message-actions';
   const cpy=document.createElement('button');cpy.className='action-btn';cpy.textContent='📋 Copy';
@@ -1056,11 +1145,34 @@ function addBotMessage(text){
 function showTyping(){
   document.getElementById('welcome-screen')?.remove();
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
-  const aw=document.createElement('div');aw.className='disha-avatar-wrap thinking';aw.innerHTML=makeDishaSVG(38);div.appendChild(aw);
+  const aw=document.createElement('div');aw.className='disha-avatar-wrap thinking';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
   const col=document.createElement('div');col.className='bot-col';
-  const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Disha</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
-  const bub=document.createElement('div');bub.className='bubble';bub.innerHTML=`<div class="bubble-typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+  const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
+  const bub=document.createElement('div');bub.className='bubble thinking-bubble';
+  bub.innerHTML=`<div class="thinking-stages" id="thinking-stages"><div class="thinking-stage" id="stage-1"><span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Thinking...</span></div></div>`;
   col.appendChild(bub);div.appendChild(col);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function updateTypingWithChapters(chapters){
+  const stage1=document.getElementById('stage-1');
+  const stages=document.getElementById('thinking-stages');
+  if(!stage1||!stages)return;
+  
+  // Only show RAG flow if actual chapters were found
+  if(chapters&&chapters.length>0){
+    const chapterText=chapters.length===1?chapters[0]:`${chapters[0]} +${chapters.length-1}`;
+    stage1.innerHTML=`<span class="stage-dot done">\u2713</span><span class="stage-text-done">Found in textbook:</span><span class="stage-chapter">${chapterText}</span>`;
+    
+    const stage2=document.createElement('div');
+    stage2.className='thinking-stage';
+    stage2.id='stage-2';
+    stage2.innerHTML=`<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Writing your answer...</span>`;
+    stages.appendChild(stage2);
+  } else {
+    // Casual chat or no biology match \u2014 just show writing
+    stage1.innerHTML=`<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">Writing your answer...</span>`;
+  }
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
 function removeTyping(){document.getElementById('typing-indicator')?.remove();}
 function sendSuggestion(card){const q=card.dataset?.q||card.textContent;input.value=q;sendMessage();}
@@ -1082,12 +1194,14 @@ async function sendMessage(){
       const r=await fetch('/ask-image',{method:'POST',body:fd});const d=await r.json();
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
       reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';if(d.chat_id)currentChatId=d.chat_id;
+      if(d.chapters_found)updateTypingWithChapters(d.chapters_found);
       removeImage();
     }else{
       const body={message:text};if(currentChatId)body.chat_id=currentChatId;if(currentProjectId)body.project_id=currentProjectId;
       const r=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
       reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';if(d.chat_id)currentChatId=d.chat_id;
+      if(d.chapters_found)updateTypingWithChapters(d.chapters_found);
     }
     removeTyping();addBotMessage(reply);
     if(currentChatId){const title=display.length>40?display.slice(0,40)+'…':display;document.getElementById('topic-bar-title').textContent=title;document.getElementById('topic-bar-tag').style.display='';}
@@ -1095,7 +1209,7 @@ async function sendMessage(){
   }catch(e){
     removeTyping();
     const div=document.createElement('div');div.className='message bot';
-    const aw=document.createElement('div');aw.className='disha-avatar-wrap';aw.innerHTML=makeDishaSVG(38);div.appendChild(aw);
+    const aw=document.createElement('div');aw.className='disha-avatar-wrap';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
     const col=document.createElement('div');col.className='bot-col';
     const err=document.createElement('div');err.className='error-bubble';err.innerHTML='<span>⚠️ সংযোগে সমস্যা হয়েছে।</span>';
     col.appendChild(err);div.appendChild(col);chatBox.appendChild(div);
@@ -1202,7 +1316,11 @@ function checkPasswordStrength(p){const b=document.getElementById('strength-bar'
 
 input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({behavior:'smooth',block:'nearest'});},100);});
 
-renderProjects();renderHistory();updateProfileSection();checkLoginState();
+renderProjects();renderHistory();updateProfileSection();checkLoginState().then(()=>{
+  const greet=getBDTGreeting();
+  const greetEl=document.getElementById('initial-greeting');
+  if(greetEl)greetEl.innerHTML=greet.text+' '+greet.emoji;
+});
 </script>
 </body>
 </html>
