@@ -3,3 +3,7 @@
 __pycache__/
 *.pyc
 test_chain.ipynb
+# Ignore PDFs
+*.pdf
+books/
+chroma_db/

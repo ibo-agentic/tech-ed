@@ -588,9 +588,14 @@
         <p class="welcome-sub" id="initial-subtext">আজ কী শিখতে চাও?<br><span style="color:var(--text3);font-size:11px;">I'll help you with NCTB Biology — chapters, definitions, and exam-style answers.</span></p>
         <p class="welcome-img-note">📎 ছবি আপলোড করেও প্রশ্ন করা যাবে!</p>
         <div class="subject-grid">
-          <div class="subj-card" onclick="sendSuggestion(this)" data-q="What is osmosis? Explain with example">
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="osmosis kake bole?" data-subject="biology">
             <div class="subj-card-icon">🧬</div>
             <div class="subj-card-title">Biology</div>
+            <div class="subj-card-example">15 chapters · ready</div>
+          </div>
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="বায়ুমণ্ডল কী?" data-subject="geography">
+            <div class="subj-card-icon">🌍</div>
+            <div class="subj-card-title">Geography</div>
             <div class="subj-card-example">15 chapters · ready</div>
           </div>
           <div class="subj-card disabled">
@@ -1109,6 +1114,7 @@ document.addEventListener('input',e=>{
 });
 
 function newChat(){
+  activeSubject = 'biology';  // Reset to default on new chat
   currentChatId=null;chatBox.innerHTML='';
   const projectName=currentProjectId?(projects.find(x=>x.id===currentProjectId)||{}).name:'';
   const headerText=projectName?`নতুন চ্যাট — ${escapeHtml(projectName)} 📂`:'নতুন চ্যাট শুরু করো 👋';
@@ -1278,7 +1284,17 @@ function pushChapterFound(chapters){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 function removeTyping(){document.getElementById('typing-indicator')?.remove();}
+let activeSubject = 'biology';  // Tracks which subject was selected from cards
+
 function sendSuggestion(card){const q=card.dataset?.q||card.textContent;input.value=q;sendMessage();}
+
+function sendSuggestionWithSubject(card){
+  const q = card.dataset?.q || card.textContent;
+  const subject = card.dataset?.subject || 'biology';
+  activeSubject = subject;  // Remember for subsequent messages in this chat
+  input.value = q;
+  sendMessage();
+}
 
 async function sendMessage(){
   const text=input.value.trim();
@@ -1334,7 +1350,7 @@ async function sendMessage(){
       removeImage();
     }else{
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
-      const body={message:text};
+      const body={message:text, subject: activeSubject};
       if(currentChatId)body.chat_id=currentChatId;
       if(currentProjectId)body.project_id=currentProjectId;
 

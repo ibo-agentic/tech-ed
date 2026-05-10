@@ -307,6 +307,7 @@ def ask():
     user_message = data.get("message", "")
     chat_id = data.get("chat_id")
     project_id = data.get("project_id")
+    subject = data.get("subject", "biology")  # default to biology
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -323,7 +324,7 @@ def ask():
         if "history" not in session:
             session["history"] = []
         recent = session["history"][-10:]
-        result = get_answer(user_message, recent, project_instructions="")
+        result = get_answer(user_message, recent, project_instructions="", subject=subject)
         if isinstance(result, dict):
             reply = result.get("reply", "")
         else:
@@ -350,7 +351,7 @@ def ask():
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
-    result = get_answer(user_message, history, project_instructions=project_instructions)
+    result = get_answer(user_message, history, project_instructions=project_instructions, subject=subject)
 
     if isinstance(result, dict):
         reply = result.get("reply", "")
@@ -391,6 +392,7 @@ def ask_stream():
     user_message = data.get("message", "")
     chat_id = data.get("chat_id")
     project_id = data.get("project_id")
+    subject = data.get("subject", "biology")  # default to biology
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -419,22 +421,56 @@ def ask_stream():
         session.modified = True
 
     def event_stream():
-        from chain import do_rag_lookup, run_llm
+        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
 
         try:
+            # Auto-detect subject from question if user mentioned one explicitly
+            effective_subject = detect_subject_in_question(user_message, fallback=subject)
+
+            # ── TOC QUESTIONS: BYPASS LLM ENTIRELY ──
+            if is_toc_question(user_message):
+                toc_reply = build_toc_response(effective_subject)
+                if toc_reply:
+                    yield sse({"type": "stage", "text": "Looking up chapter list..."})
+                    yield sse({"type": "chapters", "chapters": ["অধ্যায় তালিকা (Table of Contents)"]})
+
+                    # Save to chat history (logged-in users)
+                    current_chat_id = None
+                    if is_logged_in:
+                        chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+                        current_chat_id = chat['id']
+                        messages_list = chat.get('messages', [])
+                        messages_list.append({"role": "user", "content": user_message})
+                        messages_list.append({"role": "assistant", "content": toc_reply})
+                        is_first_exchange = len(messages_list) == 2
+                        threading.Thread(
+                            target=background_save,
+                            args=(current_chat_id, messages_list, user_message, toc_reply, user_id, is_first_exchange),
+                            daemon=True
+                        ).start()
+
+                    yield sse({
+                        "type": "reply",
+                        "reply": toc_reply,
+                        "chat_id": current_chat_id,
+                        "chapters_found": ["অধ্যায় তালিকা"]
+                    })
+                    return  # CRITICAL: exit, don't run LLM
+
             # ── STAGE 1: Generic thinking placeholder ──
             yield sse({"type": "stage", "text": "Thinking..."})
 
             # Run RAG silently — don't tell the user we're searching unless we actually find something
-            nctb_context, chapters_found = do_rag_lookup(user_message)
+            nctb_context, chapters_found = do_rag_lookup(user_message, subject=effective_subject)
             is_biology = bool(nctb_context and nctb_context.strip()) and bool(chapters_found)
 
             # ── STAGE 2: Only show "found in textbook" if we actually found relevant content ──
             if is_biology:
-                yield sse({"type": "stage", "text": "Searching NCTB Biology textbook..."})
+                subject_name = "Biology" if effective_subject == "biology" else "Geography" if effective_subject == "geography" else "NCTB"
+                yield sse({"type": "stage", "text": f"Searching NCTB {subject_name} textbook..."})
                 yield sse({"type": "chapters", "chapters": chapters_found})
 
             # ── STAGE 3: Writing answer ──
