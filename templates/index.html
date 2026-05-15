@@ -598,6 +598,11 @@
             <div class="subj-card-title">Geography</div>
             <div class="subj-card-example">15 chapters · ready</div>
           </div>
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="হিসাববিজ্ঞান কী?" data-subject="accounting">
+            <div class="subj-card-icon">💼</div>
+            <div class="subj-card-title">Accounting</div>
+            <div class="subj-card-example">12 chapters · ready</div>
+          </div>
           <div class="subj-card disabled">
             <div class="subj-card-icon">⚛️</div>
             <div class="subj-card-title">Physics</div>
@@ -982,6 +987,7 @@ async function loadChatById(chatId){
     document.getElementById('topic-bar-title').textContent = chat.title || 'Chat';
     document.getElementById('topic-bar-tag').style.display = '';
     chatBox.scrollTop = chatBox.scrollHeight;
+    if(chat.subject){ activeSubject = chat.subject; localStorage.setItem('activeSubject', chat.subject); }
     renderHistory();
     closeSidebar();
   } catch(e){
@@ -1114,7 +1120,6 @@ document.addEventListener('input',e=>{
 });
 
 function newChat(){
-  activeSubject = 'biology';  // Reset to default on new chat
   currentChatId=null;chatBox.innerHTML='';
   const projectName=currentProjectId?(projects.find(x=>x.id===currentProjectId)||{}).name:'';
   const headerText=projectName?`নতুন চ্যাট — ${escapeHtml(projectName)} 📂`:'নতুন চ্যাট শুরু করো 👋';
@@ -1284,14 +1289,15 @@ function pushChapterFound(chapters){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 function removeTyping(){document.getElementById('typing-indicator')?.remove();}
-let activeSubject = 'biology';  // Tracks which subject was selected from cards
+let activeSubject = localStorage.getItem('activeSubject') || 'biology';  // Tracks which subject was selected from cards
 
 function sendSuggestion(card){const q=card.dataset?.q||card.textContent;input.value=q;sendMessage();}
 
 function sendSuggestionWithSubject(card){
   const q = card.dataset?.q || card.textContent;
   const subject = card.dataset?.subject || 'biology';
-  activeSubject = subject;  // Remember for subsequent messages in this chat
+  activeSubject = subject;
+  localStorage.setItem('activeSubject', subject);
   input.value = q;
   sendMessage();
 }
@@ -1341,7 +1347,15 @@ async function sendMessage(){
       fd.append('message',text||'এই ছবিটি দেখে বুঝিয়ে দাও।');
       if(currentChatId)fd.append('chat_id',currentChatId);
       if(currentProjectId)fd.append('project_id',currentProjectId);
+      fd.append('subject', activeSubject || 'biology');
       const r=await fetch('/ask-image',{method:'POST',body:fd});
+      if(!r.ok){
+        const errData=await r.json().catch(()=>({error:'সার্ভার এরর'}));
+        removeTyping();
+        if(errData.login_required){showLoginPrompt(true);sendBtn.disabled=false;return;}
+        addBotMessage('⚠️ '+(errData.error||'কিছু সমস্যা হয়েছে।'));
+        sendBtn.disabled=false;return;
+      }
       const d=await r.json();
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
       const reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';

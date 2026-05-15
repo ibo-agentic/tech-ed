@@ -7,7 +7,7 @@ import base64
 import os
 import threading
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ MAX_INSTRUCTIONS_LENGTH = 1000
 
 # ── CHAT HELPERS ──
 
-def get_or_create_chat(user_id, chat_id=None, project_id=None):
+def get_or_create_chat(user_id, chat_id=None, project_id=None, subject='biology'):
     admin = get_admin_client()
 
     if chat_id:
@@ -41,12 +41,18 @@ def get_or_create_chat(user_id, chat_id=None, project_id=None):
         'user_id': user_id,
         'title': 'New Chat',
         'messages': [],
-        'created_at': datetime.utcnow().isoformat()
+        'subject': subject,
+        'created_at': datetime.now(timezone.utc).isoformat()
     }
     if project_id:
         new_chat_data['project_id'] = project_id
 
-    new_chat = admin.table('chats').insert(new_chat_data).execute()
+    try:
+        new_chat = admin.table('chats').insert(new_chat_data).execute()
+    except Exception:
+        # Column may not exist yet — retry without subject
+        new_chat_data.pop('subject', None)
+        new_chat = admin.table('chats').insert(new_chat_data).execute()
     return new_chat.data[0]
 
 
@@ -54,7 +60,7 @@ def save_messages(chat_id, messages):
     admin = get_admin_client()
     admin.table('chats').update({
         'messages': messages,
-        'updated_at': datetime.utcnow().isoformat()
+        'updated_at': datetime.now(timezone.utc).isoformat()
     }).eq('id', chat_id).execute()
 
 
@@ -212,7 +218,7 @@ def update_project(project_id):
     if not check.data:
         return jsonify({'error': 'Project not found'}), 404
 
-    update = {'updated_at': datetime.utcnow().isoformat()}
+    update = {'updated_at': datetime.now(timezone.utc).isoformat()}
 
     if 'name' in data:
         name = (data['name'] or '').strip()
@@ -344,7 +350,7 @@ def ask():
     if project_id:
         project_instructions = get_project_instructions(project_id, user_id)
 
-    chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
     messages = chat.get('messages', [])
 
@@ -440,7 +446,7 @@ def ask_stream():
                     # Save to chat history (logged-in users)
                     current_chat_id = None
                     if is_logged_in:
-                        chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+                        chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                         current_chat_id = chat['id']
                         messages_list = chat.get('messages', [])
                         messages_list.append({"role": "user", "content": user_message})
@@ -483,7 +489,7 @@ def ask_stream():
             if is_logged_in:
                 if project_id:
                     project_instructions = get_project_instructions(project_id, user_id)
-                chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+                chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                 current_chat_id = chat['id']
                 messages_list = chat.get('messages', [])
                 recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
@@ -543,8 +549,11 @@ def ask_image():
     if project_id:
         project_instructions = get_project_instructions(project_id, user_id)
 
-    chat = get_or_create_chat(user_id, chat_id, project_id=project_id)
+    subject = request.form.get("subject", "biology")
+
+    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
+    subject = chat.get('subject') or subject  # stored chat subject is authoritative
     messages = chat.get('messages', [])
 
     image_bytes = image_file.read()
@@ -559,7 +568,8 @@ def ask_image():
 
     answer = get_answer_with_image(
         user_message, history, image_base64, image_type,
-        project_instructions=project_instructions
+        project_instructions=project_instructions,
+        subject=subject,
     )
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
