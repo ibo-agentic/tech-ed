@@ -196,6 +196,7 @@ SUBJECT_ALIASES = {
     "biology": ["biology", "bio", "জীববিজ্ঞান", "জীব বিজ্ঞান", "জিববিজ্ঞান"],
     "geography": ["geography", "geo", "bugol", "bhugol", "ভূগোল", "ভুগোল", "bugol o poribesh"],
     "accounting": ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
+    "physics": ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
 }
 
 
