@@ -83,8 +83,8 @@ COMPLEX_MATH_KEYWORDS = [
     "জাবেদা", "খতিয়ান", "রেওয়ামিল", "বিবরণী",
     "balance sheet", "trial balance", "ledger", "journal",
     "প্রাপ্তি ও প্রদান", "আয়-ব্যয়", "আর্থিক অবস্থা",
-    # Explicit multi-step signals
-    "ধাপে ধাপে", "step by step", "সমাধান কর", "প্রমাণ কর",
+    # Explicit multi-step signals (accounting/algebra context only)
+    "ধাপে ধাপে", "সমাধান কর", "প্রমাণ কর",
     "প্রস্তুত কর", "তৈরি কর",
     # Chemistry
     "মোলার", "মোল", "stoichiometry", "বিক্রিয়া সমীকরণ",
@@ -189,17 +189,19 @@ def is_complex_math(user_input: str) -> bool:
     return False
 
 
-def pick_chain(user_input: str):
-    """Select which chain (LLM) to use based on question type.
+def pick_chain(user_input: str, subject: str = ""):
+    """Select which LLM based on detected subject + question type.
 
-    Physics → Flash (fast, sufficient for formula-based problems)
-    Accounting / step-by-step math → Pro (strongest for multi-step arithmetic)
+    Physics → always Flash (subject is authoritative over keyword heuristics)
+    Accounting + complex math → Pro
     Everything else → Flash
     """
-    if is_physics_question(user_input):
+    # Subject is the primary gate — never send physics to Pro
+    if subject == "physics" or is_physics_question(user_input):
         print(f"⚛️ [Routing] Physics → Gemini 2.5 Flash")
         return flash_chain
-    if is_complex_math(user_input):
+    # Only route to Pro for accounting or genuine multi-step math on non-physics subjects
+    if subject == "accounting" or is_complex_math(user_input):
         print(f"🧮 [Routing] Accounting/complex math → Gemini 2.5 Pro")
         return gemini_pro_chain
     print(f"💬 [Routing] Theory/simple → Gemini 2.5 Flash")
@@ -217,6 +219,60 @@ SUBJECT_ALIASES = {
     "accounting": ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
     "physics": ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
 }
+
+
+# Distinctive content keywords per subject — used to auto-detect subject from question text
+_SUBJECT_CONTENT_KEYWORDS = {
+    "biology": [
+        "সালোকসংশ্লেষণ", "photosynthesis", "কোষ", "cell", "উদ্ভিদ", "প্রাণী",
+        "শ্বসন", "respiration", "রক্ত", "blood", "হৃদয়", "heart", "ফুসফুস",
+        "বাস্তুতন্ত্র", "ecosystem", "ব্যাকটেরিয়া", "bacteria", "ভাইরাস", "virus",
+        "ক্লোরোফিল", "chlorophyll", "মাইটোকন্ড্রিয়া", "mitochondria",
+        "ক্রোমোজোম", "chromosome", "জিন", "gene", "dna", "rna",
+        "মাইটোসিস", "mitosis", "মিয়োসিস", "meiosis",
+        "জীব", "টিস্যু", "tissue", "অঙ্গ", "organ",
+    ],
+    "physics": [
+        "বেগ", "velocity", "ত্বরণ", "acceleration", "বল", "force",
+        "ঘর্ষণ", "friction", "নিউটন", "newton", "ভরবেগ", "momentum",
+        "বিদ্যুৎ", "electricity", "চুম্বক", "magnet", "তরঙ্গ", "wave",
+        "শব্দ", "sound", "আলো", "light", "তাপ", "heat", "চাপ", "pressure",
+        "ক্ষমতা", "power", "কাজ", "work", "শক্তি", "energy",
+        "প্রতিসরণ", "refraction", "প্রতিফলন", "reflection",
+    ],
+    "chemistry": [
+        "পরমাণু", "atom", "অণু", "molecule", "রাসায়নিক", "chemical",
+        "বিক্রিয়া", "reaction", "যৌগ", "compound", "মৌল", "element",
+        "অ্যাসিড", "acid", "ক্ষার", "base", "লবণ", "salt",
+        "ইলেকট্রন", "electron", "প্রোটন", "proton", "নিউট্রন", "neutron",
+        "পর্যায় সারণি", "periodic table",
+    ],
+    "geography": [
+        "ভূগোল", "মানচিত্র", "map", "জলবায়ু", "climate", "নদী", "river",
+        "পর্বত", "mountain", "মহাদেশ", "continent", "সাগর", "ocean",
+        "বৃষ্টিপাত", "rainfall", "ভূমিকম্প", "earthquake",
+        "জনসংখ্যা", "population", "মৃত্তিকা", "soil",
+    ],
+    "accounting": [
+        "হিসাব", "লেজার", "ledger", "জাবেদা", "journal", "ক্রেডিট", "credit",
+        "ডেবিট", "debit", "ব্যালেন্স শিট", "balance sheet", "মুনাফা", "profit",
+        "ক্ষতি", "loss", "আর্থিক", "financial", "trial balance", "নগদ",
+    ],
+}
+
+
+def detect_subject_from_question(text: str, fallback: str = "biology") -> str:
+    """Detect subject from question content keywords. Returns fallback if unclear."""
+    t = text.lower()
+    scores = {subj: 0 for subj in _SUBJECT_CONTENT_KEYWORDS}
+    for subj, keywords in _SUBJECT_CONTENT_KEYWORDS.items():
+        for kw in keywords:
+            if kw in t:
+                scores[subj] += 1
+    best = max(scores, key=scores.get)
+    if scores[best] > 0:
+        return best
+    return fallback
 
 
 CASUAL_PATTERNS = [
@@ -266,10 +322,7 @@ _SUBJECT_REPLIES = [
     "আমি পড়াই: **জীববিজ্ঞান**, **পদার্থবিজ্ঞান**, **ভূগোল**, আর **হিসাববিজ্ঞান** — SSC NCTB syllabus অনুযায়ী। কোনটা নিয়ে শুরু করবে? 🌱",
 ]
 
-_GREETING_TRIGGERS = ["hi", "hello", "হ্যালো", "হাই", "আসসালামু", "সালাম", "assalamu"]
 _THANKS_TRIGGERS   = ["ধন্যবাদ", "thanks", "thank you", "শুক্রিয়া"]
-_BYE_TRIGGERS      = ["bye", "বিদায়", "আবার আসব", "আবার আসবো"]
-_OK_TRIGGERS       = ["ok", "okay", "ঠিক আছে", "বুঝলাম", "বুঝেছি", "got it", "আচ্ছা"]
 _SUBJECT_TRIGGERS  = ["kon kon subject", "which subject", "what subject", "কী পড়াও",
                       "কী পড়ান", "kon subject", "apni ki poran", "tumi ki poran",
                       "কোন subject", "ki subject"]
@@ -280,16 +333,26 @@ def instant_reply(user_input: str) -> str | None:
     Returns None if the message needs LLM processing.
     """
     text = user_input.strip().lower()
+    words = set(text.split())  # word-level set for short English triggers
+
     if any(t in text for t in _SUBJECT_TRIGGERS):
         return random.choice(_SUBJECT_REPLIES)
-    if any(t in text for t in _GREETING_TRIGGERS):
+
+    # Greetings — "hi"/"hello" must be standalone words, not inside longer words
+    if words & {"hi", "hello", "assalamu"} or any(t in text for t in ["হ্যালো", "হাই", "আসসালামু", "সালাম"]):
         return random.choice(_GREETING_REPLIES)
+
     if any(t in text for t in _THANKS_TRIGGERS):
         return random.choice(_THANKS_REPLIES)
-    if any(t in text for t in _BYE_TRIGGERS):
+
+    # Bye — "bye" must be standalone
+    if words & {"bye"} or any(t in text for t in ["বিদায়", "আবার আসব", "আবার আসবো"]):
         return random.choice(_BYE_REPLIES)
-    if any(t in text for t in _OK_TRIGGERS) or text in {"hm", "hmm"}:
+
+    # OK — "ok"/"okay" must be standalone words, not substrings (e.g. "salok", "okay-ish")
+    if words & {"ok", "okay", "hm", "hmm"} or any(t in text for t in ["ঠিক আছে", "বুঝলাম", "বুঝেছি", "got it", "আচ্ছা"]):
         return random.choice(_OK_REPLIES)
+
     return None
 
 
@@ -400,9 +463,60 @@ def check_stream_mismatch(user_stream: str, question_subject: str) -> str | None
     )
 
 
-def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "") -> str:
+def _transliterate_name_to_bangla(name: str) -> str:
+    """Approximate Latin-to-Bangla transliteration for personal names."""
+    cons = {
+        'b': 'ব', 'c': 'ক', 'd': 'দ', 'f': 'ফ', 'g': 'গ',
+        'h': 'হ', 'j': 'জ', 'k': 'ক', 'l': 'ল', 'm': 'ম',
+        'n': 'ন', 'p': 'প', 'q': 'ক', 'r': 'র', 's': 'স',
+        't': 'ত', 'v': 'ভ', 'w': 'ওয়', 'x': 'ক্স', 'y': 'য়', 'z': 'জ',
+    }
+    ind_v = {'a': 'আ', 'e': 'এ', 'i': 'ই', 'o': 'ও', 'u': 'উ'}
+    dep_v = {'a': 'া', 'e': 'ে', 'i': 'ি', 'o': 'ো', 'u': 'ু'}
+
+    s = name.lower().strip()
+    if not s:
+        return name
+
+    # If name already contains Bangla characters, return as-is
+    if any('ঀ' <= ch <= '৿' for ch in name):
+        return name
+
+    result = []
+    prev_type = 'start'  # 'start', 'consonant', 'vowel'
+
+    for ch in s:
+        if ch in ind_v:
+            if prev_type == 'consonant':
+                result.append(dep_v[ch])
+            elif prev_type == 'vowel' and ch in ('a', 'e', 'o', 'u'):
+                # vowel-after-vowel: insert য় connector (e.g. "ia" → "িয়া", "ea" → "েয়া")
+                result.append('য়' + dep_v[ch])
+            else:
+                result.append(ind_v[ch])
+            prev_type = 'vowel'
+        elif ch in cons:
+            result.append(cons[ch])
+            prev_type = 'consonant'
+        # skip other chars (spaces, hyphens etc.)
+
+    return ''.join(result) or name
+
+
+def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "", student_name: str = "") -> str:
     """Build the full system prompt with NCTB context + optional project instructions."""
     prompt = SYSTEM_PROMPT
+
+    if student_name and student_name.strip():
+        first_name = student_name.strip().split()[0]
+        bangla_name = _transliterate_name_to_bangla(first_name)
+        prompt += f"""
+
+## ছাত্রের নাম
+ছাত্রের নাম: {bangla_name}
+মাঝে মাঝে (সব সময় না) নাম ধরে ডাকো — যখন স্বাভাবিক লাগে।
+⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে। কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
+"""
 
     if stream and stream in STREAM_INFO:
         info = STREAM_INFO[stream]
@@ -476,12 +590,12 @@ def do_rag_lookup(user_input: str, subject: str = "biology"):
     return nctb_context, chapters_found
 
 
-def run_llm(user_input, history, nctb_context, project_instructions="", stream=""):
+def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject=""):
     """
-    Run the LLM with already-retrieved context. Auto-picks Flash or Haiku.
+    Run the LLM with already-retrieved context. Auto-picks Flash or Pro.
     Returns the final reply string.
     """
-    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream)
+    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name)
     messages = [SystemMessage(content=system_with_context)]
     for msg in history:
         if msg["role"] == "user":
@@ -490,8 +604,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
             messages.append(AIMessage(content=msg["content"]))
     messages.append(HumanMessage(content=user_input))
 
-    # ── ROUTING happens here ──
-    selected_chain = pick_chain(user_input)
+    selected_chain = pick_chain(user_input, subject=subject)
     return selected_chain.invoke(messages)
 
 
@@ -522,7 +635,7 @@ def get_answer(user_input, history, project_instructions: str = "", subject: str
     print(f"📚 [DEBUG] Context length: {len(nctb_context)} chars")
 
     t1 = time.time()
-    reply = run_llm(user_input, history, nctb_context, project_instructions)
+    reply = run_llm(user_input, history, nctb_context, project_instructions, subject=detected_subject)
     t2 = time.time()
 
     print(f"⏱️  RAG: {t1-t0:.2f}s | LLM: {t2-t1:.2f}s | TOTAL: {t2-t0:.2f}s\n")

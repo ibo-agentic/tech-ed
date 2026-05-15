@@ -128,7 +128,7 @@ def list_projects():
     admin = get_admin_client()
     user_id = session['user_id']
     res = admin.table('projects')\
-        .select('id, name, icon, custom_instructions, created_at, updated_at')\
+        .select('id, name, icon, custom_instructions, stream, created_at, updated_at')\
         .eq('user_id', user_id)\
         .order('updated_at', desc=True)\
         .execute()
@@ -155,6 +155,9 @@ def create_project():
     name = (data.get('name') or '').strip()
     icon = (data.get('icon') or '📁').strip()[:4]
     instructions = (data.get('custom_instructions') or '').strip()
+    stream = (data.get('stream') or '').strip()
+    if stream not in ('science', 'commerce', 'arts', ''):
+        stream = ''
 
     if not name:
         return jsonify({'error': 'Project name required'}), 400
@@ -166,12 +169,16 @@ def create_project():
     admin = get_admin_client()
     user_id = session['user_id']
 
-    res = admin.table('projects').insert({
+    insert_data = {
         'user_id': user_id,
         'name': name,
         'icon': icon,
         'custom_instructions': instructions,
-    }).execute()
+    }
+    if stream:
+        insert_data['stream'] = stream
+
+    res = admin.table('projects').insert(insert_data).execute()
 
     if res.data:
         project = res.data[0]
@@ -240,6 +247,10 @@ def update_project(project_id):
         if len(instructions) > MAX_INSTRUCTIONS_LENGTH:
             return jsonify({'error': f'Instructions too long (max {MAX_INSTRUCTIONS_LENGTH} chars)'}), 400
         update['custom_instructions'] = instructions
+
+    if 'stream' in data:
+        stream = (data['stream'] or '').strip()
+        update['stream'] = stream if stream in ('science', 'commerce', 'arts') else None
 
     admin.table('projects').update(update).eq('id', project_id).execute()
     return jsonify({'success': True})
@@ -412,6 +423,7 @@ def ask_stream():
     plan = session.get('plan', 'free')
     guest_count = session.get('guest_messages', 0)
     history_session = session.get('history', [])
+    student_name = session.get('name', '')
 
     # Guest limit check
     if not is_logged_in and guest_count >= 5:
@@ -430,14 +442,19 @@ def ask_stream():
         session.modified = True
 
     def event_stream():
-        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, is_casual_chat, instant_reply, check_stream_mismatch
+        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, detect_subject_from_question, is_casual_chat, instant_reply, check_stream_mismatch
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
 
         try:
-            # Auto-detect subject from question if user mentioned one explicitly
-            effective_subject = detect_subject_in_question(user_message, fallback=subject)
+            # 1. Check if user explicitly named a subject ("biology chapter", "physics question")
+            explicit_subject = detect_subject_in_question(user_message, fallback=None)
+            # 2. Try content keyword detection ("সালোকসংশ্লেষণ" → biology)
+            content_subject = detect_subject_from_question(user_message, fallback=None) if not explicit_subject else None
+            # 3. Resolve: explicit > content-detected > frontend activeSubject
+            subject_confirmed = bool(explicit_subject or content_subject)
+            effective_subject = explicit_subject or content_subject or subject
 
             # ── STREAM MISMATCH: soft redirect before doing any LLM work ──
             mismatch_msg = check_stream_mismatch(stream, effective_subject)
@@ -454,11 +471,32 @@ def ask_stream():
                         args=(current_chat_id, messages_list, user_message, user_id),
                         daemon=True
                     ).start()
-                yield sse({"type": "reply", "reply": mismatch_msg, "chat_id": current_chat_id, "chapters_found": []})
+                yield sse({"type": "reply", "reply": mismatch_msg, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                 return
 
             # ── TOC QUESTIONS: BYPASS LLM ENTIRELY ──
             if is_toc_question(user_message):
+                # If no subject was explicitly named or content-detected, ask rather than guess wrong
+                if not subject_confirmed:
+                    clarify = (
+                        "কোন বিষয়ের অধ্যায়ের তালিকা দেখতে চাও? 😊\n\n"
+                        "বলো — **জীববিজ্ঞান**, **পদার্থবিজ্ঞান**, **রসায়ন**, **হিসাববিজ্ঞান** নাকি **ভূগোল**?"
+                    )
+                    current_chat_id = None
+                    if is_logged_in:
+                        chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
+                        current_chat_id = chat['id']
+                        messages_list = chat.get('messages', [])
+                        messages_list.append({"role": "user", "content": user_message})
+                        messages_list.append({"role": "assistant", "content": clarify})
+                        threading.Thread(
+                            target=background_save,
+                            args=(current_chat_id, messages_list, user_message, user_id),
+                            daemon=True
+                        ).start()
+                    yield sse({"type": "reply", "reply": clarify, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    return
+
                 toc_reply = build_toc_response(effective_subject)
                 if toc_reply:
                     yield sse({"type": "stage", "text": "Looking up chapter list..."})
@@ -482,7 +520,8 @@ def ask_stream():
                         "type": "reply",
                         "reply": toc_reply,
                         "chat_id": current_chat_id,
-                        "chapters_found": ["অধ্যায় তালিকা"]
+                        "chapters_found": ["অধ্যায় তালিকা"],
+                        "chips": False
                     })
                     return  # CRITICAL: exit, don't run LLM
 
@@ -506,7 +545,7 @@ def ask_stream():
                         history = [{"role": m["role"], "content": m["content"]} for m in recent]
                     else:
                         history = history_session[-10:]
-                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream)
+                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream, student_name=student_name, subject=effective_subject)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": user_message})
                     messages_list.append({"role": "assistant", "content": reply})
@@ -515,7 +554,7 @@ def ask_stream():
                         args=(current_chat_id, messages_list, user_message, user_id),
                         daemon=True
                     ).start()
-                yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id, "chapters_found": []})
+                yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                 return
 
             # ── STAGE 1: Generic thinking placeholder ──
@@ -549,7 +588,7 @@ def ask_stream():
             else:
                 history = history_session[-10:]
 
-            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream)
+            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject)
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
@@ -564,7 +603,8 @@ def ask_stream():
                 "type": "reply",
                 "reply": reply,
                 "chat_id": current_chat_id,
-                "chapters_found": chapters_found if is_biology else []
+                "chapters_found": chapters_found if is_biology else [],
+                "chips": True,
             })
 
         except Exception as e:
@@ -637,11 +677,12 @@ def ask_image():
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
-    answer = get_answer_with_image(
+    answer, show_chips = get_answer_with_image(
         user_message, history, image_base64, image_type,
         project_instructions=project_instructions,
         subject=subject,
         stream=stream,
+        student_name=session.get('name', ''),
     )
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
@@ -665,6 +706,7 @@ def ask_image():
         "reply": answer,
         "chat_id": current_chat_id,
         "image_url": image_url,
+        "chips": show_chips,
     })
 
 

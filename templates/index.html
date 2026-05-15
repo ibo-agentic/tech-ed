@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Dipti AI — AI Tutor</title>
+  <title>Dipti AI — SSC AI Tutor Bangladesh | Sheelbi</title>
+  <meta name="description" content="Dipti AI is a free AI tutor for SSC students in Bangladesh. Get instant answers in Bangla for Biology, Physics, Accounting, Geography and more — powered by NCTB textbooks.">
+  <meta name="keywords" content="Dipti AI, SSC tutor Bangladesh, AI tutor Bangla, NCTB, জীববিজ্ঞান, পদার্থবিজ্ঞান, হিসাববিজ্ঞান, SSC exam help, Sheelbi">
+  <meta property="og:title" content="Dipti AI — SSC AI Tutor Bangladesh">
+  <meta property="og:description" content="Free AI tutor for SSC students. Ask questions in Bangla and get instant answers from NCTB textbooks.">
+  <meta property="og:type" content="website">
+  <meta name="robots" content="index, follow">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><text y='.9em' font-size='80' x='10'>✦</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -235,6 +241,13 @@
     .user .bubble img.sent-image:hover{transform:scale(1.02);box-shadow:0 4px 16px rgba(0,0,0,.4);}
     .user .bubble.image-only img.sent-image{max-width:280px;max-height:300px;}
 
+    .reply-chips{display:flex;flex-wrap:wrap;gap:7px;padding-left:41px;margin-top:-2px;margin-bottom:6px;}
+    .reply-chip{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:all .15s;white-space:nowrap;}
+    .reply-chip:hover{border-color:var(--green);color:var(--green);background:rgba(13,228,160,.07);}
+    .reply-chip.primary{border-color:var(--green);color:var(--green);}
+    .reply-chip.primary:hover{background:rgba(13,228,160,.12);}
+    @media(max-width:480px){.reply-chip{font-size:11px;padding:4px 10px;}.reply-chips{gap:5px;padding-left:0;}}
+
     /* Lightbox */
     .image-lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;animation:fadeOverlay .2s ease both;cursor:zoom-out;padding:20px;}
     .image-lightbox.active{display:flex;}
@@ -305,6 +318,14 @@
     .icon-pick{width:36px;height:36px;border-radius:var(--radius-sm);background:var(--bg3);border:2px solid transparent;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .13s;}
     .icon-pick:hover{background:var(--bg4);}
     .icon-pick.selected{border-color:var(--green);background:var(--green-bg);}
+
+    .proj-stream-picker{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+    .proj-stream-btn{flex:1;min-width:90px;padding:7px 10px;border-radius:var(--radius-sm);background:var(--bg3);border:2px solid transparent;cursor:pointer;font-size:12px;color:var(--text1);transition:all .13s;text-align:center;white-space:nowrap;}
+    .proj-stream-btn:hover{background:var(--bg4);}
+    .proj-stream-btn.selected{border-color:var(--green);background:var(--green-bg);color:var(--green);font-weight:600;}
+    .proj-stream-none{font-size:11px;color:var(--text3);cursor:pointer;padding:4px 8px;border-radius:var(--radius-xs);background:transparent;border:1px solid transparent;transition:all .13s;}
+    .proj-stream-none:hover{color:var(--text2);border-color:var(--border);}
+    .proj-stream-none.selected{color:var(--text2);border-color:var(--border);background:var(--bg3);}
 
     .modal-error{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);color:var(--danger);padding:8px 11px;border-radius:var(--radius-xs);font-size:11.5px;margin-bottom:12px;display:none;}
     .modal-success{background:var(--green-bg);border:1px solid rgba(13,228,160,.2);color:var(--green);padding:8px 11px;border-radius:var(--radius-xs);font-size:11.5px;margin-bottom:12px;display:none;}
@@ -676,7 +697,7 @@
       <div class="hint-bar" style="justify-content:flex-end;">
         <span class="char-count" id="char-count"></span>
       </div>
-      <div class="disclaimer-bar">AI can sometimes make mistakes — always double-check. ✦ Dipti AI</div>
+      <div class="disclaimer-bar">AI can sometimes make mistakes — always double-check. ✦ Dipti AI &nbsp;·&nbsp; <span style="opacity:.5;">© 2026 Sheelbi</span></div>
     </div>
 
   </div>
@@ -699,6 +720,15 @@
     <div class="field-group">
       <label class="field-label">Icon</label>
       <div class="icon-picker" id="cp-icon-picker"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">বিভাগ (Stream)</label>
+      <div class="proj-stream-picker" id="cp-stream-picker">
+        <button class="proj-stream-btn" data-stream="science" onclick="selectProjectStream('cp','science',this)">🔬 বিজ্ঞান</button>
+        <button class="proj-stream-btn" data-stream="commerce" onclick="selectProjectStream('cp','commerce',this)">📊 ব্যবসায় শিক্ষা</button>
+        <button class="proj-stream-btn" data-stream="arts" onclick="selectProjectStream('cp','arts',this)">🎨 মানবিক</button>
+      </div>
+      <div class="field-hint"><span>বিভাগ বেছে নিলে নতুন চ্যাটে আর জিজ্ঞেস করবে না</span></div>
     </div>
     <div class="field-group">
       <label class="field-label">Custom Instructions (Optional)</label>
@@ -728,6 +758,15 @@
     <div class="field-group">
       <label class="field-label">Icon</label>
       <div class="icon-picker" id="ep-icon-picker"></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">বিভাগ (Stream)</label>
+      <div class="proj-stream-picker" id="ep-stream-picker">
+        <button class="proj-stream-btn" data-stream="science" onclick="selectProjectStream('ep','science',this)">🔬 বিজ্ঞান</button>
+        <button class="proj-stream-btn" data-stream="commerce" onclick="selectProjectStream('ep','commerce',this)">📊 ব্যবসায় শিক্ষা</button>
+        <button class="proj-stream-btn" data-stream="arts" onclick="selectProjectStream('ep','arts',this)">🎨 মানবিক</button>
+      </div>
+      <div class="field-hint"><span>বিভাগ বেছে নিলে নতুন চ্যাটে আর জিজ্ঞেস করবে না</span></div>
     </div>
     <div class="field-group">
       <label class="field-label">Custom Instructions</label>
@@ -1039,7 +1078,8 @@ async function loadChatById(chatId){
     document.getElementById('topic-bar-title').textContent = chat.title || 'Chat';
     document.getElementById('topic-bar-tag').style.display = '';
     chatBox.scrollTop = chatBox.scrollHeight;
-    if(chat.subject){ activeSubject = chat.subject; localStorage.setItem('activeSubject', chat.subject); }
+    activeSubject = chat.subject || 'biology';
+    localStorage.setItem('activeSubject', activeSubject);
     renderHistory();
     closeSidebar();
   } catch(e){
@@ -1047,7 +1087,12 @@ async function loadChatById(chatId){
   }
 }
 
-function enterProject(id){currentProjectId=id;currentChatId=null;updateProjectBanner();renderProjects();loadAllChats();newChat();closeSidebar();}
+function enterProject(id){
+  currentProjectId=id;currentChatId=null;
+  const p=projects.find(x=>x.id===id);
+  if(p&&p.stream){activeStream=p.stream;localStorage.setItem('activeStream',activeStream);updateStreamBadge();}
+  updateProjectBanner();renderProjects();loadAllChats();newChat();closeSidebar();
+}
 function exitProject(){currentProjectId=null;currentChatId=null;updateProjectBanner();renderProjects();loadAllChats();newChat();closeSidebar();}
 
 function updateProjectBanner(){
@@ -1057,12 +1102,18 @@ function updateProjectBanner(){
   if(!p){banner.classList.remove('visible');return;}
   banner.classList.add('visible');
   document.getElementById('project-banner-icon').textContent=p.icon||'📁';
-  document.getElementById('project-banner-name').textContent=p.name;
+  const streamLabel=p.stream&&STREAM_META[p.stream]?(' · '+STREAM_META[p.stream].icon+' '+STREAM_META[p.stream].label):'';
+  document.getElementById('project-banner-name').textContent=p.name+streamLabel;
   const inst=p.custom_instructions&&p.custom_instructions.trim();
   const instEl=document.getElementById('project-banner-instructions');
   if(inst){instEl.textContent=inst.length>200?inst.slice(0,200)+'...':inst;instEl.classList.remove('project-banner-instructions-empty');}
   else{instEl.textContent='No custom instructions. Click ⚙ Edit to add.';instEl.classList.add('project-banner-instructions-empty');}
   document.getElementById('new-chat-btn-label').textContent='New chat in '+p.name;
+}
+
+function selectProjectStream(prefix, stream, el){
+  document.querySelectorAll('#'+prefix+'-stream-picker .proj-stream-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
 }
 
 function openCreateProjectModal(){
@@ -1072,6 +1123,12 @@ function openCreateProjectModal(){
   document.getElementById('cp-name-counter').textContent='0/50';
   document.getElementById('cp-instructions-counter').textContent='0/1000';
   document.getElementById('create-project-error').style.display='none';
+  // Clear stream selection — default to current activeStream if set
+  document.querySelectorAll('#cp-stream-picker .proj-stream-btn').forEach(b=>b.classList.remove('selected'));
+  if(activeStream){
+    const match=document.querySelector('#cp-stream-picker [data-stream="'+activeStream+'"]');
+    if(match)match.classList.add('selected');
+  }
   const picker=document.getElementById('cp-icon-picker');picker.innerHTML='';
   PROJECT_ICONS.forEach((icon,i)=>{
     const btn=document.createElement('button');
@@ -1090,11 +1147,13 @@ async function submitCreateProject(){
   const instructions=document.getElementById('cp-instructions').value.trim();
   const sel=document.querySelector('#cp-icon-picker .icon-pick.selected');
   const icon=sel?sel.dataset.icon:'📁';
+  const streamSel=document.querySelector('#cp-stream-picker .proj-stream-btn.selected');
+  const stream=streamSel?streamSel.dataset.stream:'';
   const errEl=document.getElementById('create-project-error');
   if(!name){errEl.textContent='Project name required.';errEl.style.display='block';return;}
   const btn=document.getElementById('cp-create-btn');btn.disabled=true;btn.textContent='Creating...';
   try{
-    const r=await fetch('/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,custom_instructions:instructions})});
+    const r=await fetch('/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,custom_instructions:instructions,stream})});
     const d=await r.json();
     if(d.project){projects.unshift(d.project);renderProjects();closeCreateProjectModal();enterProject(d.project.id);}
     else{errEl.textContent=d.error||'Failed.';errEl.style.display='block';}
@@ -1112,6 +1171,12 @@ function openEditProjectModalFor(id){
   document.getElementById('ep-instructions-counter').textContent=(p.custom_instructions||'').length+'/1000';
   document.getElementById('edit-project-error').style.display='none';
   document.getElementById('edit-project-success').style.display='none';
+  // Pre-select stream
+  document.querySelectorAll('#ep-stream-picker .proj-stream-btn').forEach(b=>b.classList.remove('selected'));
+  if(p.stream){
+    const match=document.querySelector('#ep-stream-picker [data-stream="'+p.stream+'"]');
+    if(match)match.classList.add('selected');
+  }
   const picker=document.getElementById('ep-icon-picker');picker.innerHTML='';
   PROJECT_ICONS.forEach(icon=>{
     const btn=document.createElement('button');
@@ -1130,18 +1195,24 @@ async function submitEditProject(){
   const instructions=document.getElementById('ep-instructions').value.trim();
   const sel=document.querySelector('#ep-icon-picker .icon-pick.selected');
   const icon=sel?sel.dataset.icon:'📁';
+  const streamSel=document.querySelector('#ep-stream-picker .proj-stream-btn.selected');
+  const stream=streamSel?streamSel.dataset.stream:'';
   const errEl=document.getElementById('edit-project-error');
   const okEl=document.getElementById('edit-project-success');
   if(!name){errEl.textContent='Name required.';errEl.style.display='block';return;}
   const btn=document.getElementById('ep-save-btn');btn.disabled=true;btn.textContent='Saving...';
   try{
-    const r=await fetch('/projects/'+editingProjectId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,custom_instructions:instructions})});
+    const r=await fetch('/projects/'+editingProjectId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,icon,custom_instructions:instructions,stream})});
     const d=await r.json();
     if(d.success){
       const idx=projects.findIndex(x=>x.id===editingProjectId);
-      if(idx>=0){projects[idx].name=name;projects[idx].icon=icon;projects[idx].custom_instructions=instructions;}
+      if(idx>=0){projects[idx].name=name;projects[idx].icon=icon;projects[idx].custom_instructions=instructions;projects[idx].stream=stream||null;}
       renderProjects();
-      if(editingProjectId===currentProjectId)updateProjectBanner();
+      if(editingProjectId===currentProjectId){
+        updateProjectBanner();
+        // Update activeStream if this is the project we're currently in
+        if(stream){activeStream=stream;localStorage.setItem('activeStream',activeStream);updateStreamBadge();}
+      }
       okEl.textContent='✓ Saved!';okEl.style.display='block';
       setTimeout(()=>closeEditProjectModal(),800);
     }else{errEl.textContent=d.error||'Failed.';errEl.style.display='block';}
@@ -1173,7 +1244,10 @@ document.addEventListener('input',e=>{
 
 function newChat(){
   currentChatId=null;chatBox.innerHTML='';
-  openStreamPicker(true);  // Always show stream picker so student confirms/changes stream
+  // Skip stream picker if we're inside a project that already has a stream assigned
+  const currentProject=currentProjectId?projects.find(x=>x.id===currentProjectId):null;
+  if(currentProject&&currentProject.stream){_doNewChat();return;}
+  openStreamPicker(true);
 }
 
 function _doNewChat(){
@@ -1281,13 +1355,35 @@ function createBotWrapper(html){
 
 function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
 
-function addBotMessage(text){
+function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   const html=marked.parse(text);
   const div=createBotWrapper(html);
   const bub=div.querySelector('.bubble');
   bub.style.lineHeight=/[\u0980-\u09FF]/.test(text)?'2.1':'1.85';
-  chatBox.appendChild(div);renderMath(bub);chatBox.scrollTop=chatBox.scrollHeight;
+  chatBox.appendChild(div);renderMath(bub);
+  if(showChips){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD01</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
+    chatBox.appendChild(chips);
+  }
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+let _chipSendOverride = null; // API gets this; bubble shows the short input text
+
+function useChip(btn, action){
+  btn.closest('.reply-chips').remove();
+  if(action==='write'){
+    input.value='\u0986\u09AE\u09BE\u09B0 \u09AE\u09A4\u09C7, ';
+    input.focus();
+    autoResize(input);
+  }else if(action==='explain'){
+    input.value='\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD01';
+    _chipSendOverride='\u0986\u0997\u09C7\u09B0 explanation \u099F\u09BE \u09AC\u09C1\u099D\u09BF\u09A8\u09BF \u2014 \u098F\u0987 \u09AC\u09BF\u09B7\u09AF\u09BC\u099F\u09BE \u098F\u0995\u09A6\u09AE \u09A8\u09A4\u09C1\u09A8\u09AD\u09BE\u09AC\u09C7 \u09B8\u09B9\u099C \u0995\u09B0\u09C7 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964';
+    sendMessage();
+  }
+  // 'done' just removes the chips
 }
 
 function showTyping(){
@@ -1419,11 +1515,13 @@ function sendSuggestionWithSubject(card){
 async function sendMessage(){
   const text=input.value.trim();
   if(!text&&!selectedFile)return;
+  const apiText=_chipSendOverride||text; _chipSendOverride=null;
   const display=text||'(ছবি পাঠানো হয়েছে)';
   const imgSnap=selectedFile?URL.createObjectURL(selectedFile):null;
   const fileSnap=selectedFile;
   input.value='';input.style.height='auto';sendBtn.disabled=true;
   document.getElementById('char-count').textContent='';
+  document.querySelectorAll('.reply-chips').forEach(c=>c.remove());
   addUserBubble(display,imgSnap);showTyping();
 
   if(fileSnap) removeImage();
@@ -1454,7 +1552,7 @@ async function sendMessage(){
       startImageStages();
       const fd=new FormData();
       fd.append('image',fileSnap);
-      fd.append('message',text||'এই ছবিটি দেখে বুঝিয়ে দাও।');
+      fd.append('message',apiText||'এই ছবিটি দেখে বুঝিয়ে দাও।');
       if(currentChatId)fd.append('chat_id',currentChatId);
       if(currentProjectId)fd.append('project_id',currentProjectId);
       fd.append('subject', activeSubject || 'biology');
@@ -1472,11 +1570,11 @@ async function sendMessage(){
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
       const reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';
       if(d.chat_id)currentChatId=d.chat_id;
-      removeTyping();addBotMessage(reply);
+      removeTyping();addBotMessage(reply, !!d.chips);
       removeImage();
     }else{
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
-      const body={message:text, subject: activeSubject, stream: activeStream};
+      const body={message:apiText, subject: activeSubject, stream: activeStream};
       if(currentChatId)body.chat_id=currentChatId;
       if(currentProjectId)body.project_id=currentProjectId;
 
@@ -1539,7 +1637,7 @@ async function sendMessage(){
 
       removeTyping();
       if(finalReply){
-        addBotMessage(finalReply.reply || 'দুঃখিত, সমস্যা হয়েছে।');
+        addBotMessage(finalReply.reply || 'দুঃখিত, সমস্যা হয়েছে।', !!finalReply.chips);
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
         if(currentChatId){
           const title=display.length>40?display.slice(0,40)+'…':display;

@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "rag"))
 from query import get_relevant_chunks
 
 # Reuse the LLM clients from chain.py — single source of truth
-from chain import flash_llm, gemini_pro_llm, gpt54_mini_llm
+from chain import flash_llm, gemini_pro_llm, gpt54_mini_llm, _transliterate_name_to_bangla
 
 load_dotenv()
 
@@ -60,9 +60,20 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     return flash_vision_chain, subject
 
 
-def build_image_system_prompt(nctb_context: str, project_instructions: str = "") -> str:
+def build_image_system_prompt(nctb_context: str, project_instructions: str = "", student_name: str = "") -> str:
     """Build system prompt for image queries with optional project instructions."""
     prompt = SYSTEM_PROMPT
+
+    if student_name and student_name.strip():
+        first_name = student_name.strip().split()[0]
+        bangla_name = _transliterate_name_to_bangla(first_name)
+        prompt += f"""
+
+## ছাত্রের নাম
+ছাত্রের নাম: {bangla_name}
+মাঝে মাঝে (সব সময় না) নাম ধরে ডাকো — যখন স্বাভাবিক লাগে।
+⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে। কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
+"""
 
     if project_instructions and project_instructions.strip():
         prompt += f"""
@@ -99,6 +110,7 @@ def get_answer_with_image(
     project_instructions: str = "",
     subject: str = "biology",
     stream: str = "",
+    student_name: str = "",
 ):
     """
     Get AI answer for an image query.
@@ -115,13 +127,13 @@ def get_answer_with_image(
     # Stream mismatch check — return redirect before hitting the LLM
     mismatch = check_stream_mismatch(stream, subject)
     if mismatch:
-        return mismatch
+        return mismatch, False
 
     # Fetch RAG context using detected subject
     query_for_rag = user_input if user_input else "প্রশ্ন"
     nctb_context = get_relevant_chunks(query_for_rag, subject=subject)
 
-    system_with_context = build_image_system_prompt(nctb_context, project_instructions)
+    system_with_context = build_image_system_prompt(nctb_context, project_instructions, student_name=student_name)
 
     messages = [SystemMessage(content=system_with_context)]
 
@@ -144,7 +156,8 @@ def get_answer_with_image(
 
     if user_input:
         content.append({"type": "text", "text": user_input})
-    else:
+    elif subject == "accounting":
+        # Accounting: always solve fully — math is too complex to guide step-by-step
         content.append({
             "type": "text",
             "text": (
@@ -152,6 +165,17 @@ def get_answer_with_image(
                 "ধাপে ধাপে বাংলায় explain করো এবং proper bivoroni table format ব্যবহার করো। "
                 "প্রতিটা subtotal verify করে দেখাও। "
                 "শেষে balance sheet match করছে কিনা check করো।"
+            ),
+        })
+    else:
+        # Non-accounting: ask student to try first before solving
+        content.append({
+            "type": "text",
+            "text": (
+                "ছবিতে কী প্রশ্ন আছে সেটা দেখো। "
+                "Student-কে জিজ্ঞেস করো: 'তুমি কোন অংশটায় আটকে গেছ? "
+                "নিজে একটু চেষ্টা করে বলো — আমি তারপর গাইড করবো।' "
+                "সাথে সাথে full solution দেবে না।"
             ),
         })
 
@@ -162,13 +186,13 @@ def get_answer_with_image(
     
     # ── Verification (accounting only) ──
     if subject != "accounting":
-        return answer
-    
+        return answer, True  # show chips for non-accounting answers
+
     is_valid, errors = verify_accounting_answer(answer)
-    
+
     if is_valid:
         print(f"✅ [Verify] Accounting math checks out")
-        return answer
+        return answer, False
     
     # ── First attempt failed verification — retry with explicit fix prompt ──
     print(f"⚠️ [Verify] Math errors detected: {errors}")
@@ -193,7 +217,7 @@ def get_answer_with_image(
     
     if is_valid_retry:
         print(f"✅ [Verify] Retry successful — math now balances")
-        return retry_answer
+        return retry_answer, False
     
     # ── Both attempts failed — honest fallback ──
     print(f"❌ [Verify] Both attempts failed: {retry_errors}")
@@ -207,4 +231,4 @@ def get_answer_with_image(
         f"⚠️ **সতর্কতা:** এই উত্তরে calculation error থাকতে পারে। "
         f"বইয়ের সমাধান দেখে নিজে verify করে নিও — exam-এ এই answer copy করো না যতক্ষণ না নিজে check করেছ।"
     )
-    return fallback
+    return fallback, False
