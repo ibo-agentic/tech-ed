@@ -208,8 +208,7 @@ def pick_chain(user_input: str):
 
 # ── TOC SHORT-CIRCUIT ──
 TOC_KEYWORDS = [
-    "chapter", "অধ্যায়", "তালিকা", "syllabus",
-    "chapter gula", "kon kon", "ki ki", "kiki", "koyta", "কয়টি",
+    "chapter", "অধ্যায়", "তালিকা", "syllabus", "chapter gula", "কয়টি", "koyta",
 ]
 
 SUBJECT_ALIASES = {
@@ -218,6 +217,80 @@ SUBJECT_ALIASES = {
     "accounting": ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
     "physics": ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
 }
+
+
+CASUAL_PATTERNS = [
+    "হ্যালো", "হ্যালো!", "hello", "hi ", "hi!", "হাই", "আসসালামু",
+    "সালাম", "কেমন আছ", "কেমন আছো", "কেমন আছেন", "ভালো আছ",
+    "ভালো আছো", "কী খবর", "ki khobor", "what's up", "whats up",
+    "ধন্যবাদ", "thanks", "thank you", "শুক্রিয়া",
+    "আবার আসব", "bye", "বিদায়", "ok", "okay", "ঠিক আছে",
+    "বুঝলাম", "বুঝেছি", "got it",
+    "kon kon subject", "কোন কোন subject", "কোন subject", "কী subject",
+    "ki subject", "which subject", "what subject", "কী পড়াও", "কী পড়ান",
+    "kon subject poran", "apni ki poran", "tumi ki poran",
+]
+
+def is_casual_chat(user_input: str) -> bool:
+    """Returns True for greetings/thanks/casual — skip RAG and stage indicators."""
+    text = user_input.strip().lower()
+    if len(text) <= 10:
+        return True
+    return any(p in text for p in CASUAL_PATTERNS)
+
+
+# ── INSTANT GREETING RESPONSES (zero LLM cost) ──
+import random
+
+_GREETING_REPLIES = [
+    "হ্যালো! কী পড়তে চাও আজকে? 🌱",
+    "হ্যালো! বলো, কোন বিষয়ে সাহায্য লাগবে? 😊",
+    "আরে হ্যালো! কী জানতে চাও? বলো 🌸",
+    "হ্যালো! আজকে কোন subject নিয়ে কাজ করছো? ✨",
+]
+_THANKS_REPLIES = [
+    "আরে ধন্যবাদ কেন! আরও কিছু লাগলে বলো 🌱",
+    "স্বাগতম! আর কোনো প্রশ্ন থাকলে জিজ্ঞেস করো 😊",
+    "হাহা, এটাই তো আমার কাজ! আর কিছু লাগবে? 🌸",
+]
+_BYE_REPLIES = [
+    "ঠিক আছে, পরে আসো! পড়াশোনা ভালো যাক 🌱",
+    "বাই! যেকোনো সময় প্রশ্ন থাকলে আসো 🌸",
+    "আবার দেখা হবে! ভালো থেকো ✨",
+]
+_OK_REPLIES = [
+    "ঠিক আছে! আর কিছু লাগলে বলো 🌱",
+    "ওকে! কোনো প্রশ্ন থাকলে জিজ্ঞেস করো 😊",
+]
+_SUBJECT_REPLIES = [
+    "আমি পড়াই: **জীববিজ্ঞান**, **পদার্থবিজ্ঞান**, **ভূগোল**, আর **হিসাববিজ্ঞান** — SSC NCTB syllabus অনুযায়ী। কোনটা নিয়ে শুরু করবে? 🌱",
+]
+
+_GREETING_TRIGGERS = ["hi", "hello", "হ্যালো", "হাই", "আসসালামু", "সালাম", "assalamu"]
+_THANKS_TRIGGERS   = ["ধন্যবাদ", "thanks", "thank you", "শুক্রিয়া"]
+_BYE_TRIGGERS      = ["bye", "বিদায়", "আবার আসব", "আবার আসবো"]
+_OK_TRIGGERS       = ["ok", "okay", "ঠিক আছে", "বুঝলাম", "বুঝেছি", "got it", "আচ্ছা"]
+_SUBJECT_TRIGGERS  = ["kon kon subject", "which subject", "what subject", "কী পড়াও",
+                      "কী পড়ান", "kon subject", "apni ki poran", "tumi ki poran",
+                      "কোন subject", "ki subject"]
+
+def instant_reply(user_input: str) -> str | None:
+    """
+    Return a hardcoded reply instantly for pure greetings/thanks/bye/ok.
+    Returns None if the message needs LLM processing.
+    """
+    text = user_input.strip().lower()
+    if any(t in text for t in _SUBJECT_TRIGGERS):
+        return random.choice(_SUBJECT_REPLIES)
+    if any(t in text for t in _GREETING_TRIGGERS):
+        return random.choice(_GREETING_REPLIES)
+    if any(t in text for t in _THANKS_TRIGGERS):
+        return random.choice(_THANKS_REPLIES)
+    if any(t in text for t in _BYE_TRIGGERS):
+        return random.choice(_BYE_REPLIES)
+    if any(t in text for t in _OK_TRIGGERS) or text in {"hm", "hmm"}:
+        return random.choice(_OK_REPLIES)
+    return None
 
 
 def is_toc_question(user_input: str) -> bool:
@@ -272,9 +345,76 @@ def build_toc_response(subject: str) -> str:
     return intro + body + outro
 
 
-def build_system_prompt(nctb_context: str, project_instructions: str = "") -> str:
+# ── STREAM DEFINITIONS ──
+STREAM_INFO = {
+    "science": {
+        "name": "বিজ্ঞান বিভাগ",
+        "subjects": ["biology", "physics", "chemistry"],
+        "label": "Biology, Physics, Chemistry, Higher Math",
+    },
+    "commerce": {
+        "name": "ব্যবসায় শিক্ষা বিভাগ",
+        "subjects": ["accounting", "economics"],
+        "label": "Accounting, Economics, Finance & Banking, Business Studies",
+    },
+    "arts": {
+        "name": "মানবিক বিভাগ",
+        "subjects": ["geography", "history", "civics"],
+        "label": "Geography, History, Civics, Economics",
+    },
+}
+
+def get_stream_for_subject(subject: str) -> str | None:
+    for stream, info in STREAM_INFO.items():
+        if subject in info["subjects"]:
+            return stream
+    return None
+
+def check_stream_mismatch(user_stream: str, question_subject: str) -> str | None:
+    """
+    Returns a soft-redirect message if the question subject is outside
+    the student's stream. Returns None if it's fine to answer.
+    """
+    if not user_stream or user_stream not in STREAM_INFO:
+        return None
+    allowed = STREAM_INFO[user_stream]["subjects"]
+    if question_subject in allowed:
+        return None
+    # Subject belongs to a different stream
+    other_stream = get_stream_for_subject(question_subject)
+    if not other_stream:
+        return None  # common subject — always allowed
+    stream_name  = STREAM_INFO[user_stream]["name"]
+    other_name   = STREAM_INFO[other_stream]["name"]
+    subject_labels = {
+        "biology": "জীববিজ্ঞান", "physics": "পদার্থবিজ্ঞান",
+        "chemistry": "রসায়ন", "accounting": "হিসাববিজ্ঞান",
+        "geography": "ভূগোল", "economics": "অর্থনীতি",
+    }
+    subj_label = subject_labels.get(question_subject, question_subject)
+    return (
+        f"তুমি **{stream_name}**-এ আছো, তাই **{subj_label}** তোমার সিলেবাসে নেই 🌱\n\n"
+        f"এই বিষয়টি **{other_name}**-এর শিক্ষার্থীদের জন্য।\n\n"
+        f"**{subj_label}** পড়তে চাইলে নতুন চ্যাটে **{other_name}** নির্বাচন করো।\n"
+        f"আর যদি শুধু জানার আগ্রহ থেকে প্রশ্ন করে থাকো, তাহলে সেটাও বলতে পারো 😊"
+    )
+
+
+def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "") -> str:
     """Build the full system prompt with NCTB context + optional project instructions."""
     prompt = SYSTEM_PROMPT
+
+    if stream and stream in STREAM_INFO:
+        info = STREAM_INFO[stream]
+        prompt += f"""
+
+## ছাত্রের বিভাগ (Stream):
+
+এই ছাত্র SSC **{info['name']}**-এ পড়ে।
+তার syllabus-এ আছে: {info['label']}
+
+সবসময় এই বিভাগের context মাথায় রেখে উত্তর দাও।
+"""
 
     if project_instructions and project_instructions.strip():
         prompt += f"""
@@ -336,12 +476,12 @@ def do_rag_lookup(user_input: str, subject: str = "biology"):
     return nctb_context, chapters_found
 
 
-def run_llm(user_input, history, nctb_context, project_instructions=""):
+def run_llm(user_input, history, nctb_context, project_instructions="", stream=""):
     """
     Run the LLM with already-retrieved context. Auto-picks Flash or Haiku.
     Returns the final reply string.
     """
-    system_with_context = build_system_prompt(nctb_context, project_instructions)
+    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream)
     messages = [SystemMessage(content=system_with_context)]
     for msg in history:
         if msg["role"] == "user":

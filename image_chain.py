@@ -32,9 +32,14 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
     msg = HumanMessage(content=[
         {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
         {"type": "text", "text": (
-            "One word only. Is this a complex multi-step accounting problem "
-            "(ledger, trial balance, balance sheet, income statement with many calculations)? "
-            "Reply: accounting_hard, accounting_simple, biology, geography, or other."
+            "One word only. Classify this image:\n"
+            "- accounting_hard: ONLY if it contains actual numbers to calculate "
+            "(e.g. ledger entries, trial balance with figures, income statement with amounts, "
+            "cash flow with numbers). Must have REAL DATA to compute.\n"
+            "- accounting_simple: accounting theory/concept question with NO numbers to calculate "
+            "(e.g. 'how to prepare X', 'discuss Y', 'what is Z', definition questions).\n"
+            "- biology, geography, physics, or other: for those subjects.\n"
+            "Reply with exactly one word."
         )},
     ])
     result = flash_vision_chain.invoke([msg]).strip().lower()
@@ -93,16 +98,24 @@ def get_answer_with_image(
     image_type="image/jpeg",
     project_instructions: str = "",
     subject: str = "biology",
+    stream: str = "",
 ):
     """
     Get AI answer for an image query.
-    
+
     For accounting subject: also verifies math balances after Pro responds.
     If verification fails, retries once with explicit "fix the math" prompt.
     If still wrong, returns honest "couldn't verify" message.
     """
+    from chain import check_stream_mismatch
+
     # Auto-detect subject from image — overrides whatever the frontend sent
     selected_chain, subject = pick_vision_chain(image_base64, image_type)
+
+    # Stream mismatch check — return redirect before hitting the LLM
+    mismatch = check_stream_mismatch(stream, subject)
+    if mismatch:
+        return mismatch
 
     # Fetch RAG context using detected subject
     query_for_rag = user_input if user_input else "প্রশ্ন"

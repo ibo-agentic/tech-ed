@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Sheelbi — AI Tutor</title>
+  <title>Dipti AI — AI Tutor</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><text y='.9em' font-size='80' x='10'>✦</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -220,8 +220,9 @@
     .bot .bubble ol li,.bot .bubble ul li{counter-increment:step;padding:6px 0 6px 32px;position:relative;line-height:1.7;border:none;background:transparent;border-radius:0;}
     .bot .bubble ol li:before,.bot .bubble ul li:before{content:counter(step);position:absolute;left:0;top:6px;width:22px;height:22px;background:rgba(13,228,160,0.1);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;}
     .bot .bubble table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:10px 0;font-size:12px;}
-    .bot .bubble th,.bot .bubble td{padding:7px 10px;border:1px solid var(--border2);text-align:left;vertical-align:top;}
+    .bot .bubble th,.bot .bubble td{padding:7px 10px;border:1px solid var(--border2);text-align:left;vertical-align:top;white-space:nowrap;}
     .bot .bubble th{background:var(--bg3);font-weight:600;color:var(--blue);}
+    .bot .bubble td:last-child{text-align:right;}
     .bot .bubble pre{overflow-x:auto;max-width:100%;background:var(--bg3);padding:9px 11px;border-radius:var(--radius-xs);margin:8px 0;}
     .bot .bubble code{background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:12px;}
     .bot .bubble pre code{padding:0;background:transparent;}
@@ -415,6 +416,25 @@
     .stage-text-done{color:var(--text2);font-size:12px;}
     .stage-chapter{color:var(--green);font-weight:600;font-size:12px;background:var(--green-bg);padding:1px 8px;border-radius:10px;border:1px solid rgba(13,228,160,.2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+    /* ── STREAM PICKER ── */
+    .stream-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+    .stream-overlay.active{display:flex;}
+    .stream-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:32px 28px;width:min(420px,95vw);text-align:center;}
+    .stream-card h2{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;}
+    .stream-card p{font-size:13px;color:var(--text3);margin-bottom:24px;line-height:1.6;}
+    .stream-options{display:flex;flex-direction:column;gap:10px;}
+    .stream-btn{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;border:1.5px solid var(--border2);background:var(--bg3);cursor:pointer;transition:all .18s;text-align:left;}
+    .stream-btn:hover{border-color:var(--green);background:var(--green-bg);}
+    .stream-btn.selected{border-color:var(--green);background:var(--green-bg);}
+    .stream-btn-icon{font-size:28px;flex-shrink:0;}
+    .stream-btn-info{flex:1;}
+    .stream-btn-title{font-size:14px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .stream-btn-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .stream-confirm{margin-top:18px;width:100%;padding:11px;background:var(--green);color:#0d1117;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;opacity:.4;transition:opacity .15s;}
+    .stream-confirm.ready{opacity:1;}
+    .stream-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(13,228,160,.25);background:var(--green-bg);color:var(--green);cursor:pointer;transition:all .13s;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .stream-badge:hover{border-color:var(--green);}
   </style>
 </head>
 <body>
@@ -507,7 +527,7 @@
         <line x1="55" y1="55" x2="82" y2="82" stroke="#9b6fd4" stroke-width="11" stroke-linecap="round"/>
         <circle cx="50" cy="50" r="7" fill="#f0a030"/>
       </svg>
-      <div class="sb-logo-text">Sheelbi</div>
+      <div class="sb-logo-text">Dipti AI</div>
       <button class="sidebar-collapse-btn" id="collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">‹</button>
     </div>
 
@@ -558,7 +578,7 @@
     <div class="main-search-bar" id="main-search-bar">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
         <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:2px;" onclick="toggleSidebar()">☰</button>
-        <span style="font-size:16px;font-weight:800;color:var(--text);">Sheelbi</span>
+        <span style="font-size:16px;font-weight:800;color:var(--text);">Dipti AI</span>
         <button class="chat-topic-action" title="New chat" onclick="newChat()" style="font-size:13px;">✏️</button>
       </div>
     </div>
@@ -566,6 +586,7 @@
     <div class="chat-topic-bar" id="chat-topic-bar">
       <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
       <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Dipti AI</span>
+      <button class="stream-badge" id="stream-badge" onclick="openStreamPicker()" title="Change stream" style="display:none;"></button>
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
@@ -655,7 +676,7 @@
       <div class="hint-bar" style="justify-content:flex-end;">
         <span class="char-count" id="char-count"></span>
       </div>
-      <div class="disclaimer-bar">AI can sometimes make mistakes — always double-check. ✦ Sheelbi</div>
+      <div class="disclaimer-bar">AI can sometimes make mistakes — always double-check. ✦ Dipti AI</div>
     </div>
 
   </div>
@@ -750,7 +771,7 @@
   <div id="login-backdrop" style="position:absolute;inset:0;" onclick="tryDismissLogin()"></div>
   <div class="login-card" id="login-card">
     <button class="card-close-btn" onclick="hideLoginPrompt()">✕</button>
-    <h2>Welcome to <span>Sheelbi!</span></h2>
+    <h2>Welcome to <span>Dipti AI!</span></h2>
     <p id="login-modal-sub">Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.</p>
     <div class="login-tabs">
       <button class="login-tab active" onclick="switchCardTab('login')">Login</button>
@@ -784,6 +805,38 @@
     </div>
     <button class="verify-btn" id="verify-btn" onclick="submitVerifyCode()">Verify Email ✓</button>
     <div class="resend-link">Didn't get it? <button id="resend-btn" onclick="resendCode()">Resend code</button></div>
+  </div>
+</div>
+
+<!-- Stream Picker -->
+<div id="stream-overlay" class="stream-overlay">
+  <div class="stream-card">
+    <h2>তোমার বিভাগ বেছে নাও 📚</h2>
+    <p>সঠিক উত্তরের জন্য তোমার SSC বিভাগ জানা দরকার।<br>পরে যেকোনো chat থেকে বদলাতে পারবে।</p>
+    <div class="stream-options">
+      <button class="stream-btn" onclick="selectStream('science',this)">
+        <span class="stream-btn-icon">🔬</span>
+        <div class="stream-btn-info">
+          <div class="stream-btn-title">বিজ্ঞান বিভাগ</div>
+          <div class="stream-btn-sub">Biology · Physics · Chemistry · Higher Math</div>
+        </div>
+      </button>
+      <button class="stream-btn" onclick="selectStream('commerce',this)">
+        <span class="stream-btn-icon">📊</span>
+        <div class="stream-btn-info">
+          <div class="stream-btn-title">ব্যবসায় শিক্ষা বিভাগ</div>
+          <div class="stream-btn-sub">Accounting · Economics · Finance & Banking</div>
+        </div>
+      </button>
+      <button class="stream-btn" onclick="selectStream('arts',this)">
+        <span class="stream-btn-icon">🎨</span>
+        <div class="stream-btn-info">
+          <div class="stream-btn-title">মানবিক বিভাগ</div>
+          <div class="stream-btn-sub">Geography · History · Civics · Economics</div>
+        </div>
+      </button>
+    </div>
+    <button class="stream-confirm" id="stream-confirm-btn" onclick="confirmStream()" disabled>শুরু করো →</button>
   </div>
 </div>
 
@@ -867,10 +920,10 @@ function toggleSidebarCollapse(){
   const c=sb.classList.contains('collapsed');
   btn.textContent=c?'›':'‹';
   btn.title=c?'Expand sidebar':'Collapse sidebar';
-  try{localStorage.setItem('sheelbi_sidebar_collapsed',c?'1':'0');}catch(e){}
+  try{localStorage.setItem('Dipti AI_sidebar_collapsed',c?'1':'0');}catch(e){}
 }
 try{
-  if(localStorage.getItem('sheelbi_sidebar_collapsed')==='1'){
+  if(localStorage.getItem('Dipti AI_sidebar_collapsed')==='1'){
     document.getElementById('sidebar').classList.add('collapsed');
     document.getElementById('collapse-btn').textContent='›';
   }
@@ -1120,6 +1173,10 @@ document.addEventListener('input',e=>{
 
 function newChat(){
   currentChatId=null;chatBox.innerHTML='';
+  openStreamPicker(true);  // Always show stream picker so student confirms/changes stream
+}
+
+function _doNewChat(){
   const projectName=currentProjectId?(projects.find(x=>x.id===currentProjectId)||{}).name:'';
   const headerText=projectName?`নতুন চ্যাট — ${escapeHtml(projectName)} 📂`:'নতুন চ্যাট শুরু করো 👋';
   const welcome=document.createElement('div');welcome.id='welcome-screen';welcome.className='welcome';
@@ -1288,7 +1345,65 @@ function pushChapterFound(chapters){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 function removeTyping(){document.getElementById('typing-indicator')?.remove();}
-let activeSubject = localStorage.getItem('activeSubject') || 'biology';  // Tracks which subject was selected from cards
+let activeSubject = localStorage.getItem('activeSubject') || 'biology';
+
+// ── STREAM ──
+const STREAM_META = {
+  science:  {icon:'🔬', label:'বিজ্ঞান'},
+  commerce: {icon:'📊', label:'ব্যবসায় শিক্ষা'},
+  arts:     {icon:'🎨', label:'মানবিক'},
+};
+let activeStream = localStorage.getItem('activeStream') || '';
+let _pendingStream = '';
+let _streamPickerFromNewChat = false;
+
+function updateStreamBadge(){
+  const badge = document.getElementById('stream-badge');
+  if(!badge) return;
+  if(activeStream && STREAM_META[activeStream]){
+    const m = STREAM_META[activeStream];
+    badge.textContent = m.icon + ' ' + m.label;
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openStreamPicker(fromNewChat=false){
+  _streamPickerFromNewChat = fromNewChat;
+  _pendingStream = activeStream;
+  document.querySelectorAll('.stream-btn').forEach(b => b.classList.remove('selected'));
+  if(activeStream){
+    const map = {science:0,commerce:1,arts:2};
+    const idx = map[activeStream];
+    if(idx !== undefined) document.querySelectorAll('.stream-btn')[idx]?.classList.add('selected');
+  }
+  const btn = document.getElementById('stream-confirm-btn');
+  btn.disabled = !activeStream;
+  btn.classList.toggle('ready', !!activeStream);
+  document.getElementById('stream-overlay').classList.add('active');
+}
+
+function selectStream(stream, el){
+  _pendingStream = stream;
+  document.querySelectorAll('.stream-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const btn = document.getElementById('stream-confirm-btn');
+  btn.disabled = false;
+  btn.classList.add('ready');
+}
+
+function confirmStream(){
+  if(!_pendingStream) return;
+  activeStream = _pendingStream;
+  localStorage.setItem('activeStream', activeStream);
+  document.getElementById('stream-overlay').classList.remove('active');
+  updateStreamBadge();
+  // If picker was triggered by New Chat, continue creating it now
+  if(_streamPickerFromNewChat){ _streamPickerFromNewChat=false; _doNewChat(); }
+}
+
+updateStreamBadge();
 
 function sendSuggestion(card){const q=card.dataset?.q||card.textContent;input.value=q;sendMessage();}
 
@@ -1311,45 +1426,43 @@ async function sendMessage(){
   document.getElementById('char-count').textContent='';
   addUserBubble(display,imgSnap);showTyping();
 
-  // Clear preview immediately — don't wait for upload to finish
   if(fileSnap) removeImage();
 
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
-
-  // Clear preview immediately — don't wait for upload to finish
-  if(fileSnap) removeImage();
+  // Stage timer for image uploads — pushes progress messages since /ask-image doesn't stream
+  let imgStageTimer = null;
+  function startImageStages(){
+    const stages = [
+      {delay: 800,  text: 'Analyzing image...'},
+      {delay: 6000, text: 'Identifying subject...'},
+      {delay: 14000,text: 'Searching NCTB textbook...'},
+      {delay: 22000,text: 'Writing your answer...'},
+    ];
+    stages.forEach(s => {
+      const t = setTimeout(() => pushThinkingStage(s.text), s.delay);
+      imgStageTimer = imgStageTimer || [];
+      imgStageTimer.push(t);
+    });
+  }
+  function stopImageStages(){
+    if(imgStageTimer) imgStageTimer.forEach(clearTimeout);
+    imgStageTimer = null;
+  }
 
   try{
     if(fileSnap){
-      // ── IMAGE PATH (unchanged — uses /ask-image, no streaming) ──
+      // ── IMAGE PATH (/ask-image, non-streaming — show timed stage hints) ──
+      startImageStages();
       const fd=new FormData();
       fd.append('image',fileSnap);
       fd.append('message',text||'এই ছবিটি দেখে বুঝিয়ে দাও।');
       if(currentChatId)fd.append('chat_id',currentChatId);
       if(currentProjectId)fd.append('project_id',currentProjectId);
       fd.append('subject', activeSubject || 'biology');
+      if(activeStream) fd.append('stream', activeStream);
       const r=await fetch('/ask-image',{method:'POST',body:fd});
+      stopImageStages();
       if(!r.ok){
-        const errData=await r.json().catch(()=>({error:'সার্ভার এরর'}));
+        const errData=await r.json().catch(()=>({error:'সার্ভার এরর — একটু পর আবার চেষ্টা করো।'}));
         removeTyping();
         if(errData.login_required){showLoginPrompt(true);sendBtn.disabled=false;return;}
         addBotMessage('⚠️ '+(errData.error||'কিছু সমস্যা হয়েছে।'));
@@ -1363,7 +1476,7 @@ async function sendMessage(){
       removeImage();
     }else{
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
-      const body={message:text, subject: activeSubject};
+      const body={message:text, subject: activeSubject, stream: activeStream};
       if(currentChatId)body.chat_id=currentChatId;
       if(currentProjectId)body.project_id=currentProjectId;
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+﻿from flask import Blueprint, request, jsonify, session
 from supabase import create_client
 import os
 import hashlib
@@ -17,7 +17,7 @@ supabase = create_client(
 
 resend.api_key = os.getenv("RESEND_API_KEY")
 
-APP_NAME = "Sheelbi"
+APP_NAME = "Dipti AI"
 
 
 # ──────────────────────────────────────────
@@ -125,7 +125,7 @@ def email_template(title, body_html, code=None, footer=""):
           </p>
         </td></tr>"""
 
-    footer_text = footer if footer else "If you didn't create a Sheelbi account, you can safely ignore this email."
+    footer_text = footer if footer else "If you didn't create a Dipti AI account, you can safely ignore this email."
 
     return f"""
 <!DOCTYPE html>
@@ -150,7 +150,7 @@ def email_template(title, body_html, code=None, footer=""):
           <span style="font-size:30px;line-height:64px;">🎓</span>
         </div>
         <div style="color:#ffffff;font-size:22px;font-weight:700;
-             letter-spacing:1px;margin:8px 0 4px;">Sheelbi</div>
+             letter-spacing:1px;margin:8px 0 4px;">Dipti AI</div>
         <div style="color:#7a8499;font-size:12px;">
           NCTB AI Tutor &middot; Class 1&ndash;12
         </div>
@@ -184,7 +184,7 @@ def email_template(title, body_html, code=None, footer=""):
                text-align:center;border-radius:0 0 18px 18px;
                border-top:1px solid #252930;">
         <p style="color:#4a5266;font-size:11px;margin:0;">
-          &copy; 2026 Sheelbi &middot; NCTB Curriculum &middot; Class 1&ndash;12
+          &copy; 2026 Dipti AI &middot; NCTB Curriculum &middot; Class 1&ndash;12
         </p>
       </td></tr>
     </table>
@@ -382,7 +382,7 @@ def register():
             email_template(
                 "Verify your email address",
                 f"Hi <strong style='color:#e2e6ef'>{name}</strong>! 👋<br><br>"
-                "Welcome to Sheelbi — your NCTB AI Tutor. "
+                "Welcome to Dipti AI — your NCTB AI Tutor. "
                 "Enter the code below to verify your email and start learning:",
                 code=code
             )
@@ -610,7 +610,7 @@ def forgot_password():
             email_template(
                 "Reset your password",
                 f"Hi <strong style='color:#e2e6ef'>{name}</strong>!<br><br>"
-                "Use the code below to reset your Sheelbi password.",
+                "Use the code below to reset your Dipti AI password.",
                 code=code
             )
         )
@@ -659,10 +659,10 @@ def reset_password():
             f"Password changed — {APP_NAME}",
             email_template(
                 "Your password has been changed",
-                "Your Sheelbi password was successfully reset. "
+                "Your Dipti AI password was successfully reset. "
                 "You can now log in with your new password.<br><br>"
                 "If you didn't do this, please contact us immediately.",
-                footer="This is a security notification from Sheelbi."
+                footer="This is a security notification from Dipti AI."
             )
         )
 

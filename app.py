@@ -64,22 +64,26 @@ def save_messages(chat_id, messages):
     }).eq('id', chat_id).execute()
 
 
-def auto_title(chat_id, user_message, answer):
+def auto_title(chat_id, user_message):
     try:
+        msg = user_message.strip()
+        if len(msg) < 10:
+            return  # Too short to be a meaningful title (greetings, "ok", etc.)
         admin = get_admin_client()
-        title = user_message[:50].strip()
-        if len(user_message) > 50:
-            title += '...'
+        # Only update if still at the default title — don't overwrite a real title
+        current = admin.table('chats').select('title').eq('id', chat_id).execute()
+        if current.data and current.data[0].get('title', 'New Chat') != 'New Chat':
+            return
+        title = msg[:50] + ('...' if len(msg) > 50 else '')
         admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
     except Exception:
         pass
 
 
-def background_save(chat_id, messages, user_message, answer, user_id, is_first_exchange):
+def background_save(chat_id, messages, user_message, user_id):
     try:
         save_messages(chat_id, messages)
-        if is_first_exchange:
-            auto_title(chat_id, user_message, answer)
+        auto_title(chat_id, user_message)
         increment_message_count(user_id)
     except Exception as e:
         print(f"Background save error: {e}")
@@ -369,11 +373,9 @@ def ask():
     messages.append({"role": "user", "content": user_message})
     messages.append({"role": "assistant", "content": reply})
 
-    is_first_exchange = len(messages) == 2
-
     threading.Thread(
         target=background_save,
-        args=(current_chat_id, messages, user_message, reply, user_id, is_first_exchange),
+        args=(current_chat_id, messages, user_message, user_id),
         daemon=True
     ).start()
 
@@ -398,7 +400,8 @@ def ask_stream():
     user_message = data.get("message", "")
     chat_id = data.get("chat_id")
     project_id = data.get("project_id")
-    subject = data.get("subject", "biology")  # default to biology
+    subject = data.get("subject", "biology")
+    stream = data.get("stream", "")
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -427,7 +430,7 @@ def ask_stream():
         session.modified = True
 
     def event_stream():
-        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question
+        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, is_casual_chat, instant_reply, check_stream_mismatch
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
@@ -435,6 +438,24 @@ def ask_stream():
         try:
             # Auto-detect subject from question if user mentioned one explicitly
             effective_subject = detect_subject_in_question(user_message, fallback=subject)
+
+            # ── STREAM MISMATCH: soft redirect before doing any LLM work ──
+            mismatch_msg = check_stream_mismatch(stream, effective_subject)
+            if mismatch_msg:
+                current_chat_id = None
+                if is_logged_in:
+                    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
+                    current_chat_id = chat['id']
+                    messages_list = chat.get('messages', [])
+                    messages_list.append({"role": "user", "content": user_message})
+                    messages_list.append({"role": "assistant", "content": mismatch_msg})
+                    threading.Thread(
+                        target=background_save,
+                        args=(current_chat_id, messages_list, user_message, user_id),
+                        daemon=True
+                    ).start()
+                yield sse({"type": "reply", "reply": mismatch_msg, "chat_id": current_chat_id, "chapters_found": []})
+                return
 
             # ── TOC QUESTIONS: BYPASS LLM ENTIRELY ──
             if is_toc_question(user_message):
@@ -451,10 +472,9 @@ def ask_stream():
                         messages_list = chat.get('messages', [])
                         messages_list.append({"role": "user", "content": user_message})
                         messages_list.append({"role": "assistant", "content": toc_reply})
-                        is_first_exchange = len(messages_list) == 2
                         threading.Thread(
                             target=background_save,
-                            args=(current_chat_id, messages_list, user_message, toc_reply, user_id, is_first_exchange),
+                            args=(current_chat_id, messages_list, user_message, user_id),
                             daemon=True
                         ).start()
 
@@ -465,6 +485,38 @@ def ask_stream():
                         "chapters_found": ["অধ্যায় তালিকা"]
                     })
                     return  # CRITICAL: exit, don't run LLM
+
+            # ── CASUAL CHAT: skip RAG and stage indicators entirely ──
+            if is_casual_chat(user_message):
+                current_chat_id = None
+                messages_list = []
+                project_instructions = ""
+                # Try zero-latency hardcoded reply first
+                reply = instant_reply(user_message)
+                if is_logged_in:
+                    if project_id:
+                        project_instructions = get_project_instructions(project_id, user_id)
+                    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
+                    current_chat_id = chat['id']
+                    messages_list = chat.get('messages', [])
+                if reply is None:
+                    # Needs LLM but still skip RAG
+                    if is_logged_in:
+                        recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
+                        history = [{"role": m["role"], "content": m["content"]} for m in recent]
+                    else:
+                        history = history_session[-10:]
+                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream)
+                if is_logged_in:
+                    messages_list.append({"role": "user", "content": user_message})
+                    messages_list.append({"role": "assistant", "content": reply})
+                    threading.Thread(
+                        target=background_save,
+                        args=(current_chat_id, messages_list, user_message, user_id),
+                        daemon=True
+                    ).start()
+                yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id, "chapters_found": []})
+                return
 
             # ── STAGE 1: Generic thinking placeholder ──
             yield sse({"type": "stage", "text": "Thinking..."})
@@ -497,15 +549,14 @@ def ask_stream():
             else:
                 history = history_session[-10:]
 
-            reply = run_llm(user_message, history, nctb_context, project_instructions)
+            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream)
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
                 messages_list.append({"role": "assistant", "content": reply})
-                is_first_exchange = len(messages_list) == 2
                 threading.Thread(
                     target=background_save,
-                    args=(current_chat_id, messages_list, user_message, reply, user_id, is_first_exchange),
+                    args=(current_chat_id, messages_list, user_message, user_id),
                     daemon=True
                 ).start()
 
@@ -550,6 +601,7 @@ def ask_image():
         project_instructions = get_project_instructions(project_id, user_id)
 
     subject = request.form.get("subject", "biology")
+    stream  = request.form.get("stream", "")
 
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
@@ -558,6 +610,25 @@ def ask_image():
 
     image_bytes = image_file.read()
     image_type = image_file.content_type or "image/jpeg"
+
+    # Fix EXIF rotation + enhance contrast/sharpness for dark/blurry exam photos
+    try:
+        from PIL import Image, ImageOps, ImageEnhance
+        import io as _io
+        pil_img = ImageOps.exif_transpose(Image.open(_io.BytesIO(image_bytes)))
+        # RGBA/P mode can't be saved as JPEG — convert to RGB
+        if pil_img.mode not in ("RGB", "L"):
+            pil_img = pil_img.convert("RGB")
+        # Boost contrast and sharpness so text is easier for the LLM to read
+        pil_img = ImageEnhance.Contrast(pil_img).enhance(1.4)
+        pil_img = ImageEnhance.Sharpness(pil_img).enhance(2.0)
+        buf = _io.BytesIO()
+        pil_img.save(buf, format="JPEG", quality=90)
+        image_bytes = buf.getvalue()
+        image_type = "image/jpeg"
+    except Exception as e:
+        print(f"[image-preprocess] warning: {e}")  # keep original bytes on failure
+
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
     # Upload to Supabase Storage so we can show it on chat reload
@@ -570,6 +641,7 @@ def ask_image():
         user_message, history, image_base64, image_type,
         project_instructions=project_instructions,
         subject=subject,
+        stream=stream,
     )
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
@@ -583,11 +655,9 @@ def ask_image():
     messages.append(user_msg)
     messages.append({"role": "assistant", "content": answer})
 
-    is_first_exchange = len(messages) == 2
-
     threading.Thread(
         target=background_save,
-        args=(current_chat_id, messages, user_message, answer, user_id, is_first_exchange),
+        args=(current_chat_id, messages, user_message, user_id),
         daemon=True
     ).start()
 
