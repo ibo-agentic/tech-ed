@@ -77,7 +77,7 @@ MATH_KEYWORDS_BANGLA = [
     "মূলধন", "সম্পদ", "দায়", "মালিকানা স্বত্ব",
 ]
 
-# Patterns that signal a multi-step problem needing Pro
+# Patterns that signal a multi-step problem needing Pro (accounting + general math only)
 COMPLEX_MATH_KEYWORDS = [
     # Accounting — always multi-step
     "জাবেদা", "খতিয়ান", "রেওয়ামিল", "বিবরণী",
@@ -86,14 +86,26 @@ COMPLEX_MATH_KEYWORDS = [
     # Explicit multi-step signals
     "ধাপে ধাপে", "step by step", "সমাধান কর", "প্রমাণ কর",
     "প্রস্তুত কর", "তৈরি কর",
-    # Physics calculations
-    "বেগ", "ত্বরণ", "বল", "কাজ", "ক্ষমতা", "শক্তি", "ভরবেগ",
-    "তরঙ্গদৈর্ঘ্য", "কম্পাঙ্ক", "প্রতিরোধ", "তড়িৎ",
     # Chemistry
     "মোলার", "মোল", "stoichiometry", "বিক্রিয়া সমীকরণ",
     # Multi-equation / algebra
     "সমীকরণ সমাধান", "simultaneous", "দুটি সমীকরণ",
 ]
+
+# Physics keywords — routed to Flash, not Pro
+PHYSICS_KEYWORDS = [
+    "বেগ", "ত্বরণ", "বল", "কাজ", "ক্ষমতা", "শক্তি", "ভরবেগ",
+    "তরঙ্গদৈর্ঘ্য", "কম্পাঙ্ক", "প্রতিরোধ", "তড়িৎ",
+    "পদার্থ", "পদার্থবিজ্ঞান", "physics", "নিউটন", "মহাকর্ষ",
+    "চাপ", "তাপ", "আলো", "প্রতিফলন", "প্রতিসরণ",
+    "বিদ্যুৎ", "চৌম্বক", "তেজস্ক্রিয়",
+]
+
+
+def is_physics_question(user_input: str) -> bool:
+    """Returns True if the question is about physics."""
+    text = user_input.lower()
+    return any(kw.lower() in text for kw in PHYSICS_KEYWORDS)
 
 # Bangla numerals (০-৯) and English numerals (0-9) — a question with multiple
 # numbers is almost always math
@@ -178,9 +190,17 @@ def is_complex_math(user_input: str) -> bool:
 
 
 def pick_chain(user_input: str):
-    """Select which chain (LLM) to use based on question type."""
+    """Select which chain (LLM) to use based on question type.
+
+    Physics → Flash (fast, sufficient for formula-based problems)
+    Accounting / step-by-step math → Pro (strongest for multi-step arithmetic)
+    Everything else → Flash
+    """
+    if is_physics_question(user_input):
+        print(f"⚛️ [Routing] Physics → Gemini 2.5 Flash")
+        return flash_chain
     if is_complex_math(user_input):
-        print(f"🧮 [Routing] Complex math → Gemini 2.5 Pro")
+        print(f"🧮 [Routing] Accounting/complex math → Gemini 2.5 Pro")
         return gemini_pro_chain
     print(f"💬 [Routing] Theory/simple → Gemini 2.5 Flash")
     return flash_chain
