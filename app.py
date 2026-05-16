@@ -482,7 +482,7 @@ def ask_stream():
         session.modified = True
 
     def event_stream():
-        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, detect_subject_from_question, is_casual_chat, instant_reply, check_stream_mismatch
+        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, detect_subject_from_question, is_casual_chat, instant_reply, check_stream_mismatch, is_roadmap_request, detect_chapter_from_message, generate_section_list, is_despair, detect_subject_for_roadmap
         from memory import get_student_profile
         student_profile = get_student_profile(user_id) if is_logged_in else None
 
@@ -497,6 +497,41 @@ def ask_stream():
             # 3. Resolve: explicit > content-detected > frontend activeSubject
             subject_confirmed = bool(explicit_subject or content_subject)
             effective_subject = explicit_subject or content_subject or subject
+
+            # ── ROADMAP: must run BEFORE mismatch check (no subject needed) ──
+            if is_roadmap_request(user_message):
+                # Use stream's primary subject if student didn't name one
+                _stream_primary = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
+                # Fuzzy match first (catches typos like "physcis"), then explicit, then stream default
+                roadmap_subject = detect_subject_for_roadmap(user_message) or explicit_subject or _stream_primary.get(stream) or content_subject or effective_subject
+                chapter_info = detect_chapter_from_message(user_message, roadmap_subject)
+                from rag.chapters import CHAPTERS
+                chs = CHAPTERS.get(roadmap_subject, {})
+                if chapter_info:
+                    # Specific chapter → show section-level roadmap
+                    chapter_num, chapter_title = chapter_info
+                    yield sse({"type": "stage", "text": "পড়ার roadmap তৈরি করছি... 📚"})
+                    sections = generate_section_list(roadmap_subject, chapter_num, chapter_title)
+                    if sections:
+                        yield sse({
+                            "type": "roadmap",
+                            "level": "chapter",
+                            "subject": roadmap_subject,
+                            "chapter_num": chapter_num,
+                            "chapter_title": chapter_title,
+                            "sections": sections,
+                        })
+                        return
+                elif chs:
+                    # No specific chapter → show full book roadmap so student can pick
+                    all_chapters = [{"num": num, "title": title} for _, (num, title) in chs.items()]
+                    yield sse({
+                        "type": "roadmap",
+                        "level": "book",
+                        "subject": roadmap_subject,
+                        "chapters": all_chapters,
+                    })
+                    return
 
             # ── STREAM MISMATCH: soft redirect before doing any LLM work ──
             # Skip mismatch check when subject is ambiguous + it's a TOC question —
@@ -569,9 +604,45 @@ def ask_stream():
                     })
                     return  # CRITICAL: exit, don't run LLM
 
+            # ── GUIDE SECTION: teach a specific section step-by-step ──
+            if user_message.startswith('__GUIDE_SECTION__:'):
+                section_name = user_message[len('__GUIDE_SECTION__:'):]
+                project_instructions = ""
+                current_chat_id = None
+                messages_list = []
+                if is_logged_in:
+                    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
+                    current_chat_id = chat['id']
+                    messages_list = chat.get('messages', [])
+                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-10:]]
+                    if project_id:
+                        project_instructions = get_project_instructions(project_id, user_id)
+                nctb_context, _ = do_rag_lookup(section_name, subject=effective_subject)
+                guide_query = (
+                    f"এখন শুধু এই section টি পড়াও: **{section_name}**\n"
+                    f"NCTB বই এর ক্রম অনুযায়ী সহজ ভাষায় explain করো। "
+                    f"example দাও। শেষে বোঝার জন্য একটা ছোট প্রশ্ন করো।"
+                )
+                reply = run_llm(guide_query, history, nctb_context, project_instructions,
+                                stream=stream, student_name=student_name,
+                                subject=effective_subject, student_profile=student_profile)
+                if is_logged_in:
+                    messages_list.append({"role": "user", "content": section_name})
+                    messages_list.append({"role": "assistant", "content": reply})
+                    threading.Thread(
+                        target=background_save,
+                        args=(current_chat_id, messages_list, section_name, user_id),
+                        daemon=True
+                    ).start()
+                yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id,
+                           "chapters_found": [], "chips": True})
+                return
+
             # ── QUIZ: chip trigger OR natural language ("10 ta quiz kore dayow") ──
-            _is_chip = (user_message == '__QUIZ__')
-            if not _is_chip:
+            _is_chip = (user_message == '__QUIZ__' or user_message == '__REVIEW_QUIZ__')
+            if user_message == '__REVIEW_QUIZ__':
+                _quiz_total = 3
+            elif not _is_chip:
                 from chain import parse_quiz_request
                 _quiz_total = parse_quiz_request(user_message)
             else:
@@ -600,7 +671,7 @@ def ask_stream():
                     return
                 opts = mcq['options']
                 mcq_history_text = f"🎯 Quiz\n{mcq['question']}\nA) {opts['A']}\nB) {opts['B']}\nC) {opts['C']}\nD) {opts['D']}\n[সঠিক উত্তর: {mcq['correct']}]"
-                display_msg = "Quiz করো 🎯" if _is_chip else user_message
+                display_msg = "নিজেকে Test করো 🎯" if user_message == '__REVIEW_QUIZ__' else ("Quiz করো 🎯" if _is_chip else user_message)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": display_msg})
                     messages_list.append({"role": "assistant", "content": mcq_history_text})
@@ -702,12 +773,13 @@ def ask_stream():
                     daemon=True
                 ).start()
 
+            chips_value = "offer_roadmap" if is_despair(user_message) else True
             yield sse({
                 "type": "reply",
                 "reply": reply,
                 "chat_id": current_chat_id,
                 "chapters_found": chapters_found if is_biology else [],
-                "chips": True,
+                "chips": chips_value,
             })
 
             # ── SESSION WRAP-UP: trigger when student says goodbye after a real session ──

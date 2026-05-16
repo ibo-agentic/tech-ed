@@ -130,11 +130,6 @@ def is_math_question(user_input: str) -> bool:
 
     text = user_input.lower()
 
-    # Count numbers in the text
-    bangla_num_count = sum(1 for c in user_input if c in BANGLA_DIGITS)
-    english_num_count = sum(1 for c in user_input if c in ENGLISH_DIGITS)
-    total_digit_chars = bangla_num_count + english_num_count
-
     # Find sequences of digits (each is a "number")
     bangla_numbers = re.findall(r"[০-৯]+", user_input)
     english_numbers = re.findall(r"\d+", user_input)
@@ -399,7 +394,7 @@ def build_toc_response(subject: str) -> str:
     intro = f"চলো, {subject_label} বইয়ের সব অধ্যায়ের নাম দেখে নিই 🌱\n\nএই বইয়ে মোট **{total}টি অধ্যায়** আছে:\n\n"
 
     chapter_lines = []
-    for ordinal, (num, title) in chapters.items():
+    for _, (num, title) in chapters.items():
         chapter_lines.append(f"{num}. {title}")
 
     body = "\n".join(chapter_lines)
@@ -418,6 +413,117 @@ def parse_quiz_request(text: str) -> int:
     if m:
         return min(int(m.group(1)), 20)
     return 1
+
+
+# ── GUIDE MODE: step-by-step chapter learning ──
+
+_ROADMAP_KEYWORDS = [
+    'roadmap', 'রোডম্যাপ', 'guide mode',
+    'ধাপে ধাপে পড়', 'শুরু থেকে পড়', 'পুরোটা পড়', 'পুরো পড়তে চাই',
+    'শেষ করতে চাই', 'শুরু করতে চাই', 'পড়া শুরু করতে চাই',
+    'কোথা থেকে শুরু', 'কীভাবে পড়ব', 'কীভাবে শুরু করব',
+    'step by step পড়', 'পথনির্দেশ',
+]
+
+
+_DESPAIR_KEYWORDS = [
+    'kisui bujhina', 'kisui bujtesina', 'kichhu bujhi na', 'bujhi na', 'bujhte parchi na',
+    'কিছুই বুঝি না', 'কিছু বুঝি না', 'বুঝতে পারছি না', 'বুঝছি না',
+    'অনেক কঠিন', 'খুব কঠিন', 'very hard', 'too hard', 'difficult',
+    'ভয় লাগছে', 'ভয় লাগে', 'কঠিন লাগছে', 'পারছি না', 'parchina',
+    'give up', 'দুর্বল', 'weak in', 'not good at', 'ami weak',
+    'শুরু করতে পারছি না', 'কোথা থেকে শুরু করব',
+]
+
+
+def is_despair(text: str) -> bool:
+    t = text.lower()
+    return any(k in t for k in _DESPAIR_KEYWORDS)
+
+
+_ROADMAP_SUBJECT_ALIASES = [
+    (['physics', 'phys', 'পদার্থ', 'physic'], 'physics'),
+    (['biology', 'bio', 'জীববিজ্ঞান', 'জীব বিজ্ঞান', 'biolog'], 'biology'),
+    (['accounting', 'account', 'হিসাব', 'acounting', 'accounts'], 'accounting'),
+    (['geography', 'geo', 'ভূগোল', 'geograph'], 'geography'),
+]
+
+
+def detect_subject_for_roadmap(text: str):
+    """Typo-tolerant subject detection for roadmap requests. Returns subject string or None."""
+    t = text.lower()
+    for keywords, subject in _ROADMAP_SUBJECT_ALIASES:
+        if any(k in t for k in keywords):
+            return subject
+    return None
+
+
+def is_roadmap_request(text: str) -> bool:
+    t = text.lower()
+    return any(k in t for k in _ROADMAP_KEYWORDS)
+
+
+_EN_ORDINALS = {
+    'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5,
+    'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'tenth': 10,
+    'eleventh': 11, 'twelfth': 12, 'thirteenth': 13, 'fourteenth': 14, 'fifteenth': 15,
+}
+
+
+def detect_chapter_from_message(text: str, subject: str):
+    """Extract (chapter_num, chapter_title) from message. Returns None if not found."""
+    chapters = CHAPTERS.get(subject, {})
+    t = text.lower()
+
+    # Match Bengali ordinal words or chapter title substring
+    for ordinal, (num, title) in chapters.items():
+        if ordinal in t or title.lower() in t:
+            return num, title
+
+    # Match English ordinals ("second chapter", "third chapter")
+    for word, n in _EN_ORDINALS.items():
+        if word in t:
+            for _, (num, title) in chapters.items():
+                if num == n:
+                    return num, title
+
+    # Match "chapter N" / "অধ্যায় N" with ASCII or Bengali digits
+    m = re.search(r'(?:chapter|অধ্যায়)\s*[:\s]*([০-৯0-9]+)', t)
+    if m:
+        n = int(m.group(1).translate(str.maketrans('০১২৩৪৫৬৭৮৯', '0123456789')))
+        for _, (num, title) in chapters.items():
+            if num == n:
+                return num, title
+
+    return None
+
+
+def generate_section_list(subject: str, chapter_num: int, chapter_title: str) -> list:
+    """Return NCTB sub-sections for a chapter. Uses hardcoded data; Flash is fallback only."""
+    from rag.chapters import CHAPTER_SECTIONS
+    hardcoded = CHAPTER_SECTIONS.get(subject, {}).get(chapter_num)
+    if hardcoded:
+        print(f"[roadmap] Using hardcoded sections for {subject} ch{chapter_num}")
+        return hardcoded
+
+    # Flash fallback for subjects not yet hardcoded (e.g. chemistry)
+    print(f"[roadmap] No hardcoded sections for {subject} ch{chapter_num} — asking Flash")
+    _f = flash_llm | StrOutputParser()
+    prompt = (
+        f"SSC NCTB {subject} বই এর অধ্যায় {chapter_num}: \"{chapter_title}\"\n"
+        f"এই অধ্যায়ের sub-section গুলো NCTB বই এর হুবহু ক্রমে দাও।\n"
+        f"শুধু JSON array — অন্য কোনো text না:\n"
+        f'["{chapter_num}.১ নাম", "{chapter_num}.২ নাম", ...]'
+    )
+    try:
+        raw = _f.invoke([HumanMessage(content=prompt)]).strip()
+        if "```" in raw:
+            raw = raw.split("```")[1].lstrip("json").strip()
+        sections = json.loads(raw)
+        return [s for s in sections if isinstance(s, str) and s.strip()]
+    except Exception as e:
+        print(f"[roadmap] section list error: {e}")
+        return []
 
 
 def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str = "") -> dict:

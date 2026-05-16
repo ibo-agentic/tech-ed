@@ -253,6 +253,18 @@
     .reply-chip.primary{border-color:var(--green);color:var(--green);}
     .reply-chip.primary:hover{background:rgba(13,228,160,.12);}
     @media(max-width:480px){.reply-chip{font-size:11px;padding:4px 10px;}.reply-chips{gap:5px;padding-left:0;}}
+    .roadmap-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;max-width:420px;}
+    .roadmap-header{font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .roadmap-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+    .roadmap-step{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .roadmap-dot{font-size:14px;width:18px;flex-shrink:0;color:var(--green);}
+    .roadmap-label{line-height:1.5;}
+    .roadmap-start-btn{width:100%;background:transparent;border:1px solid var(--green);border-radius:8px;color:var(--green);padding:8px 14px;font-size:12px;font-family:'Noto Sans Bengali','Sora',sans-serif;cursor:pointer;transition:background .15s;}
+    .roadmap-start-btn:hover{background:var(--green-bg);}
+    .roadmap-chapter-list{display:flex;flex-direction:column;gap:6px;}
+    .roadmap-chapter-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;text-align:left;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:border-color .15s,color .15s;display:flex;align-items:center;gap:8px;}
+    .roadmap-chapter-btn:hover{border-color:var(--green);color:var(--text);}
+    .roadmap-ch-num{color:var(--green);font-weight:700;min-width:20px;}
     .mcq-label{font-size:10px;font-weight:700;color:var(--green);letter-spacing:.8px;margin-bottom:8px;}
     .mcq-question{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.85;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .mcq-options{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
@@ -1498,6 +1510,9 @@ function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
   if(showChips==='image_question') initTeachProgress(text);
+  // Ensure a blank line before bullet/list items so marked.js parses them as
+  // block-level lists rather than inline text with literal * characters.
+  text = text.replace(/([^\n])\n([ \t]*[*\-] )/g, '$1\n\n$2');
   text=fixBareMermaid(text);
   const html=marked.parse(text);
   const div=createBotWrapper(html);
@@ -1513,6 +1528,23 @@ function addBotMessage(text, showChips=false){
     const knowBtn = showChips==='img_next_correct' ? '' : `<button class="reply-chip" onclick="useChip(this,'dont_know')">\u099C\u09BE\u09A8\u09BF \u09A8\u09BE \uD83E\uDD37</button>`;
     chips.innerHTML=`${knowBtn}<button class="reply-chip primary" onclick="useChip(this,'img_next')">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u2192</button>`;
     chatBox.appendChild(chips);
+  }else if(showChips==='offer_roadmap'){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'start_roadmap')">হ্যাঁ, roadmap দাও 📚</button><button class="reply-chip" onclick="useChip(this,'done')">না, শুধু প্রশ্ন করব</button>`;
+    chatBox.appendChild(chips);
+  }else if(showChips==='review_quiz'){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'review_quiz')">\u09A8\u09BF\u099C\u09C7\u0995\u09C7 Test \u0995\u09B0\u09CB \uD83C\uDFAF</button>`;
+    chatBox.appendChild(chips);
+  }else if(showChips==='guide_next'){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    const nextLabel = _guideSections[_guideCurrentIdx+1] || '';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'guide_next')">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0: ${escapeHtml(nextLabel)} \u2192</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD04</button><button class="reply-chip" onclick="useChip(this,'quiz')">Quiz \u0995\u09B0\u09CB \uD83C\uDFAF</button>`;
+    chatBox.appendChild(chips);
+  }else if(showChips==='guide_done'){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'guide_chapter_done')">\uD83C\uDF89 \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09B6\u09C7\u09B7! \u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09B6\u09C1\u09B0\u09C1 \u0995\u09B0\u09AC?</button>`;
+    chatBox.appendChild(chips);
   }else if(showChips){
     const chips=document.createElement('div');chips.className='reply-chips';
     chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD04</button><button class="reply-chip" onclick="useChip(this,'quiz')">Quiz \u0995\u09B0\u09CB \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
@@ -1522,11 +1554,82 @@ function addBotMessage(text, showChips=false){
   setTimeout(()=>{ chatBox.scrollTop=chatBox.scrollHeight; }, 150);
 }
 
-let _chipSendOverride = null; // API gets this; bubble shows the short input text
-let _imageFollowUp = false;  // true for the current request only
-let _imageTeachMode = false; // true for the whole image teaching session
-let _imageJustExplaining = false; // true after student says "জানি না" — dipti explaining, not asking
-let _pendingTeachAdvance = false; // advance bar on NEXT bot response, not at click time
+let _chipSendOverride = null;
+let _imageFollowUp = false;
+let _imageTeachMode = false;
+let _imageJustExplaining = false;
+let _pendingTeachAdvance = false;
+
+// ── Guide mode state ──
+let _guideMode = false;
+let _guideSections = [];
+let _guideCurrentIdx = -1;
+let _guideSubject = '';
+let _guideChapter = '';
+
+function renderRoadmapCard(data){
+  document.getElementById('welcome-screen')?.remove();
+  const div = document.createElement('div'); div.className = 'message bot';
+  const aw = document.createElement('div'); aw.className = 'disha-avatar-wrap'; aw.innerHTML = makeDiptiSVG(38);
+  const col = document.createElement('div'); col.className = 'bot-col';
+  const nr = document.createElement('div'); nr.className = 'disha-name-row';
+  nr.innerHTML = `<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;
+  col.appendChild(nr);
+  const bub = document.createElement('div'); bub.className = 'bubble';
+
+  if(data.level === 'book'){
+    // Store chapters globally so onclick can reference by index (avoids quote-escaping issues)
+    window._roadmapChapters = data.chapters;
+    window._roadmapSubject = data.subject;
+    const subjectLabel = {'biology':'জীববিজ্ঞান','physics':'পদার্থবিজ্ঞান','accounting':'হিসাববিজ্ঞান','geography':'ভূগোল'}[data.subject] || data.subject;
+    const items = data.chapters.map((ch, i) =>
+      `<button class="roadmap-chapter-btn" onclick="guidePickChapter(${i})">
+        <span class="roadmap-ch-num">${ch.num}.</span> ${escapeHtml(ch.title)}
+      </button>`
+    ).join('');
+    bub.innerHTML = `<div class="roadmap-card"><div class="roadmap-header">📚 ${escapeHtml(subjectLabel)} — সম্পূর্ণ Roadmap</div><div class="roadmap-chapter-list">${items}</div></div>`;
+    _guideSubject = data.subject;
+  } else {
+    // Single chapter — list sections
+    const sectionItems = data.sections.map((s, i) =>
+      `<div class="roadmap-step" data-idx="${i}"><span class="roadmap-dot">○</span><span class="roadmap-label">${escapeHtml(s)}</span></div>`
+    ).join('');
+    bub.innerHTML = `<div class="roadmap-card"><div class="roadmap-header">📖 অধ্যায় ${data.chapter_num}: ${escapeHtml(data.chapter_title)}</div><div class="roadmap-steps">${sectionItems}</div><button class="roadmap-start-btn" onclick="guideStart()">শুরু করো: ${escapeHtml(data.sections[0])} →</button></div>`;
+    _guideMode = true;
+    _guideSections = data.sections;
+    _guideCurrentIdx = -1;
+    _guideSubject = data.subject;
+    _guideChapter = data.chapter_title;
+  }
+
+  div.appendChild(aw); col.appendChild(bub); div.appendChild(col);
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function guidePickChapter(idx){
+  const ch = window._roadmapChapters[idx];
+  input.value = ch.title;
+  _chipSendOverride = `${window._roadmapSubject} অধ্যায় ${ch.num} এর roadmap দাও`;
+  sendMessage();
+}
+
+function guideStart(){
+  _guideCurrentIdx = 0;
+  _updateRoadmapDots();
+  input.value = _guideSections[0];
+  _chipSendOverride = `__GUIDE_SECTION__:${_guideSections[0]}`;
+  sendMessage();
+}
+
+function _updateRoadmapDots(){
+  document.querySelectorAll('.roadmap-step').forEach((el, i) => {
+    const dot = el.querySelector('.roadmap-dot');
+    if(i < _guideCurrentIdx) dot.textContent = '✅';
+    else if(i === _guideCurrentIdx) dot.textContent = '▶';
+    else dot.textContent = '○';
+  });
+}
 
 // ── Voice Modal (hold-to-speak + Whisper) ──
 let _vmRecording = false;
@@ -1757,7 +1860,12 @@ function useChip(btn, action){
     sendMessage();
   }else if(action==='quiz'){
     input.value='Quiz \u0995\u09B0\u09CB \uD83C\uDFAF';
-    _chipSendOverride='__QUIZ__';
+    if(_guideMode && _guideCurrentIdx >= 0){
+      const section=_guideSections[_guideCurrentIdx];
+      _chipSendOverride=`${section} \u09A5\u09C7\u0995\u09C7 \u098F\u0995\u099F\u09BE quiz \u09A6\u09BE\u0993`;
+    }else{
+      _chipSendOverride='__QUIZ__';
+    }
     sendMessage();
   }else if(action==='done'){
     input.value='\u09AC\u09C1\u099D\u09C7\u099B\u09BF';
@@ -1785,6 +1893,25 @@ function useChip(btn, action){
     _chipSendOverride='\u0986\u09AE\u09BF \u09B8\u09A4\u09CD\u09AF\u09BF\u0987 \u099C\u09BE\u09A8\u09BF \u09A8\u09BE \u2014 \u098F\u0996\u09A8 \u09B8\u09B0\u09BE\u09B8\u09B0\u09BF \u09AA\u09C1\u09B0\u09CB \u0989\u09A4\u09CD\u09A4\u09B0 \u09AC\u09B2\u09C7 \u09A6\u09BE\u0993, \u0986\u09B0 \u0995\u09CB\u09A8\u09CB \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09CB \u09A8\u09BE\u0964';
     _imageFollowUp=true;
     _imageJustExplaining=true;
+    sendMessage();
+  }else if(action==='start_roadmap'){
+    input.value='roadmap দাও';
+    _chipSendOverride='roadmap শুরু করতে চাই';
+    sendMessage();
+  }else if(action==='review_quiz'){
+    input.value='\u09A8\u09BF\u099C\u09C7\u0995\u09C7 Test \u0995\u09B0\u09CB \uD83C\uDFAF';
+    _chipSendOverride='__REVIEW_QUIZ__';
+    sendMessage();
+  }else if(action==='guide_next'){
+    _guideCurrentIdx++;
+    _updateRoadmapDots();
+    const section=_guideSections[_guideCurrentIdx];
+    input.value=section;
+    _chipSendOverride=`__GUIDE_SECTION__:${section}`;
+    sendMessage();
+  }else if(action==='guide_chapter_done'){
+    _guideMode=false; _guideSections=[]; _guideCurrentIdx=-1;
+    input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09AA\u09A1\u09BC\u09A4\u09C7 \u099A\u09BE\u0987';
     sendMessage();
   }
 }
@@ -1846,7 +1973,8 @@ function submitMcqAnswer(btn,chosen){
       _quizSession=null;
       setTimeout(()=>{
         const chips=document.createElement('div');chips.className='reply-chips';
-        chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+        const guideBtn=_guideNextBtn();
+        chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
         chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
       },800);
     }else{
@@ -1862,6 +1990,14 @@ function nextQuizQuestion(btn){
   sendMessage();
 }
 
+function _guideNextBtn(){
+  if(_guideMode && _guideCurrentIdx >= 0 && _guideCurrentIdx < _guideSections.length - 1){
+    const next = _guideSections[_guideCurrentIdx + 1];
+    return `<button class="reply-chip primary" onclick="useChip(this,'guide_next')">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0: ${escapeHtml(next)} \u2192</button>`;
+  }
+  return '';
+}
+
 function showQuizScore(){
   if(!_quizSession)return;
   const{score,total}=_quizSession;
@@ -1872,6 +2008,12 @@ function showQuizScore(){
   const pct=score/total;
   const msg=pct===1?`\uD83C\uDF89 \u09AA\u09BE\u09B0\u09AB\u09C7\u0995\u09CD\u099F! ${total}/${total} \u09B8\u09A0\u09BF\u0995!`:pct>=.7?`\u2705 \u09AD\u09BE\u09B2\u09CB \u09B9\u09AF\u09BC\u09C7\u099B\u09C7! ${total} \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u09AE\u09A7\u09CD\u09AF\u09C7 ${score}\u099F\u09BF \u09B8\u09A0\u09BF\u0995\u0964`:`\uD83D\uDCDA ${total} \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u09AE\u09A7\u09CD\u09AF\u09C7 ${score}\u099F\u09BF \u09B8\u09A0\u09BF\u0995\u0964 \u0986\u09B0\u09CB \u098F\u0995\u099F\u09C1 \u09AA\u09A1\u09BC\u09B2\u09C7 \u0986\u09B0\u09CB \u09AD\u09BE\u09B2\u09CB \u09B9\u09AC\u09C7!`;
   addBotMessage(msg,false);
+  setTimeout(()=>{
+    const chips=document.createElement('div');chips.className='reply-chips';
+    const guideBtn=_guideNextBtn();
+    chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">\u0986\u09B0\u09C7\u0995\u099F\u09BE Quiz \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
+    chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
+  },800);
 }
 
 function showTyping(){
@@ -2122,6 +2264,10 @@ async function sendMessage(){
           }else if(evt.type==='wrapup'){
             // Session wrap-up arrives after the main reply — show as a second bot message
             if(evt.reply) setTimeout(()=>addBotMessage(evt.reply, false), 800);
+          }else if(evt.type==='roadmap'){
+            removeTyping();
+            renderRoadmapCard(evt);
+            quizRendered=true; // reuse flag to skip fallback addBotMessage
           }else if(evt.type==='quiz'){
             removeTyping();
             if(!_quizSession){_quizSession={total:evt.quiz_total||1,answered:0,score:0};}
@@ -2171,8 +2317,19 @@ async function sendMessage(){
         }
         // If student answered correctly, hide "জানি না" chip
         const studentAnsweredCorrectly = showImgNext && /বাহ|হ্যাঁ.{0,10}ঠিক|একদম ঠিক|সঠিক বলেছ|ঠিকই ধরেছ|পারফেক্ট/u.test(replyText);
-        // After session ends, show NO chips — prevents "বুঝেছি" → "পরবর্তী প্রশ্নে যাও।" loop
-        const chipsArg = showImgNext ? (studentAnsweredCorrectly ? 'img_next_correct' : 'img_next') : (teachSessionEnded ? false : !!finalReply.chips);
+        // Suppress chips when Dipti is asking the student a question
+        const botAsking = /\?/.test(replyText.slice(-150));
+        // Determine chips
+        let chipsArg;
+        if(showImgNext){
+          chipsArg = studentAnsweredCorrectly ? 'img_next_correct' : 'img_next';
+        }else if(teachSessionEnded){
+          chipsArg = 'review_quiz';
+        }else if(_guideMode && _guideCurrentIdx >= 0){
+          chipsArg = _guideCurrentIdx < _guideSections.length - 1 ? 'guide_next' : 'guide_done';
+        }else{
+          chipsArg = !botAsking && !!finalReply.chips;
+        }
         addBotMessage(replyText || 'দুঃখিত, সমস্যা হয়েছে।', chipsArg);
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
         if(currentChatId){
