@@ -17,6 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 
   <style>
     :root {
@@ -158,18 +159,23 @@
     .chat-topic-spacer{flex:1;}
     .chat-topic-action{width:30px;height:30px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
     .chat-topic-action:hover{border-color:var(--blue);color:var(--blue);}
+    #teach-progress-bar{display:none;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+    .tpb-step{padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:600;font-family:'Noto Sans Bengali','Sora',sans-serif;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);transition:all .25s;}
+    .tpb-step.done{color:var(--green);background:var(--green-bg);border-color:rgba(13,228,160,.3);}
+    .tpb-step.current{color:#0d1117;background:var(--green);border-color:var(--green);}
+    .tpb-sep{color:var(--border2);font-size:10px;}
 
-    .project-banner{display:none;background:linear-gradient(135deg,var(--green-bg),rgba(77,127,255,.05));border-bottom:1px solid rgba(13,228,160,.2);padding:14px 16px;flex-shrink:0;}
-    .project-banner.visible{display:block;}
-    .project-banner-row1{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-    .project-banner-back{background:transparent;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:4px;transition:all .15s;}
+    .project-banner{display:none;background:linear-gradient(135deg,var(--green-bg),rgba(77,127,255,.05));border-bottom:1px solid rgba(13,228,160,.2);padding:7px 14px;flex-shrink:0;}
+    .project-banner.visible{display:flex;align-items:center;gap:8px;}
+    .project-banner-row1{display:contents;}
+    .project-banner-back{background:transparent;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap;}
     .project-banner-back:hover{background:var(--bg3);color:var(--text);}
-    .project-banner-icon{font-size:18px;}
-    .project-banner-name{flex:1;font-size:15px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
-    .project-banner-edit{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 10px;border-radius:var(--radius-sm);cursor:pointer;font-family:'Sora',sans-serif;transition:all .15s;}
+    .project-banner-icon{font-size:16px;flex-shrink:0;}
+    .project-banner-name{flex:1;font-size:13px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .project-banner-edit{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:3px 8px;border-radius:var(--radius-sm);cursor:pointer;font-family:'Sora',sans-serif;transition:all .15s;flex-shrink:0;}
     .project-banner-edit:hover{border-color:var(--blue);color:var(--blue);}
-    .project-banner-instructions{font-size:11px;color:var(--text2);line-height:1.6;font-family:'Noto Sans Bengali','Sora',sans-serif;background:var(--bg2);padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);}
-    .project-banner-instructions-empty{font-size:11px;color:var(--text3);font-style:italic;}
+    .project-banner-instructions{font-size:11px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
+    .project-banner-instructions-empty{display:none;}
 
     .main-search-bar{display:none;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
     .main-search-inner{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;}
@@ -247,6 +253,22 @@
     .reply-chip.primary{border-color:var(--green);color:var(--green);}
     .reply-chip.primary:hover{background:rgba(13,228,160,.12);}
     @media(max-width:480px){.reply-chip{font-size:11px;padding:4px 10px;}.reply-chips{gap:5px;padding-left:0;}}
+    .mcq-label{font-size:10px;font-weight:700;color:var(--green);letter-spacing:.8px;margin-bottom:8px;}
+    .mcq-question{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.85;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .mcq-options{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+    .mcq-opt{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;text-align:left;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:border-color .15s,background .15s,color .15s;line-height:1.6;}
+    .mcq-opt:hover:not(:disabled){border-color:var(--green);color:var(--text);}
+    .mcq-opt.correct{border-color:#4ade80 !important;background:rgba(74,222,128,.12);color:#4ade80 !important;}
+    .mcq-opt.wrong{border-color:#f87171 !important;background:rgba(248,113,113,.1);color:#f87171 !important;}
+    .mcq-opt:disabled{cursor:default;}
+    .mcq-opt .opt-key{font-weight:700;color:var(--green);margin-right:5px;}
+    .mcq-opt.correct .opt-key,.mcq-opt.wrong .opt-key{color:inherit;}
+    @media(max-width:480px){.mcq-options{grid-template-columns:1fr;}}
+    .mcq-counter{font-size:10px;color:var(--text3);margin-bottom:4px;font-family:'Sora',sans-serif;letter-spacing:.3px;}
+    .mcq-explanation{font-size:12px;color:var(--text2);border-top:1px solid var(--border);padding-top:9px;margin-top:10px;line-height:1.7;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .mcq-next-btn{margin-top:10px;width:100%;background:var(--green);border:none;color:#000;border-radius:8px;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:opacity .15s;}
+    .mcq-next-btn:hover{opacity:.85;}
+    .mcq-score{font-size:13px;font-weight:600;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
 
     /* Lightbox */
     .image-lightbox{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);align-items:center;justify-content:center;animation:fadeOverlay .2s ease both;cursor:zoom-out;padding:20px;}
@@ -261,6 +283,10 @@
     .action-btn.ok{color:var(--green);border-color:var(--green);}
     mark{background:rgba(77,127,255,.1);color:var(--blue);border-radius:3px;padding:1px 5px;font-weight:600;}
     .katex-display{margin:.7em auto;text-align:center;overflow-x:auto;}
+    .mermaid-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;margin:10px 0;overflow-x:auto;text-align:center;}
+    .mermaid-wrap svg{max-width:100%;height:auto;font-family:'Sora',sans-serif;}
+    .mermaid-error{font-size:11px;color:var(--text3);font-family:monospace;white-space:pre-wrap;padding:8px;background:var(--bg3);border-radius:var(--radius-sm);border:1px dashed var(--border);}
+    @media(max-width:480px){.mermaid-wrap{padding:8px 4px;}.mermaid-wrap svg{font-size:11px;}}
 
     #scroll-btn{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:16px;padding:5px 14px;font-size:11px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;font-family:'Sora',sans-serif;font-weight:600;z-index:20;white-space:nowrap;}
     #scroll-btn.visible{opacity:1;pointer-events:auto;}
@@ -282,6 +308,28 @@
     #send-btn{width:38px;height:38px;flex-shrink:0;min-width:38px;background:var(--green);border:none;border-radius:var(--radius-sm);color:#0d1117;font-size:15px;cursor:pointer;transition:all .13s;display:flex;align-items:center;justify-content:center;}
     #send-btn:hover{background:var(--green2);transform:translateY(-1px);}
     #send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none;color:var(--text3);}
+
+    #mic-btn{width:38px;height:38px;flex-shrink:0;min-width:38px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:15px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+    #mic-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+    /* ── Voice Panel (floating, chat stays visible) ── */
+    #voice-panel{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:500;width:min(420px,calc(100vw - 32px));background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:vpSlideUp .22s ease both;}
+    #voice-panel.open{display:block;}
+    @keyframes vpSlideUp{from{opacity:0;transform:translateX(-50%) translateY(16px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+    #vp-row{display:flex;align-items:center;gap:12px;}
+    #vp-avatar{width:38px;height:38px;border-radius:50%;background:var(--bg3);border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    #vp-info{flex:1;min-width:0;}
+    #vp-status{font-size:12px;font-weight:600;color:var(--text);}
+    #vp-transcript{font-size:12px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+    #vp-level-wrap{width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:6px;}
+    #vp-level-fill{height:100%;width:0%;background:var(--green);border-radius:2px;transition:width .07s;}
+    #vp-hold-btn{width:52px;height:52px;border-radius:50%;background:var(--green);border:none;cursor:pointer;font-size:20px;color:#0d1117;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;flex-shrink:0;touch-action:none;transition:all .12s;}
+    #vp-hold-btn.recording{background:#dc0050;color:#fff;box-shadow:0 0 0 8px rgba(220,0,80,.18);}
+    #vp-hold-btn.processing{background:var(--border);cursor:not-allowed;color:var(--text3);}
+    #vp-close{width:30px;height:30px;border-radius:50%;background:transparent;border:1px solid var(--border2);color:var(--text3);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    #vp-close:hover{border-color:var(--danger);color:var(--danger);}
+    #vp-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;}
+    #vp-send-now{display:none;width:100%;margin-top:8px;background:var(--green);border:none;border-radius:10px;color:#0d1117;font-size:13px;padding:8px;cursor:pointer;font-weight:600;}
 
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
@@ -423,8 +471,9 @@
       .bot .bubble{font-size:13px;padding:10px 13px;}
       .message-actions{opacity:1;}
       .subject-grid{grid-template-columns:repeat(2,1fr);}
-      .project-banner{padding:10px 14px;}
-      .project-banner-name{font-size:14px;}
+      .project-banner{padding:6px 12px;}
+      .project-banner-name{font-size:13px;}
+      .project-banner-instructions{display:none;}
     }
 
     @keyframes shimmer-text{0%{background-position:-200% 0}100%{background-position:200% 0}}
@@ -607,7 +656,7 @@
     <div class="chat-topic-bar" id="chat-topic-bar">
       <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
       <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Dipti AI</span>
-      <button class="stream-badge" id="stream-badge" onclick="openStreamPicker()" title="Change stream" style="display:none;"></button>
+      <button class="stream-badge" id="stream-badge" onclick="newChat()" title="New chat" style="display:none;"></button>
       <div class="chat-topic-spacer"></div>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
@@ -623,6 +672,8 @@
       </div>
       <div class="project-banner-instructions" id="project-banner-instructions">No custom instructions.</div>
     </div>
+
+    <div id="teach-progress-bar"></div>
 
     <div id="chat-box">
       <div class="welcome" id="welcome-screen">
@@ -689,11 +740,15 @@
       <div id="input-row">
         <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
         <button class="inp-icon-btn" id="attach-btn" title="ছবি যোগ করো" onclick="document.getElementById('file-input').click()">📎</button>
-        <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this)"></textarea>
+        <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this);stopMicOnType()"></textarea>
+        <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </button>
         <button id="send-btn" onclick="sendMessage()" title="পাঠাও">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
         </button>
       </div>
+
       <div class="hint-bar" style="justify-content:flex-end;">
         <span class="char-count" id="char-count"></span>
       </div>
@@ -702,6 +757,24 @@
 
   </div>
 
+</div>
+
+<!-- Voice Panel -->
+<div id="voice-panel">
+  <div id="vp-row">
+    <div id="vp-avatar">🤖</div>
+    <div id="vp-info">
+      <div id="vp-status">তোমার পালা</div>
+      <div id="vp-transcript">ধরো → বলো → ছেড়ে দাও</div>
+      <div id="vp-level-wrap"><div id="vp-level-fill"></div></div>
+    </div>
+    <button id="vp-hold-btn"
+      onmousedown="vmStartRecord(event)" onmouseup="vmStopRecord()" onmouseleave="vmStopRecord()"
+      ontouchstart="vmStartRecord(event)" ontouchend="vmStopRecord()">🎤</button>
+    <button id="vp-close" onclick="closeVoiceModal()">✕</button>
+  </div>
+  <div id="vp-hint">বোতাম ধরে রাখো এবং বাংলায় বলো</div>
+  <button id="vp-send-now" onclick="vmSendNow()">পাঠাও ✓</button>
 </div>
 
 <!-- MODALS -->
@@ -1069,9 +1142,15 @@ async function loadChatById(chatId){
         // Now reads image_url back from saved messages — image survives reload
         addUserBubble(m.content, m.image_url || null);
       } else if(m.role === 'assistant'){
-        const div = createBotWrapper(marked.parse(m.content));
-        chatBox.appendChild(div);
-        renderMath(div.querySelector('.bubble'));
+        const storedMcq=parseStoredMcq(m.content);
+        if(storedMcq){
+          chatBox.appendChild(renderStoredMcqBubble(storedMcq));
+        }else{
+          const div=createBotWrapper(marked.parse(m.content));
+          chatBox.appendChild(div);
+          const bub=div.querySelector('.bubble');
+          renderMath(bub);renderMermaid(bub);
+        }
       }
     });
 
@@ -1251,8 +1330,8 @@ function newChat(){
 }
 
 function _doNewChat(){
+  _quizSession=null; _imageTeachMode=false; _imageFollowUp=false; _pendingTeachAdvance=false; closeVoiceModal();
   const projectName=currentProjectId?(projects.find(x=>x.id===currentProjectId)||{}).name:'';
-  const headerText=projectName?`নতুন চ্যাট — ${escapeHtml(projectName)} 📂`:'নতুন চ্যাট শুরু করো 👋';
   const welcome=document.createElement('div');welcome.id='welcome-screen';welcome.className='welcome';
   const greet=getBDTGreeting();
   const projectHeader=projectName?`📂 ${escapeHtml(projectName)} — New Chat`:'';
@@ -1262,6 +1341,16 @@ function _doNewChat(){
   document.getElementById('topic-bar-title').textContent=projectName?`📂 ${projectName} — New Chat`:'New Chat';
   document.getElementById('topic-bar-tag').style.display='none';
   closeSidebar();
+  // Fetch personalised opening from Dipti (logged-in only)
+  if(loggedInUser){
+    const streamParam = activeStream ? `?stream=${encodeURIComponent(activeStream)}` : '';
+    fetch('/student-opening'+streamParam).then(r=>r.json()).then(d=>{
+      if(d.opening){
+        document.getElementById('welcome-screen')?.remove();
+        addBotMessage(d.opening, false);
+      }
+    }).catch(()=>{});
+  }
 }
 
 function toggleSidebar(){if(sidebarOpen)closeSidebar();else openSidebar();}
@@ -1355,22 +1444,306 @@ function createBotWrapper(html){
 
 function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
 
+function fixBareMermaid(text){
+  const lines=text.split('\n');
+  const out=[];let inFence=false;let i=0;
+  while(i<lines.length){
+    const l=lines[i];
+    if(l.startsWith('```')){inFence=!inFence;}
+    if(!inFence&&/^flowchart\s+(TD|LR|TB|RL|BT)\b/.test(l)){
+      out.push('```mermaid');
+      while(i<lines.length&&lines[i].trim()!==''){out.push(lines[i]);i++;}
+      out.push('```');
+    }else{out.push(l);i++;}
+  }
+  return out.join('\n');
+}
+
+function fixMermaidLabels(code){
+  // Strip subgraph wrappers — Bengali text in subgraph titles breaks mermaid parser
+  code = code.replace(/^[ \t]*subgraph\s+[^\n]*\n/gm, '').replace(/^[ \t]*end[ \t]*$/gm, '');
+  // Wrap unquoted node labels that contain special chars in double quotes
+  // Matches: ID[label], ID(label) — skips already-quoted ID["label"]
+  code = code
+    .replace(/(\w+)\[([^"\]\n]+)\]/g,(m,id,lbl)=>`${id}["${lbl.trim()}"]`)
+    .replace(/(\w+)\(([^")\n]+)\)/g,(m,id,lbl)=>`${id}("${lbl.trim()}")`);
+  return code;
+}
+
+async function renderMermaid(el){
+  const blocks=el.querySelectorAll('pre > code.language-mermaid');
+  for(const block of blocks){
+    const rawCode=block.textContent.trim();
+    const code=fixMermaidLabels(rawCode);
+    const pre=block.parentElement;
+    const wrap=document.createElement('div');
+    // Suppress mermaid's own error popup
+    const origErr=mermaid.parseError;mermaid.parseError=()=>{};
+    try{
+      const id='mg-'+Date.now()+'-'+Math.floor(Math.random()*99999);
+      const isDarkNow=document.documentElement.getAttribute('data-theme')!=='light';
+      mermaid.initialize({startOnLoad:false,theme:isDarkNow?'dark':'base',fontFamily:'Sora,sans-serif',fontSize:13,flowchart:{curve:'basis',padding:14},securityLevel:'loose'});
+      const {svg}=await mermaid.render(id,code);
+      wrap.className='mermaid-wrap';
+      wrap.innerHTML=svg;
+    }catch(e){
+      wrap.className='mermaid-error';
+      wrap.textContent=rawCode;
+    }finally{mermaid.parseError=origErr;}
+    pre.replaceWith(wrap);
+  }
+}
+
 function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
+  // Parse question labels from initial image listing so progress bar can track them
+  if(showChips==='image_question') initTeachProgress(text);
+  text=fixBareMermaid(text);
   const html=marked.parse(text);
   const div=createBotWrapper(html);
   const bub=div.querySelector('.bubble');
   bub.style.lineHeight=/[\u0980-\u09FF]/.test(text)?'2.1':'1.85';
-  chatBox.appendChild(div);renderMath(bub);
-  if(showChips){
+  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);
+  if(showChips==='image_question'){
     const chips=document.createElement('div');chips.className='reply-chips';
-    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD01</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'img_solve')">\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \uD83D\uDCDD</button><button class="reply-chip" onclick="useChip(this,'img_teach')">\u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDCD6</button>`;
+    chatBox.appendChild(chips);
+  }else if(showChips==='img_next'||showChips==='img_next_correct'){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    const knowBtn = showChips==='img_next_correct' ? '' : `<button class="reply-chip" onclick="useChip(this,'dont_know')">\u099C\u09BE\u09A8\u09BF \u09A8\u09BE \uD83E\uDD37</button>`;
+    chips.innerHTML=`${knowBtn}<button class="reply-chip primary" onclick="useChip(this,'img_next')">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u2192</button>`;
+    chatBox.appendChild(chips);
+  }else if(showChips){
+    const chips=document.createElement('div');chips.className='reply-chips';
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD04</button><button class="reply-chip" onclick="useChip(this,'quiz')">Quiz \u0995\u09B0\u09CB \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
     chatBox.appendChild(chips);
   }
   chatBox.scrollTop=chatBox.scrollHeight;
+  setTimeout(()=>{ chatBox.scrollTop=chatBox.scrollHeight; }, 150);
 }
 
 let _chipSendOverride = null; // API gets this; bubble shows the short input text
+let _imageFollowUp = false;  // true for the current request only
+let _imageTeachMode = false; // true for the whole image teaching session
+let _imageJustExplaining = false; // true after student says "জানি না" — dipti explaining, not asking
+let _pendingTeachAdvance = false; // advance bar on NEXT bot response, not at click time
+
+// ── Voice Modal (hold-to-speak + Whisper) ──
+let _vmRecording = false;
+let _vmMediaRecorder = null;
+let _vmChunks = [];
+let _vmStream = null;
+let _vmAudioCtx = null;
+let _vmAnalyser = null;
+let _vmLevelRAF = null;
+
+// Voice feature disabled until transcription quality is production-ready
+// Re-enable by uncommenting the line below:
+// if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){ document.getElementById('mic-btn').style.display = 'flex'; }
+
+function openVoiceModal(){
+  document.getElementById('voice-panel').classList.add('open');
+  _vmSetState('idle');
+}
+
+function closeVoiceModal(){
+  if(_vmRecording) _vmAbort();
+  document.getElementById('voice-panel').classList.remove('open');
+}
+
+function _vmSetState(state){
+  const btn = document.getElementById('vp-hold-btn');
+  const status = document.getElementById('vp-status');
+  const hint = document.getElementById('vp-hint');
+  if(state === 'idle'){
+    btn.className = ''; btn.textContent = '🎤';
+    status.textContent = 'তোমার পালা';
+    hint.textContent = 'বোতাম ধরে রাখো এবং বাংলায় বলো';
+  } else if(state === 'recording'){
+    btn.className = 'recording'; btn.textContent = '🔴';
+    status.textContent = 'শুনছি...';
+    hint.textContent = 'বলা শেষ হলে ছেড়ে দাও';
+  } else if(state === 'processing'){
+    btn.className = 'processing'; btn.textContent = '⏳';
+    status.textContent = 'বুঝতে পারছি...';
+    hint.textContent = '';
+  } else if(state === 'thinking'){
+    btn.className = 'processing'; btn.textContent = '💭';
+    status.textContent = 'Dipti উত্তর লিখছে...';
+    hint.textContent = '';
+  }
+}
+
+async function vmStartRecord(e){
+  if(e) e.preventDefault();
+  if(_vmRecording || sendBtn.disabled) return;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    _vmStream = stream;
+    _vmAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    _vmAnalyser = _vmAudioCtx.createAnalyser();
+    _vmAnalyser.fftSize = 512;
+    _vmAudioCtx.createMediaStreamSource(stream).connect(_vmAnalyser);
+
+    const mimeType = ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4']
+      .find(t => MediaRecorder.isTypeSupported(t)) || '';
+    _vmMediaRecorder = new MediaRecorder(stream, mimeType ? {mimeType} : {});
+    _vmChunks = [];
+    _vmMediaRecorder.ondataavailable = e => { if(e.data.size > 0) _vmChunks.push(e.data); };
+    _vmMediaRecorder.onstop = _vmOnStop;
+    _vmMediaRecorder.start();
+    _vmRecording = true;
+    _vmSetState('recording');
+    _vmDrawLevel();
+  }catch(err){
+    console.warn('[VM] mic error:', err.name);
+    document.getElementById('vm-transcript').textContent = 'মাইক্রোফোন অ্যাক্সেস দাও — browser-এ Allow করো।';
+  }
+}
+
+function vmStopRecord(){
+  if(!_vmRecording) return;
+  _vmRecording = false;
+  cancelAnimationFrame(_vmLevelRAF);
+  document.getElementById('vp-level-fill').style.width = '0%';
+  if(_vmMediaRecorder && _vmMediaRecorder.state !== 'inactive') _vmMediaRecorder.stop();
+  _vmSetState('processing');
+}
+
+function _vmAbort(){
+  _vmRecording = false;
+  cancelAnimationFrame(_vmLevelRAF);
+  if(_vmMediaRecorder && _vmMediaRecorder.state !== 'inactive'){
+    _vmMediaRecorder.onstop = null; // don't process
+    _vmMediaRecorder.stop();
+  }
+  _vmCleanupStream();
+}
+
+function _vmCleanupStream(){
+  cancelAnimationFrame(_vmLevelRAF);
+  if(_vmStream){ _vmStream.getTracks().forEach(t => t.stop()); _vmStream = null; }
+  if(_vmAudioCtx){ try{ _vmAudioCtx.close(); }catch(e){} _vmAudioCtx = null; }
+  _vmAnalyser = null;
+}
+
+function _vmDrawLevel(){
+  if(!_vmRecording || !_vmAnalyser) return;
+  const data = new Uint8Array(_vmAnalyser.fftSize);
+  _vmAnalyser.getByteTimeDomainData(data);
+  let sum = 0;
+  for(let i = 0; i < data.length; i++){ const v = (data[i]-128)/128; sum += v*v; }
+  const pct = Math.min(100, Math.sqrt(sum/data.length) * 700);
+  document.getElementById('vp-level-fill').style.width = pct + '%';
+  _vmLevelRAF = requestAnimationFrame(_vmDrawLevel);
+}
+
+async function _vmOnStop(){
+  _vmCleanupStream();
+  const transcriptEl = document.getElementById('vp-transcript');
+  const blob = new Blob(_vmChunks, {type:'audio/webm'});
+
+  if(blob.size < 1500){
+    transcriptEl.textContent = 'কিছু শুনতে পাইনি — আবার চেষ্টা করো।';
+    _vmSetState('idle'); return;
+  }
+
+  try{
+    const mimeUsed = (_vmMediaRecorder && _vmMediaRecorder.mimeType) || 'audio/webm';
+    const ext = mimeUsed.includes('mp4') ? 'mp4' : mimeUsed.includes('ogg') ? 'ogg' : 'webm';
+    const form = new FormData();
+    form.append('audio', blob, 'audio.' + ext);
+    const r = await fetch('/transcribe', {method:'POST', body:form});
+    const d = await r.json();
+    if(d.login_required){
+      transcriptEl.textContent = 'লগইন করো তারপর ভয়েস ব্যবহার করো।';
+      _vmSetState('idle'); return;
+    }
+    if(d.error){ transcriptEl.textContent = 'ত্রুটি: ' + d.error; _vmSetState('idle'); return; }
+    const text = (d.text || '').trim();
+    if(text.length >= 2){
+      transcriptEl.textContent = '🎤 ' + text;
+      input.value = text; autoResize(input);
+      const sendNowBtn = document.getElementById('vp-send-now');
+      if(sendNowBtn) sendNowBtn.style.display = 'block';
+      _vmSetState('idle');
+      document.getElementById('vp-status').textContent = 'পাঠানো হচ্ছে ২ সেকেন্ডে...';
+      document.getElementById('vp-hint').textContent = 'ভুল থাকলে নিচের input box-এ ঠিক করো';
+      window._vmSendTimer = setTimeout(()=>vmSendNow(), 2500);
+    } else {
+      transcriptEl.textContent = 'বুঝতে পারিনি — আবার বলো।';
+      _vmSetState('idle');
+    }
+  }catch(err){
+    console.warn('[VM] transcribe error:', err);
+    transcriptEl.textContent = 'সংযোগ সমস্যা — আবার চেষ্টা করো।';
+    _vmSetState('idle');
+  }
+}
+
+function vmSendNow(){
+  clearTimeout(window._vmSendTimer);
+  const sendNowBtn = document.getElementById('vp-send-now');
+  if(sendNowBtn) sendNowBtn.style.display = 'none';
+  if(!input.value.trim()) return;
+  _vmSetState('thinking');
+  sendMessage();
+  const poll = setInterval(()=>{
+    if(!sendBtn.disabled){
+      clearInterval(poll);
+      _vmSetState('idle');
+      document.getElementById('vp-transcript').textContent = 'ধরো → বলো → ছেড়ে দাও';
+    }
+  }, 300);
+}
+
+// Stubs so existing references don't break
+function stopMic(){}
+function stopMicOnType(){}
+
+// ── Question progress tracker ──
+let _teachSteps = [];
+let _teachCurrentStep = 0;
+
+function parseQuestionLabels(text) {
+  const order = ['ক','খ','গ','ঘ','ঙ','চ','ছ','জ','ঝ'];
+  const found = order.filter(l => text.includes(l+'.') || text.includes('**'+l+'.**'));
+  if(found.length >= 2) return found;
+  const nums = ['১','২','৩','৪','৫','৬','৭','৮','৯'];
+  const fn = nums.filter(n => text.includes(n+'.') || text.includes('**'+n+'.**'));
+  if(fn.length >= 2) return fn;
+  return [];
+}
+
+function updateTeachProgressBar(){
+  const bar = document.getElementById('teach-progress-bar');
+  if(!bar || _teachSteps.length === 0){ if(bar) bar.style.display='none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = _teachSteps.map((s,i) => {
+    const done = i < _teachCurrentStep, cur = i === _teachCurrentStep;
+    const sep = i < _teachSteps.length-1 ? '<span class="tpb-sep">›</span>' : '';
+    return `<span class="tpb-step ${done?'done':cur?'current':''}">${s}${done?' ✓':''}</span>${sep}`;
+  }).join('');
+}
+
+function initTeachProgress(text){
+  _teachSteps = parseQuestionLabels(text);
+  _teachCurrentStep = 0;
+}
+
+function advanceTeachProgress(){
+  if(_teachCurrentStep < _teachSteps.length){
+    _teachCurrentStep++;
+    updateTeachProgressBar();
+  }
+}
+
+function resetTeachProgress(){
+  _teachSteps = [];
+  _teachCurrentStep = 0;
+  const bar = document.getElementById('teach-progress-bar');
+  if(bar) bar.style.display = 'none';
+}
 
 function useChip(btn, action){
   btn.closest('.reply-chips').remove();
@@ -1382,8 +1755,123 @@ function useChip(btn, action){
     input.value='\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD01';
     _chipSendOverride='\u0986\u0997\u09C7\u09B0 explanation \u099F\u09BE \u09AC\u09C1\u099D\u09BF\u09A8\u09BF \u2014 \u098F\u0987 \u09AC\u09BF\u09B7\u09AF\u09BC\u099F\u09BE \u098F\u0995\u09A6\u09AE \u09A8\u09A4\u09C1\u09A8\u09AD\u09BE\u09AC\u09C7 \u09B8\u09B9\u099C \u0995\u09B0\u09C7 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964';
     sendMessage();
+  }else if(action==='quiz'){
+    input.value='Quiz \u0995\u09B0\u09CB \uD83C\uDFAF';
+    _chipSendOverride='__QUIZ__';
+    sendMessage();
+  }else if(action==='done'){
+    input.value='\u09AC\u09C1\u099D\u09C7\u099B\u09BF';
+    _chipSendOverride='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7 \u09AF\u09BE\u0993\u0964';
+    _imageFollowUp=true; _pendingTeachAdvance=true;
+    sendMessage();
+  }else if(action==='img_solve'){
+    input.value='\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993';
+    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09B2\u09C7\u0996\u09CB \u2014 \u0995, \u0996, \u0997, \u0998 \u09B8\u09AC \u0985\u0982\u09B6 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7\u0964 \u0995\u09CB\u09A8\u09CB follow-up \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
+    _imageFollowUp=true; _imageTeachMode=false; resetTeachProgress();
+    sendMessage();
+  }else if(action==='img_teach'){
+    input.value='\u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993';
+    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB \u098F\u0995\u099F\u09BE \u098F\u0995\u099F\u09BE \u0995\u09B0\u09C7 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \u2014 \u09AA\u09CD\u09B0\u09A5\u09AE\u09C7 \u0995 \u09A8\u09AE\u09CD\u09AC\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A5\u09C7\u0995\u09C7 \u09B6\u09C1\u09B0\u09C1 \u0995\u09B0\u09CB, \u0986\u09AE\u09BE\u0995\u09C7 \u09AD\u09BE\u09AC\u09A4\u09C7 \u09B8\u09BE\u09B9\u09BE\u09AF\u09CD\u09AF \u0995\u09B0\u09CB\u0964';
+    _imageFollowUp=true; _imageTeachMode=true;
+    updateTeachProgressBar();
+    sendMessage();
+  }else if(action==='img_next'){
+    input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8';
+    _chipSendOverride='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7 \u09AF\u09BE\u0993\u0964';
+    _imageFollowUp=true; _pendingTeachAdvance=true;
+    sendMessage();
+  }else if(action==='dont_know'){
+    input.value='\u099C\u09BE\u09A8\u09BF \u09A8\u09BE';
+    _chipSendOverride='\u0986\u09AE\u09BF \u09B8\u09A4\u09CD\u09AF\u09BF\u0987 \u099C\u09BE\u09A8\u09BF \u09A8\u09BE \u2014 \u098F\u0996\u09A8 \u09B8\u09B0\u09BE\u09B8\u09B0\u09BF \u09AA\u09C1\u09B0\u09CB \u0989\u09A4\u09CD\u09A4\u09B0 \u09AC\u09B2\u09C7 \u09A6\u09BE\u0993, \u0986\u09B0 \u0995\u09CB\u09A8\u09CB \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09CB \u09A8\u09BE\u0964';
+    _imageFollowUp=true;
+    _imageJustExplaining=true;
+    sendMessage();
   }
-  // 'done' just removes the chips
+}
+
+let _quizSession = null; // {total, answered, score}
+
+function parseStoredMcq(text){
+  if(!text||!text.startsWith('🎯 Quiz\n'))return null;
+  const lines=text.split('\n');
+  if(lines.length<6)return null;
+  const question=lines[1];
+  const opts={};
+  for(let i=2;i<=5;i++){const m=lines[i]?.match(/^([A-D])\)\s*(.+)/);if(m)opts[m[1]]=m[2];}
+  const cl=lines.find(l=>l.startsWith('[সঠিক উত্তর:'));
+  const correct=cl?.match(/\[সঠিক উত্তর:\s*([A-D])\]/)?.[1];
+  if(!correct||Object.keys(opts).length!==4)return null;
+  return{question,options:opts,correct};
+}
+
+function renderStoredMcqBubble(mcq){
+  const div=createBotWrapper('');
+  div.querySelector('.message-actions').style.display='none';
+  const bub=div.querySelector('.bubble');
+  const opts=Object.entries(mcq.options).map(([k,v])=>`<button class="mcq-opt${k===mcq.correct?' correct':''}" disabled><span class="opt-key">${k})</span>${escapeHtml(v)}</button>`).join('');
+  bub.innerHTML=`<div class="mcq-label">🎯 QUIZ</div><div class="mcq-question">${escapeHtml(mcq.question)}</div><div class="mcq-options">${opts}</div>`;
+  return div;
+}
+
+function renderMcqBubble(mcq, quizNum, quizTotal){
+  document.getElementById('welcome-screen')?.remove();
+  const div=createBotWrapper('');
+  div.querySelector('.message-actions').style.display='none';
+  const bub=div.querySelector('.bubble');
+  const counterHtml=quizTotal>1?`<div class="mcq-counter">\u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 ${quizNum}/${quizTotal}</div>`:'';
+  const opts=Object.entries(mcq.options).map(([k,v])=>`<button class="mcq-opt" data-key="${k}" onclick="submitMcqAnswer(this,'${k}')"><span class="opt-key">${k})</span>${escapeHtml(v)}</button>`).join('');
+  const nextBtn=quizTotal>1?`<button class="mcq-next-btn" style="display:none" onclick="nextQuizQuestion(this)">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u2192</button>`:'';
+  bub.innerHTML=`<div class="mcq-bubble" data-correct="${mcq.correct}" data-expl="${encodeURIComponent(mcq.explanation||'')}">${counterHtml}<div class="mcq-label">\uD83C\uDFAF QUIZ</div><div class="mcq-question">${escapeHtml(mcq.question)}</div><div class="mcq-options">${opts}</div><div class="mcq-explanation" style="display:none"></div>${nextBtn}</div>`;
+  chatBox.appendChild(div);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+function submitMcqAnswer(btn,chosen){
+  const bubble=btn.closest('.mcq-bubble');
+  const correct=bubble.dataset.correct;
+  const isCorrect=chosen===correct;
+  bubble.querySelectorAll('.mcq-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.key===correct)b.classList.add('correct');
+    else if(b.dataset.key===chosen&&!isCorrect)b.classList.add('wrong');
+  });
+  const explEl=bubble.querySelector('.mcq-explanation');
+  if(explEl){explEl.textContent=decodeURIComponent(bubble.dataset.expl||'');explEl.style.display='';}
+  if(_quizSession){
+    if(isCorrect)_quizSession.score++;
+    _quizSession.answered++;
+    if(_quizSession.answered<_quizSession.total){
+      setTimeout(()=>bubble.querySelector('.mcq-next-btn')?.style.removeProperty('display'),800);
+    }else if(_quizSession.total===1){
+      _quizSession=null;
+      setTimeout(()=>{
+        const chips=document.createElement('div');chips.className='reply-chips';
+        chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+        chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
+      },800);
+    }else{
+      setTimeout(showQuizScore,1800);
+    }
+  }
+}
+
+function nextQuizQuestion(btn){
+  if(btn){btn.disabled=true;btn.style.opacity='.4';}
+  input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8';
+  _chipSendOverride='__QUIZ__';
+  sendMessage();
+}
+
+function showQuizScore(){
+  if(!_quizSession)return;
+  const{score,total}=_quizSession;
+  _quizSession=null;
+  if(loggedInUser){
+    fetch('/save-quiz-result',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({score,total})}).catch(()=>{});
+  }
+  const pct=score/total;
+  const msg=pct===1?`\uD83C\uDF89 \u09AA\u09BE\u09B0\u09AB\u09C7\u0995\u09CD\u099F! ${total}/${total} \u09B8\u09A0\u09BF\u0995!`:pct>=.7?`\u2705 \u09AD\u09BE\u09B2\u09CB \u09B9\u09AF\u09BC\u09C7\u099B\u09C7! ${total} \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u09AE\u09A7\u09CD\u09AF\u09C7 ${score}\u099F\u09BF \u09B8\u09A0\u09BF\u0995\u0964`:`\uD83D\uDCDA ${total} \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u09AE\u09A7\u09CD\u09AF\u09C7 ${score}\u099F\u09BF \u09B8\u09A0\u09BF\u0995\u0964 \u0986\u09B0\u09CB \u098F\u0995\u099F\u09C1 \u09AA\u09A1\u09BC\u09B2\u09C7 \u0986\u09B0\u09CB \u09AD\u09BE\u09B2\u09CB \u09B9\u09AC\u09C7!`;
+  addBotMessage(msg,false);
 }
 
 function showTyping(){
@@ -1513,6 +2001,7 @@ function sendSuggestionWithSubject(card){
 }
 
 async function sendMessage(){
+  stopMic();
   const text=input.value.trim();
   if(!text&&!selectedFile)return;
   const apiText=_chipSendOverride||text; _chipSendOverride=null;
@@ -1570,7 +2059,7 @@ async function sendMessage(){
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
       const reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';
       if(d.chat_id)currentChatId=d.chat_id;
-      removeTyping();addBotMessage(reply, !!d.chips);
+      removeTyping();addBotMessage(reply, d.chips||false);
       removeImage();
     }else{
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
@@ -1600,6 +2089,7 @@ async function sendMessage(){
       let buffer = '';
       let finalReply = null;
       let firstStageReplaced = false;
+      let quizRendered = false;
 
       while(true){
         const {done, value} = await reader.read();
@@ -1625,10 +2115,19 @@ async function sendMessage(){
               pushThinkingStage(evt.text);
             }
           }else if(evt.type==='chapters'){
-            pushChapterFound(evt.chapters);
+            if(!_imageTeachMode) pushChapterFound(evt.chapters);
             firstStageReplaced = true; // chapter event acts as a stage transition too
           }else if(evt.type==='reply'){
             finalReply = evt;
+          }else if(evt.type==='wrapup'){
+            // Session wrap-up arrives after the main reply — show as a second bot message
+            if(evt.reply) setTimeout(()=>addBotMessage(evt.reply, false), 800);
+          }else if(evt.type==='quiz'){
+            removeTyping();
+            if(!_quizSession){_quizSession={total:evt.quiz_total||1,answered:0,score:0};}
+            renderMcqBubble(evt.mcq,_quizSession.answered+1,_quizSession.total);
+            if(evt.chat_id) currentChatId=evt.chat_id;
+            quizRendered=true;
           }else if(evt.type==='error'){
             finalReply = {reply:'⚠️ '+(evt.error||'সমস্যা হয়েছে।')};
           }
@@ -1637,14 +2136,51 @@ async function sendMessage(){
 
       removeTyping();
       if(finalReply){
-        addBotMessage(finalReply.reply || 'দুঃখিত, সমস্যা হয়েছে।', !!finalReply.chips);
+        _imageFollowUp = false;
+        const replyText = finalReply.reply || '';
+        // Smart progress advance — only move forward if bot actually introduced a higher-indexed question
+        if(_pendingTeachAdvance && _imageTeachMode && _teachSteps.length > 0){
+          let botStep = -1;
+          for(let i = _teachSteps.length - 1; i >= 0; i--){
+            const lbl = _teachSteps[i];
+            if(new RegExp('(?:^|\\n)\\*{0,2}' + lbl + '[.\\s]','um').test(replyText) ||
+               new RegExp(lbl + '\\s*নম্বর\\s*প্রশ্ন','u').test(replyText)){
+              botStep = i; break;
+            }
+          }
+          if(botStep > _teachCurrentStep){
+            _teachCurrentStep = botStep;
+            updateTeachProgressBar();
+          } else if(botStep < 0 && _teachCurrentStep >= _teachSteps.length - 1){
+            // Last step, no new question label found → signal session end via counter
+            _teachCurrentStep = _teachSteps.length;
+            updateTeachProgressBar();
+          }
+          _pendingTeachAdvance = false;
+        }
+        let showImgNext = _imageTeachMode && !_imageJustExplaining;
+        _imageJustExplaining = false;
+        // Detect session completion — if Dipti says "no more questions", end teaching mode
+        let teachSessionEnded = false;
+        if(showImgNext && /আর কোনো.{0,20}প্রশ্ন নেই|উদ্দীপকের সব প্রশ্ন|সব.{0,10}প্রশ্ন.{0,10}শেষ|সবগুলো প্রশ্নের উত্তর|সব.{0,10}প্রশ্ন.{0,10}উত্তর/u.test(replyText)){
+          _imageTeachMode = false; showImgNext = false; resetTeachProgress(); teachSessionEnded = true;
+        }
+        // Hide "পরবর্তী প্রশ্ন" once student has advanced past the last step
+        if(showImgNext && _teachSteps.length > 0 && _teachCurrentStep >= _teachSteps.length){
+          _imageTeachMode = false; showImgNext = false; resetTeachProgress(); teachSessionEnded = true;
+        }
+        // If student answered correctly, hide "জানি না" chip
+        const studentAnsweredCorrectly = showImgNext && /বাহ|হ্যাঁ.{0,10}ঠিক|একদম ঠিক|সঠিক বলেছ|ঠিকই ধরেছ|পারফেক্ট/u.test(replyText);
+        // After session ends, show NO chips — prevents "বুঝেছি" → "পরবর্তী প্রশ্নে যাও।" loop
+        const chipsArg = showImgNext ? (studentAnsweredCorrectly ? 'img_next_correct' : 'img_next') : (teachSessionEnded ? false : !!finalReply.chips);
+        addBotMessage(replyText || 'দুঃখিত, সমস্যা হয়েছে।', chipsArg);
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
         if(currentChatId){
           const title=display.length>40?display.slice(0,40)+'…':display;
           document.getElementById('topic-bar-title').textContent=title;
           document.getElementById('topic-bar-tag').style.display='';
         }
-      }else{
+      }else if(!quizRendered){
         addBotMessage('⚠️ সংযোগে সমস্যা হয়েছে।');
       }
     }
@@ -1655,6 +2191,7 @@ async function sendMessage(){
     addBotMessage('⚠️ সংযোগে সমস্যা হয়েছে।');
   }
   sendBtn.disabled=false;input.focus();
+  if(_voiceMode) setTimeout(startMic, 700);
 }
 
 function handleFileSelect(e){const f=e.target.files[0];if(!f)return;selectedFile=f;const r=new FileReader();r.onload=ev=>{document.getElementById('preview-thumb').src=ev.target.result;};r.readAsDataURL(f);document.getElementById('preview-name').textContent=f.name;strip.classList.add('visible');attachBtn.classList.add('has-image');input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';}
@@ -1694,7 +2231,20 @@ async function checkLoginState(){
   try{
     const r=await fetch('/me');if(!r.ok)return;
     const d=await r.json();
-    if(d.logged_in){updateUserUI(d);await loadProjects();await loadAllChats();if(d.needs_verification&&d.email)showVerifyScreen(d.email);}
+    if(d.logged_in){
+      updateUserUI(d);
+      await loadProjects();
+      await loadAllChats();
+      if(d.needs_verification&&d.email)showVerifyScreen(d.email);
+      // Show Dipti's personalised opening on the initial welcome screen
+      const _sp = activeStream ? `?stream=${encodeURIComponent(activeStream)}` : '';
+      fetch('/student-opening'+_sp).then(r=>r.json()).then(data=>{
+        if(data.opening && document.getElementById('welcome-screen')){
+          document.getElementById('welcome-screen').remove();
+          addBotMessage(data.opening, false);
+        }
+      }).catch(()=>{});
+    }
   }catch(e){}
 }
 

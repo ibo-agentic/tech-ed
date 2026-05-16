@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -408,6 +409,116 @@ def build_toc_response(subject: str) -> str:
     return intro + body + outro
 
 
+def parse_quiz_request(text: str) -> int:
+    """Returns MCQ count if message is a quiz request, else 0."""
+    t = text.lower()
+    if 'quiz' not in t and 'কুইজ' not in t:
+        return 0
+    m = re.search(r'(\d+)\s*(?:ta\b|to\b|টা|ti\b|টি)', t)
+    if m:
+        return min(int(m.group(1)), 20)
+    return 1
+
+
+def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str = "") -> dict:
+    """
+    Generate one MCQ. Two modes:
+    - Studying mode (has real conversation): quiz ONLY from what was taught, no RAG
+    - Cold start (no/minimal convo): quiz from RAG using user's topic/chapter query
+    Returns {} on error, {"exhausted": True} when no more distinct questions possible,
+    {"no_topic": True} when cold start but no topic specified.
+    """
+    # Extract previously asked questions + answers so the LLM avoids semantic repeats
+    asked = []
+    for m in history:
+        content = str(m.get('content', ''))
+        if content.startswith('🎯 Quiz\n'):
+            lines = content.split('\n')
+            q = lines[1] if len(lines) > 1 else ''
+            ans_line = next((l for l in lines if l.startswith('[সঠিক উত্তর:')), '')
+            if q:
+                asked.append(f"{q} ({ans_line})" if ans_line else q)
+
+    # Real study messages = non-quiz, non-chip messages
+    study_messages = [
+        m for m in history
+        if isinstance(m.get('content'), str)
+        and not m.get('content', '').startswith('__')
+        and not m.get('content', '').startswith('🎯 Quiz')
+        and m.get('content', '').strip() not in ('Quiz করো 🎯', 'বুঝেছি', 'পরবর্তী প্রশ্ন')
+    ]
+    has_study_session = len(study_messages) >= 4  # meaningful conversation
+
+    convo = "\n".join(
+        f"{'ছাত্র' if m['role']=='user' else 'দীপ্তি'}: {str(m.get('content',''))[:300]}"
+        for m in study_messages[-12:]
+    )
+
+    book_context = ""
+
+    if has_study_session:
+        # Studying mode: quiz only from conversation, no RAG
+        # If questions already asked outnumber study messages, topic is exhausted
+        if len(asked) >= max(3, len(study_messages) // 2):
+            return {"exhausted": True}
+        content_block = f"ছাত্র এই session-এ যা পড়েছে:\n{convo}"
+        source_rule = "শুধুমাত্র উপরের কথোপকথনে যা আলোচনা হয়েছে সেখান থেকে প্রশ্ন তৈরি করো — textbook থেকে নতুন কিছু আনবে না"
+    else:
+        # Cold start: no real study session, use RAG from user's topic query
+        if not user_query.strip():
+            return {"no_topic": True}
+        try:
+            from rag.query import get_relevant_chunks
+            book_context = get_relevant_chunks(user_query.strip(), subject=subject, top_k=5)
+        except Exception as e:
+            print(f"[quiz] RAG error: {e}")
+        if not book_context:
+            return {"no_topic": True}
+        content_block = f"পাঠ্যপুস্তকের অংশ:\n{book_context}"
+        source_rule = "উপরের পাঠ্যপুস্তকের অংশ থেকে একটি factual MCQ প্রশ্ন তৈরি করো"
+
+    asked_block = ""
+    if asked:
+        asked_block = "\n\nইতিমধ্যে এই প্রশ্ন ও concept গুলো cover হয়েছে — একই concept ভিন্নভাবে জিজ্ঞেস করো না:\n" + "\n".join(f"- {q}" for q in asked)
+
+    prompt = f"""তুমি SSC পরীক্ষার প্রশ্ন তৈরি করছ।
+
+{content_block}{asked_block}
+
+নিয়ম:
+- {source_rule}
+- প্রতিটি প্রশ্ন আলাদা concept cover করবে — একই ধারণা ভিন্নভাবে জিজ্ঞেস করবে না
+- যদি নতুন আলাদা প্রশ্ন তৈরি করা সম্ভব না হয়, শুধু {{"exhausted": true}} দাও
+- প্রশ্ন ও explanation-এ "কথোপকথন অনুসারে" বা "Dipti বলেছে" জাতীয় কিছু লিখবে না
+- প্রশ্নটি সরাসরি factual হবে
+- explanation একটি সংক্ষিপ্ত factual কারণ হবে
+- চারটি অপশন স্পষ্ট ও আলাদা হবে
+
+শুধু JSON দাও:
+{{
+  "question": "প্রশ্ন বাংলায়",
+  "options": {{"A": "...", "B": "...", "C": "...", "D": "..."}},
+  "correct": "B",
+  "explanation": "এক বাক্যে কারণ"
+}}"""
+
+    try:
+        raw = (flash_llm | StrOutputParser()).invoke([HumanMessage(content=prompt)]).strip()
+        if "```" in raw:
+            raw = raw.split("```")[1].lstrip("json").strip()
+        data = json.loads(raw)
+        if data.get("exhausted"):
+            return {"exhausted": True}
+        if not all(k in data for k in ("question", "options", "correct", "explanation")):
+            return {}
+        if not all(k in data["options"] for k in ("A", "B", "C", "D")):
+            return {}
+        return data
+    except Exception as e:
+        print(f"[quiz] generate error: {e}")
+        return {}
+
+
 # ── STREAM DEFINITIONS ──
 STREAM_INFO = {
     "science": {
@@ -503,7 +614,7 @@ def _transliterate_name_to_bangla(name: str) -> str:
     return ''.join(result) or name
 
 
-def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "", student_name: str = "") -> str:
+def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "", student_name: str = "", student_profile: dict = None) -> str:
     """Build the full system prompt with NCTB context + optional project instructions."""
     prompt = SYSTEM_PROMPT
 
@@ -516,6 +627,38 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "", strea
 ছাত্রের নাম: {bangla_name}
 মাঝে মাঝে (সব সময় না) নাম ধরে ডাকো — যখন স্বাভাবিক লাগে।
 ⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে। কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
+"""
+
+    if student_profile:
+        weak    = student_profile.get('weak_topics') or []
+        strong  = student_profile.get('strong_topics') or []
+        confuse = student_profile.get('confusion_signals') or []
+        last    = student_profile.get('last_session_topic') or ''
+
+        profile_lines = []
+        if last:
+            profile_lines.append(f"আগের session-এ শেষ পড়েছিল: {last}")
+        if weak:
+            profile_lines.append(f"দুর্বল topic (এই ছাত্র এখানে বারবার আটকেছে): {', '.join(weak[-5:])}")
+        if strong:
+            profile_lines.append(f"শক্তিশালী topic (ভালো বোঝে): {', '.join(strong[-3:])}")
+        if confuse:
+            profile_lines.append(f"আগে যেখানে confusion হয়েছিল: {', '.join(confuse[-3:])}")
+
+        if profile_lines:
+            prompt += f"""
+
+## এই ছাত্রের লার্নিং প্রোফাইল:
+{chr(10).join('- ' + p for p in profile_lines)}
+
+## দুর্বল topic নিয়ে তোমার concrete দায়িত্ব:
+১. দুর্বল topic কথায় উঠলে — ধীরে বোঝাও, analogy দাও, তাড়াহুড়া করবে না
+২. দুর্বল topic explain করার পরে জিজ্ঞেস করো: "এবার কি পরিষ্কার হলো?"
+৩. নতুন topic পড়ানোর সময় দুর্বল topic-এর সাথে connection দেখাও যদি সম্পর্ক থাকে
+৪. ছাত্র একই concept-এ ২+ বার ভুল করলে বলো: "এটা তোমার weak point মনে হচ্ছে — চলো অন্যভাবে বুঝাই"
+৫. শক্তিশালী topic এলে তুলনামূলক দ্রুত এগোতে পারো — ছাত্র এটা জানে
+
+⚠️ দুর্বল topic মানে ছাত্র বোকা না — সে চেষ্টা করছে। ধৈর্য ধরে, positive রেখে পড়াও।
 """
 
     if stream and stream in STREAM_INFO:
@@ -590,16 +733,29 @@ def do_rag_lookup(user_input: str, subject: str = "biology"):
     return nctb_context, chapters_found
 
 
-def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject=""):
+def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile: dict = None):
     """
     Run the LLM with already-retrieved context. Auto-picks Flash or Pro.
     Returns the final reply string.
     """
-    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name)
-    messages = [SystemMessage(content=system_with_context)]
+    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
+    # cache_control marks the system prompt as a cacheable prefix — OpenRouter/provider
+    # will reuse the KV cache for this prefix across calls, cutting input cost ~90%
+    messages = [SystemMessage(content=[{
+        "type": "text",
+        "text": system_with_context,
+        "cache_control": {"type": "ephemeral"},
+    }])]
     for msg in history:
         if msg["role"] == "user":
-            messages.append(HumanMessage(content=msg["content"]))
+            img_url = msg.get("image_url")
+            if img_url:
+                messages.append(HumanMessage(content=[
+                    {"type": "image_url", "image_url": {"url": img_url}},
+                    {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
+                ]))
+            else:
+                messages.append(HumanMessage(content=msg["content"]))
         elif msg["role"] == "assistant":
             messages.append(AIMessage(content=msg["content"]))
     messages.append(HumanMessage(content=user_input))

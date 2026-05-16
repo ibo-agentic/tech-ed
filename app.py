@@ -85,6 +85,14 @@ def background_save(chat_id, messages, user_message, user_id):
         save_messages(chat_id, messages)
         auto_title(chat_id, user_message)
         increment_message_count(user_id)
+        # Always stamp the session date so opening message time-ref stays accurate
+        if user_id:
+            from memory import touch_session_date
+            touch_session_date(user_id)
+        # Full profile analysis every 10 messages
+        if user_id and len(messages) % 10 == 0:
+            from memory import update_student_profile
+            update_student_profile(user_id, messages)
     except Exception as e:
         print(f"Background save error: {e}")
 
@@ -319,6 +327,38 @@ def delete_chat(chat_id):
     return jsonify({'success': True})
 
 
+# ─── MEMORY ROUTES ───
+
+@app.route("/save-quiz-result", methods=["POST"])
+@login_required
+def save_quiz_result_route():
+    data = request.get_json() or {}
+    score = data.get('score')
+    total = data.get('total')
+    if not isinstance(score, int) or not isinstance(total, int) or total <= 0:
+        return jsonify({'ok': False}), 400
+    user_id = session['user_id']
+    from memory import save_quiz_result
+    threading.Thread(target=save_quiz_result, args=(user_id, score, total), daemon=True).start()
+    return jsonify({'ok': True})
+
+
+@app.route("/student-opening", methods=["GET"])
+@login_required
+def student_opening():
+    """Return Dipti's personalised opening line for a new chat session."""
+    from memory import get_student_profile, get_dipti_opening, save_last_stream
+    user_id = session['user_id']
+    student_name = session.get('name', '')
+    current_stream = request.args.get('stream', '')
+    profile = get_student_profile(user_id)
+    opening = get_dipti_opening(profile, student_name, current_stream=current_stream)
+    # Record the stream being entered so next switch is detected correctly
+    if current_stream:
+        threading.Thread(target=save_last_stream, args=(user_id, current_stream), daemon=True).start()
+    return jsonify({'opening': opening})
+
+
 # ─── ASK ROUTES ───
 
 @app.route("/ask", methods=["POST"])
@@ -443,6 +483,8 @@ def ask_stream():
 
     def event_stream():
         from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, detect_subject_from_question, is_casual_chat, instant_reply, check_stream_mismatch
+        from memory import get_student_profile
+        student_profile = get_student_profile(user_id) if is_logged_in else None
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
@@ -457,7 +499,9 @@ def ask_stream():
             effective_subject = explicit_subject or content_subject or subject
 
             # ── STREAM MISMATCH: soft redirect before doing any LLM work ──
-            mismatch_msg = check_stream_mismatch(stream, effective_subject)
+            # Skip mismatch check when subject is ambiguous + it's a TOC question —
+            # those go to the clarify path below and don't need stream enforcement.
+            mismatch_msg = check_stream_mismatch(stream, effective_subject) if subject_confirmed else None
             if mismatch_msg:
                 current_chat_id = None
                 if is_logged_in:
@@ -525,6 +569,49 @@ def ask_stream():
                     })
                     return  # CRITICAL: exit, don't run LLM
 
+            # ── QUIZ: chip trigger OR natural language ("10 ta quiz kore dayow") ──
+            _is_chip = (user_message == '__QUIZ__')
+            if not _is_chip:
+                from chain import parse_quiz_request
+                _quiz_total = parse_quiz_request(user_message)
+            else:
+                _quiz_total = 1
+            if _is_chip or _quiz_total > 0:
+                from chain import generate_quiz_mcq
+                yield sse({"type": "stage", "text": "প্রশ্ন তৈরি করছি... 🎯"})
+                current_chat_id = None
+                messages_list = []
+                if is_logged_in:
+                    chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
+                    current_chat_id = chat['id']
+                    messages_list = chat.get('messages', [])
+                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-10:]]
+                else:
+                    history = history_session[-10:]
+                mcq = generate_quiz_mcq(history, subject=effective_subject, user_query=user_message if not _is_chip else '')
+                if not mcq:
+                    yield sse({"type": "reply", "reply": "এই মুহূর্তে প্রশ্ন তৈরি করতে পারছি না। একটু পড়ে আবার চেষ্টা করো! 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    return
+                if mcq.get("exhausted"):
+                    yield sse({"type": "reply", "reply": "এই topic-এ আপাতত আর নতুন প্রশ্ন নেই! 🎯 আরো বিষয় পড়লে আরো quiz দিতে পারব। চলো এগিয়ে যাই?", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    return
+                if mcq.get("no_topic"):
+                    yield sse({"type": "reply", "reply": "কোন chapter বা topic নিয়ে quiz দেব বলো! যেমন: 'জীবন পাঠ থেকে quiz দাও' বা 'chapter 3 er quiz dao' 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    return
+                opts = mcq['options']
+                mcq_history_text = f"🎯 Quiz\n{mcq['question']}\nA) {opts['A']}\nB) {opts['B']}\nC) {opts['C']}\nD) {opts['D']}\n[সঠিক উত্তর: {mcq['correct']}]"
+                display_msg = "Quiz করো 🎯" if _is_chip else user_message
+                if is_logged_in:
+                    messages_list.append({"role": "user", "content": display_msg})
+                    messages_list.append({"role": "assistant", "content": mcq_history_text})
+                    threading.Thread(
+                        target=background_save,
+                        args=(current_chat_id, messages_list, display_msg, user_id),
+                        daemon=True
+                    ).start()
+                yield sse({"type": "quiz", "mcq": mcq, "quiz_total": _quiz_total, "chat_id": current_chat_id})
+                return
+
             # ── CASUAL CHAT: skip RAG and stage indicators entirely ──
             if is_casual_chat(user_message):
                 current_chat_id = None
@@ -545,7 +632,7 @@ def ask_stream():
                         history = [{"role": m["role"], "content": m["content"]} for m in recent]
                     else:
                         history = history_session[-10:]
-                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream, student_name=student_name, subject=effective_subject)
+                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": user_message})
                     messages_list.append({"role": "assistant", "content": reply})
@@ -555,6 +642,20 @@ def ask_stream():
                         daemon=True
                     ).start()
                 yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+
+                # Wrap-up: goodbye after a real session (casual path)
+                if is_logged_in:
+                    from memory import is_goodbye, generate_wrapup, save_session_promise
+                    if is_goodbye(user_message) and len(messages_list) >= 6:
+                        wrapup_text, promise = generate_wrapup(messages_list, student_name)
+                        if wrapup_text:
+                            yield sse({"type": "wrapup", "reply": wrapup_text})
+                        if promise:
+                            threading.Thread(
+                                target=save_session_promise,
+                                args=(user_id, promise, messages_list),
+                                daemon=True
+                            ).start()
                 return
 
             # ── STAGE 1: Generic thinking placeholder ──
@@ -566,8 +667,7 @@ def ask_stream():
 
             # ── STAGE 2: Only show "found in textbook" if we actually found relevant content ──
             if is_biology:
-                subject_name = "Biology" if effective_subject == "biology" else "Geography" if effective_subject == "geography" else "NCTB"
-                yield sse({"type": "stage", "text": f"Searching NCTB {subject_name} textbook..."})
+                yield sse({"type": "stage", "text": "Searching NCTB textbook..."})
                 yield sse({"type": "chapters", "chapters": chapters_found})
 
             # ── STAGE 3: Writing answer ──
@@ -584,11 +684,14 @@ def ask_stream():
                 current_chat_id = chat['id']
                 messages_list = chat.get('messages', [])
                 recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
-                history = [{"role": m["role"], "content": m["content"]} for m in recent]
+                history = [
+                    {k: v for k, v in m.items() if k in ("role", "content", "image_url")}
+                    for m in recent
+                ]
             else:
                 history = history_session[-10:]
 
-            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject)
+            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
@@ -606,6 +709,20 @@ def ask_stream():
                 "chapters_found": chapters_found if is_biology else [],
                 "chips": True,
             })
+
+            # ── SESSION WRAP-UP: trigger when student says goodbye after a real session ──
+            if is_logged_in:
+                from memory import is_goodbye, generate_wrapup, save_session_promise
+                if is_goodbye(user_message) and len(messages_list) >= 6:
+                    wrapup_text, promise = generate_wrapup(messages_list, student_name)
+                    if wrapup_text:
+                        yield sse({"type": "wrapup", "reply": wrapup_text})
+                    if promise:
+                        threading.Thread(
+                            target=save_session_promise,
+                            args=(user_id, promise, messages_list),
+                            daemon=True
+                        ).start()
 
         except Exception as e:
             print(f"[ask-stream] error: {e}")
@@ -677,13 +794,21 @@ def ask_image():
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
 
-    answer, show_chips = get_answer_with_image(
-        user_message, history, image_base64, image_type,
-        project_instructions=project_instructions,
-        subject=subject,
-        stream=stream,
-        student_name=session.get('name', ''),
-    )
+    from memory import get_student_profile
+    student_profile = get_student_profile(user_id)
+
+    try:
+        answer, show_chips = get_answer_with_image(
+            user_message, history, image_base64, image_type,
+            project_instructions=project_instructions,
+            subject=subject,
+            stream=stream,
+            student_name=session.get('name', ''),
+            student_profile=student_profile,
+        )
+    except Exception as e:
+        print(f"[ask-image] error: {e}")
+        return jsonify({"error": "ছবিটা process করতে সমস্যা হচ্ছে। একটু পরে আবার চেষ্টা করো অথবা ছবিটা আবার পাঠাও।"}), 500
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
     user_msg = {
@@ -709,6 +834,25 @@ def ask_image():
         "chips": show_chips,
     })
 
+
+@app.route('/transcribe', methods=['POST'])
+@login_required
+def transcribe():
+    audio = request.files.get('audio')
+    if not audio:
+        return jsonify({'error': 'No audio'}), 400
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        result = client.audio.transcriptions.create(
+            model='whisper-1',
+            file=('audio.webm', audio.stream, audio.content_type or 'audio/webm'),
+            prompt='বাংলা ভাষা। হ্যালো ম্যাম, আমাকে বায়োলজি, পদার্থবিজ্ঞান, রসায়ন, গণিত, ভূগোল শেখান। রেচন প্রক্রিয়া, কোষ বিভাজন, সালোকসংশ্লেষণ।',
+            temperature=0,
+        )
+        return jsonify({'text': result.text})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/sitemap.xml')
 def sitemap():

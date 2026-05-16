@@ -60,32 +60,10 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     return flash_vision_chain, subject
 
 
-def build_image_system_prompt(nctb_context: str, project_instructions: str = "", student_name: str = "") -> str:
-    """Build system prompt for image queries with optional project instructions."""
-    prompt = SYSTEM_PROMPT
-
-    if student_name and student_name.strip():
-        first_name = student_name.strip().split()[0]
-        bangla_name = _transliterate_name_to_bangla(first_name)
-        prompt += f"""
-
-## ছাত্রের নাম
-ছাত্রের নাম: {bangla_name}
-মাঝে মাঝে (সব সময় না) নাম ধরে ডাকো — যখন স্বাভাবিক লাগে।
-⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে। কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
-"""
-
-    if project_instructions and project_instructions.strip():
-        prompt += f"""
-
-## এই প্রজেক্টের বিশেষ নির্দেশনা (Project Instructions):
-
-{project_instructions.strip()}
-
-উপরের নির্দেশনা সবসময় মেনে চলবে।
-
----
-"""
+def build_image_system_prompt(nctb_context: str, project_instructions: str = "", student_name: str = "", student_profile: dict = None) -> str:
+    """Build system prompt for image queries — reuses chain.py builder so profile injection is shared."""
+    from chain import build_system_prompt
+    prompt = build_system_prompt("", project_instructions, student_name=student_name, student_profile=student_profile)
 
     if nctb_context and nctb_context.strip():
         prompt += f"""
@@ -111,6 +89,7 @@ def get_answer_with_image(
     subject: str = "biology",
     stream: str = "",
     student_name: str = "",
+    student_profile: dict = None,
 ):
     """
     Get AI answer for an image query.
@@ -133,9 +112,13 @@ def get_answer_with_image(
     query_for_rag = user_input if user_input else "প্রশ্ন"
     nctb_context = get_relevant_chunks(query_for_rag, subject=subject)
 
-    system_with_context = build_image_system_prompt(nctb_context, project_instructions, student_name=student_name)
+    system_with_context = build_image_system_prompt(nctb_context, project_instructions, student_name=student_name, student_profile=student_profile)
 
-    messages = [SystemMessage(content=system_with_context)]
+    messages = [SystemMessage(content=[{
+        "type": "text",
+        "text": system_with_context,
+        "cache_control": {"type": "ephemeral"},
+    }])]
 
     # Accounting images always get a clean context — no history bleed.
     # Text follow-ups ("step by step", "বুঝলাম না") go through chain.py
@@ -154,7 +137,7 @@ def get_answer_with_image(
         }
     ]
 
-    if user_input:
+    if user_input and user_input != _DEFAULT_CAPTION:
         content.append({"type": "text", "text": user_input})
     elif subject == "accounting":
         # Accounting: always solve fully — math is too complex to guide step-by-step
@@ -168,14 +151,15 @@ def get_answer_with_image(
             ),
         })
     else:
-        # Non-accounting: ask student to try first before solving
+        # Read the image and list the questions — then student picks solve vs teach
         content.append({
             "type": "text",
             "text": (
-                "ছবিতে কী প্রশ্ন আছে সেটা দেখো। "
-                "Student-কে জিজ্ঞেস করো: 'তুমি কোন অংশটায় আটকে গেছ? "
-                "নিজে একটু চেষ্টা করে বলো — আমি তারপর গাইড করবো।' "
-                "সাথে সাথে full solution দেবে না।"
+                "ছবিতে কী প্রশ্ন আছে সেটা পড়ো। "
+                "প্রশ্নগুলো সংক্ষেপে তালিকা করো (ক. খ. গ. ঘ. বা যা আছে)। "
+                "তারপর শেষে জিজ্ঞেস করো: "
+                "'সম্পূর্ণ সমাধান করে দেব নাকি ধাপে ধাপে বুঝিয়ে দেব?' "
+                "নিজে থেকে কোনো উত্তর দেবে না এখনই।"
             ),
         })
 
@@ -183,10 +167,12 @@ def get_answer_with_image(
 
     # ── First attempt ──
     answer = selected_chain.invoke(messages)
-    
+
     # ── Verification (accounting only) ──
     if subject != "accounting":
-        return answer, True  # show chips for non-accounting answers
+        # If we asked the preference question, show image-specific chips
+        chips = "image_question" if (not user_input or user_input == _DEFAULT_CAPTION) else True
+        return answer, chips
 
     is_valid, errors = verify_accounting_answer(answer)
 
