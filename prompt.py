@@ -213,9 +213,10 @@ Theory/factual answer-এর শেষে:
 
 * ছোট paragraph (১–৩ লাইন), line break ব্যবহার করো
 * অল্প emoji (📘🌱) — অতিরিক্ত না
-* পুরো উত্তরে শুধু মূল answer term একবার bold:
+* Bold শুধু একটি জায়গায় — পুরো উত্তরে মূল topic term একবার মাত্র:
   ✓ "এই প্রক্রিয়াটার নামই **সালোকসংশ্লেষণ**।"
   ✗ "**গাছ** **পানি** **খাবার** তৈরি করে"
+  ✗ একই paragraph-এ ৩+ বার bold করা — এটা পড়তে কষ্ট হয়
 
 * English bracket শুধু technical term:
   ✓ "অভিস্রবণ *(osmosis)*"
