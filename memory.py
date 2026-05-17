@@ -45,6 +45,45 @@ def _merge(old: list, new: list, max_items: int = 15) -> list:
     return combined[-max_items:]
 
 
+def _calculate_streak(last_date_str: str, current_streak: int) -> int:
+    """Pure function — returns updated streak count given last session date and current streak."""
+    if not last_date_str:
+        return 1
+    try:
+        last_dt = datetime.fromisoformat(last_date_str.replace('Z', '+00:00'))
+        days_ago = (datetime.now(timezone.utc) - last_dt).days
+        if days_ago == 0:
+            return max(current_streak or 1, 1)   # same day — no change
+        elif days_ago == 1:
+            return (current_streak or 1) + 1      # yesterday — extend streak
+        else:
+            return 1                              # gap — reset
+    except Exception:
+        return 1
+
+
+def get_or_init_streak(user_id: str, profile: dict | None) -> int:
+    """
+    Calculate today's streak from an already-fetched profile.
+    Schedules a background DB write if the value changed.
+    Returns the new streak so the caller can return it immediately.
+    NOTE: requires streak_days INTEGER DEFAULT 1 column in student_profiles.
+    """
+    import threading
+    if not profile:
+        return 1
+    last_date = profile.get('last_session_date') or ''
+    current = profile.get('streak_days') or 1
+    new_streak = _calculate_streak(last_date, current)
+    if new_streak != current:
+        threading.Thread(
+            target=_upsert,
+            args=(user_id, {'streak_days': new_streak}),
+            daemon=True,
+        ).start()
+    return new_streak
+
+
 def analyze_conversation(messages: list) -> dict:
     """
     Use Flash to extract learning signals from recent conversation.
@@ -231,6 +270,7 @@ def get_dipti_opening(profile: dict | None, student_name: str = "", current_stre
     session_count   = profile.get('session_count') or 0
     promise         = profile.get('next_session_promise') or ''
     last_date_str   = profile.get('last_session_date') or ''
+    streak_days     = profile.get('streak_days') or 1
     quiz_score      = profile.get('last_quiz_score')
     quiz_total      = profile.get('last_quiz_total')
     quiz_ref        = f"{quiz_score}/{quiz_total} সঠিক" if quiz_score is not None and quiz_total else ''
@@ -287,6 +327,8 @@ def get_dipti_opening(profile: dict | None, student_name: str = "", current_stre
         if _belongs_to_other_stream(promise):
             promise = ''
 
+    streak_ref = f"{streak_days} দিন ধরে" if streak_days >= 3 else ''
+
     prompt = f"""তুমি দীপ্তি আপু — SSC ছাত্রের AI শিক্ষিকা। নতুন chat শুরুতে ছাত্রকে ১–২ বাক্যে স্বাগত জানাও।
 
 ছাত্রের নাম: {name_call or 'তুমি'}
@@ -297,11 +339,13 @@ def get_dipti_opening(profile: dict | None, student_name: str = "", current_stre
 গত quiz-এর ফলাফল: {quiz_ref or 'নেই'}
 দুর্বল topic: {', '.join(weak_topics[-2:]) if weak_topics else 'নেই'}
 মোট session: {session_count}
+পরপর পড়ার streak: {streak_ref or 'নেই'}
 
 নিয়ম:
 - সময়ের reference সঠিক রাখো — "গতকাল" বলো না যদি session আজকেই হয়ে থাকে
 - promise থাকলে সেটা দিয়ে শুরু করো, না হলে আগের topic উল্লেখ করো
 - quiz ফলাফল থাকলে এবং score কম হলে (৭০%-এর নিচে) সেই topic আরেকবার practice-এর offer করো
+- streak ৩+ দিন হলে একবার mention করো ("X দিন ধরে পড়ছ — দারুণ!")
 - শুধুমাত্র বর্তমান বিভাগের বিষয় নিয়ে কথা বলো — অন্য বিভাগের topic উল্লেখ করবে না
 - প্রথম session হলে friendly শুরু করো
 - শেষে একটা প্রশ্ন

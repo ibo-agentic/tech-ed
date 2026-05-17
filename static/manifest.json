@@ -1,0 +1,42 @@
+{
+  "name": "Dipti AI — SSC টিউটর",
+  "short_name": "Dipti AI",
+  "description": "বাংলায় SSC পরীক্ষার প্রস্তুতি নাও AI টিউটরের সাথে",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "জীববিজ্ঞান",
+      "short_name": "বায়ো",
+      "url": "/?subject=biology&source=pwa",
+      "description": "জীববিজ্ঞান পড়া শুরু করো"
+    },
+    {
+      "name": "পদার্থবিজ্ঞান",
+      "short_name": "ফিজিক্স",
+      "url": "/?subject=physics&source=pwa",
+      "description": "পদার্থবিজ্ঞান পড়া শুরু করো"
+    }
+  ]
+}

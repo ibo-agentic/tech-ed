@@ -11,6 +11,13 @@
   <meta property="og:type" content="website">
   <meta name="robots" content="index, follow">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d1117'/><text y='.9em' font-size='80' x='10'>✦</text></svg>">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dipti AI">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -518,6 +525,7 @@
     .stream-confirm.ready{opacity:1;}
     .stream-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(13,228,160,.25);background:var(--green-bg);color:var(--green);cursor:pointer;transition:all .13s;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .stream-badge:hover{border-color:var(--green);}
+    #streak-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(240,160,48,.1);border:1px solid rgba(240,160,48,.25);color:var(--amber);}
   </style>
 </head>
 <body>
@@ -671,6 +679,7 @@
       <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Dipti AI</span>
       <button class="stream-badge" id="stream-badge" onclick="newChat()" title="New chat" style="display:none;"></button>
       <div class="chat-topic-spacer"></div>
+      <span id="streak-badge" style="display:none;" title="পড়ার streak"></span>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
       <button class="chat-topic-action" title="Account" onclick="showAccountModal()" id="account-btn">👤</button>
@@ -1361,6 +1370,20 @@ function _doNewChat(){
       if(d.opening){
         document.getElementById('welcome-screen')?.remove();
         addBotMessage(d.opening, false);
+        // Streak badge in header
+        if(d.streak && d.streak > 1){
+          const sb=document.getElementById('streak-badge');
+          if(sb){sb.textContent=`🔥 ${d.streak} দিন`;sb.style.display='';}
+        }
+        // Weak-topic practice chip
+        if(d.weak_topics && d.weak_topics.length > 0){
+          setTimeout(()=>{
+            const topic = d.weak_topics[d.weak_topics.length - 1];
+            const chips = document.createElement('div'); chips.className='reply-chips';
+            chips.innerHTML=`<button class="reply-chip" data-topic="${escapeHtml(topic)}" onclick="useChip(this,'weak_topic_review')">${escapeHtml(topic)} আবার দেখি 📚</button><button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয় পড়ব</button>`;
+            chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+          },600);
+        }
       }
     }).catch(()=>{});
   }
@@ -1914,6 +1937,15 @@ function useChip(btn, action){
     _guideMode=false; _guideSections=[]; _guideCurrentIdx=-1;
     input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u0985\u09A7\u09CD\u09AF\u09BE\u09AF\u09BC \u09AA\u09A1\u09BC\u09A4\u09C7 \u099A\u09BE\u0987';
     sendMessage();
+  }else if(action==='weak_topic_review'){
+    const topic=btn.dataset.topic||'';
+    input.value=topic;
+    _chipSendOverride=`${topic} topic \u099F\u09BE remind \u0995\u09B0\u09CB \u09A4\u09BE\u09B0\u09AA\u09B0 quiz \u09A6\u09BE\u0993`;
+    sendMessage();
+  }else if(action==='new_topic'){
+    _chipSendOverride='আমি নতুন একটা বিষয় পড়তে চাই। আমার জন্য কোন topic সবচেয়ে দরকারি সেটা suggest করো এবং পড়ানো শুরু করো।';
+    input.value='নতুন বিষয় পড়ব';
+    sendMessage();
   }
 }
 
@@ -1965,19 +1997,34 @@ function submitMcqAnswer(btn,chosen){
   });
   const explEl=bubble.querySelector('.mcq-explanation');
   if(explEl){explEl.textContent=decodeURIComponent(bubble.dataset.expl||'');explEl.style.display='';}
+
+  // Wrong-answer drill-down: Dipti asks the student to reflect on WHY they were wrong
+  if(!isCorrect){
+    const chosenText=bubble.querySelector(`[data-key="${chosen}"]`)?.textContent?.trim()?.replace(/^[A-D]\)\s*/,'')||'';
+    const correctText=bubble.querySelector(`[data-key="${correct}"]`)?.textContent?.trim()?.replace(/^[A-D]\)\s*/,'')||'';
+    setTimeout(()=>{
+      addBotMessage(`"${chosen}) ${chosenText}" বেছেছিলে — সঠিক ছিল না। উপরের ব্যাখ্যাটা পড়ে নিজে ভাবো: "${correct}) ${correctText}" কেন সঠিক? একটু বলো তো।`,false);
+    },700);
+  }
+
   if(_quizSession){
     if(isCorrect)_quizSession.score++;
     _quizSession.answered++;
     if(_quizSession.answered<_quizSession.total){
-      setTimeout(()=>bubble.querySelector('.mcq-next-btn')?.style.removeProperty('display'),800);
+      setTimeout(()=>bubble.querySelector('.mcq-next-btn')?.style.removeProperty('display'),isCorrect?800:1600);
     }else if(_quizSession.total===1){
       _quizSession=null;
+      const delay=isCorrect?800:1600;
       setTimeout(()=>{
         const chips=document.createElement('div');chips.className='reply-chips';
         const guideBtn=_guideNextBtn();
-        chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+        if(!isCorrect){
+          chips.innerHTML=`${guideBtn}<button class="reply-chip primary" onclick="useChip(this,'explain')">আরেকবার explain করো 🔄</button><button class="reply-chip" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+        }else{
+          chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+        }
         chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
-      },800);
+      },delay);
     }else{
       setTimeout(showQuizScore,1800);
     }
@@ -2400,6 +2447,18 @@ async function checkLoginState(){
         if(data.opening && document.getElementById('welcome-screen')){
           document.getElementById('welcome-screen').remove();
           addBotMessage(data.opening, false);
+          if(data.streak && data.streak > 1){
+            const sb=document.getElementById('streak-badge');
+            if(sb){sb.textContent=`🔥 ${data.streak} দিন`;sb.style.display='';}
+          }
+          if(data.weak_topics && data.weak_topics.length > 0){
+            setTimeout(()=>{
+              const topic = data.weak_topics[data.weak_topics.length - 1];
+              const chips = document.createElement('div'); chips.className='reply-chips';
+              chips.innerHTML=`<button class="reply-chip" data-topic="${escapeHtml(topic)}" onclick="useChip(this,'weak_topic_review')">${escapeHtml(topic)} আবার দেখি 📚</button><button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয় পড়ব</button>`;
+              chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+            },600);
+          }
         }
       }).catch(()=>{});
     }
@@ -2501,6 +2560,13 @@ renderProjects();renderHistory();updateProfileSection();checkLoginState().then((
   const greetEl=document.getElementById('initial-greeting');
   if(greetEl)greetEl.innerHTML=greet.text+' '+greet.emoji;
 });
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

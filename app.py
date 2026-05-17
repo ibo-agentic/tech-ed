@@ -346,17 +346,19 @@ def save_quiz_result_route():
 @app.route("/student-opening", methods=["GET"])
 @login_required
 def student_opening():
-    """Return Dipti's personalised opening line for a new chat session."""
-    from memory import get_student_profile, get_dipti_opening, save_last_stream
+    """Return Dipti's personalised opening line, streak, and weak topics for a new chat session."""
+    from memory import get_student_profile, get_dipti_opening, save_last_stream, get_or_init_streak
     user_id = session['user_id']
     student_name = session.get('name', '')
     current_stream = request.args.get('stream', '')
     profile = get_student_profile(user_id)
     opening = get_dipti_opening(profile, student_name, current_stream=current_stream)
-    # Record the stream being entered so next switch is detected correctly
+    streak = get_or_init_streak(user_id, profile)
     if current_stream:
         threading.Thread(target=save_last_stream, args=(user_id, current_stream), daemon=True).start()
-    return jsonify({'opening': opening})
+    # Return last 2 weak topics filtered to current stream (frontend shows practice chip)
+    weak_topics = (profile.get('weak_topics') or [])[-2:] if profile else []
+    return jsonify({'opening': opening, 'streak': streak, 'weak_topics': weak_topics})
 
 
 # ─── ASK ROUTES ───
@@ -929,6 +931,17 @@ def transcribe():
 @app.route('/sitemap.xml')
 def sitemap():
     return send_from_directory('static', 'sitemap.xml')
+
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('static', 'manifest.json', mimetype='application/manifest+json')
+
+@app.route('/sw.js')
+def service_worker():
+    response = send_from_directory('static', 'sw.js', mimetype='application/javascript')
+    response.headers['Service-Worker-Allowed'] = '/'
+    response.headers['Cache-Control'] = 'no-cache'
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=True, use_reloader=False)
