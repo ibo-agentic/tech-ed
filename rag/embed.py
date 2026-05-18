@@ -6,10 +6,13 @@ Use --rebuild flag only when you need to re-ingest everything from scratch
 (e.g., after fixing chunk metadata for an existing subject).
 """
 import argparse
+import io
 import os
 import shutil
 import sys
 from pathlib import Path
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter

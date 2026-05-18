@@ -12,13 +12,13 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "rag"))
 from query import get_relevant_chunks
 
 # Reuse the LLM clients from chain.py — single source of truth
-from chain import flash_llm, gemini_pro_llm, gpt54_mini_llm, _transliterate_name_to_bangla
+from chain import flash_llm, vision_llm, gemini_pro_llm, gpt54_mini_llm, two_step_output_chain
 
 load_dotenv()
 
 # Vision-capable parsers
 parser = StrOutputParser()
-flash_vision_chain = flash_llm | parser
+flash_vision_chain = vision_llm | parser          # Gemini 2.5 Flash: vision-capable, classification + image solving
 pro_vision_chain = gemini_pro_llm | parser
 gpt54_mini_vision_chain = gpt54_mini_llm | parser
 
@@ -56,8 +56,24 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     if subject == "accounting_hard":
         print(f"🧮 [Image Routing] complex accounting → Gemini 2.5 Pro")
         return pro_vision_chain, "accounting"
-    print(f"💬 [Image Routing] {subject} → Gemini 2.5 Flash")
+    print(f"💬 [Image Routing] {subject} → Gemini Flash Lite (vision)")
     return flash_vision_chain, subject
+
+
+def extract_problem_from_image(image_base64: str, image_type: str, user_caption: str = "") -> str:
+    """Step 1: Gemini reads the image and returns a full text extraction of the problem."""
+    prompt = (
+        "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন (ক/খ/গ/ঘ সহ), "
+        "সব দেওয়া তথ্য, সংখ্যা, diagram description। "
+        "শুধু extract করো, কোনো solution দেবে না।"
+    )
+    if user_caption:
+        prompt += f"\n\nছাত্রের নির্দেশ: {user_caption}"
+    msg = HumanMessage(content=[
+        {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
+        {"type": "text", "text": prompt},
+    ])
+    return flash_vision_chain.invoke([msg]).strip()
 
 
 def build_image_system_prompt(nctb_context: str, project_instructions: str = "", student_name: str = "", student_profile: dict = None) -> str:
@@ -130,6 +146,22 @@ def get_answer_with_image(
             elif msg["role"] == "assistant":
                 messages.append(AIMessage(content=msg["content"]))
 
+    # Non-accounting + user has a real question → extract then DeepSeek solve
+    if subject != "accounting" and user_input and user_input != _DEFAULT_CAPTION:
+        print("🖼️ [Image Pipeline] Step 1: Gemini extracts problem from image")
+        extracted = extract_problem_from_image(image_base64, image_type, user_input)
+        solve_messages = [
+            SystemMessage(content=[{
+                "type": "text",
+                "text": system_with_context,
+                "cache_control": {"type": "ephemeral"},
+            }]),
+            HumanMessage(content=f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}"),
+        ]
+        print("🖼️ [Image Pipeline] Step 2: DeepSeek solves → Gemini Flash Lite rewrites")
+        answer = two_step_output_chain.invoke(solve_messages)
+        return answer, True
+
     content = [
         {
             "type": "image_url",
@@ -170,7 +202,6 @@ def get_answer_with_image(
 
     # ── Verification (accounting only) ──
     if subject != "accounting":
-        # If we asked the preference question, show image-specific chips
         chips = "image_question" if (not user_input or user_input == _DEFAULT_CAPTION) else True
         return answer, chips
 

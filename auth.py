@@ -727,7 +727,7 @@ def me():
     return jsonify({
         'logged_in': True,
         'user_id':   user_id,
-        'name':      session['name'],
+        'name':      session.get('preferred_name') or session['name'],
         'plan':      session.get('plan', 'free'),
         'verified':  session.get('verified', False)
     })

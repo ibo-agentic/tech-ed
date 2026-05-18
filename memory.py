@@ -39,6 +39,13 @@ def _upsert(user_id: str, data: dict):
         print(f"[memory] upsert error: {e}")
 
 
+def save_preferred_name(user_id: str, name: str):
+    """Persist the student's self-corrected name so it survives across new chats."""
+    cleaned = name.strip().rstrip('.!?,।')
+    if len(cleaned) >= 2:
+        _upsert(user_id, {'preferred_name': cleaned})
+
+
 def _merge(old: list, new: list, max_items: int = 15) -> list:
     """Deduplicate and keep the most recent items."""
     combined = list(dict.fromkeys((old or []) + (new or [])))

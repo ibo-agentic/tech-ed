@@ -18,11 +18,19 @@ from chapters import CHAPTERS
 
 load_dotenv()
 
-# ── DUAL MODEL SETUP ──
-# Gemini Flash 2.5 — cheap, fast, good for theory/conversation
-# Used for ~80% of messages
+# ── MODEL SETUP ──
+# Gemini 2.5 Flash — main model: solving, vision, internal processing
 flash_llm = ChatOpenAI(
     model="google/gemini-2.5-flash",
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    temperature=0.7,
+)
+vision_llm = flash_llm  # same model — supports vision natively
+
+# Gemini 2.5 Flash Lite — student-facing output: natural Bangla conversational responses
+output_llm = ChatOpenAI(
+    model="google/gemini-2.5-flash-lite",
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.7,
@@ -60,10 +68,43 @@ gpt54_mini_llm = ChatOpenAI(
 
 parser = StrOutputParser()
 flash_chain = flash_llm | parser
+output_chain = output_llm | parser
+vision_chain = vision_llm | parser
 haiku_chain = haiku_llm | parser
 sonnet_chain = sonnet_llm | parser
 gemini_pro_chain = gemini_pro_llm | parser
 gpt54_mini_chain = gpt54_mini_llm | parser
+
+
+def rewrite_to_bangla(draft: str) -> str:
+    """Pass Gemini Flash draft through Gemini Flash Lite for natural Bangla output."""
+    try:
+        return output_chain.invoke([HumanMessage(content=(
+            "তুমি দীপ্তি আপু। নিচের উত্তরটি হুবহু same content রেখে "
+            "natural, প্রাকৃতিক বাংলায় rewrite করো। "
+            "কোনো তথ্য, সংখ্যা বা ব্যাখ্যা বাদ দেবে না — শুধু ভাষা সুন্দর ও স্বাভাবিক করো।"
+            f"\n\n{draft}"
+        ))])
+    except Exception as e:
+        print(f"[rewrite] error: {e}")
+        return draft
+
+
+def _make_two_step_chain():
+    from langchain_core.runnables import RunnableLambda
+
+    def _to_rewrite_msgs(draft: str):
+        return [HumanMessage(content=(
+            "তুমি দীপ্তি আপু। নিচের উত্তরটি হুবহু same content রেখে "
+            "natural, প্রাকৃতিক বাংলায় rewrite করো। "
+            "কোনো তথ্য, সংখ্যা বা ব্যাখ্যা বাদ দেবে না — শুধু ভাষা সুন্দর ও স্বাভাবিক করো।"
+            f"\n\n{draft}"
+        ))]
+
+    return flash_chain | RunnableLambda(_to_rewrite_msgs) | output_llm | parser
+
+
+two_step_output_chain = _make_two_step_chain()
 
 
 # ── MATH DETECTION ──
@@ -189,19 +230,24 @@ def pick_chain(user_input: str, subject: str = ""):
     """Select which LLM based on detected subject + question type.
 
     Physics → always Flash (subject is authoritative over keyword heuristics)
+    Math → Flash
     Accounting + complex math → Pro
     Everything else → Flash
     """
     # Subject is the primary gate — never send physics to Pro
     if subject == "physics" or is_physics_question(user_input):
-        print(f"⚛️ [Routing] Physics → Gemini 2.5 Flash")
+        print(f"⚛️ [Routing] Physics → Gemini Flash solve → Gemini Flash Lite rewrite")
+        return two_step_output_chain
+    # Math uses Flash — fast and accurate enough for NCTB level
+    if subject == "math":
+        print(f"📐 [Routing] Math → Gemini 2.5 Flash")
         return flash_chain
-    # Only route to Pro for accounting or genuine multi-step math on non-physics subjects
+    # Accounting always goes to Pro — complex ledger/journal precision needed
     if subject == "accounting" or is_complex_math(user_input):
-        print(f"🧮 [Routing] Accounting/complex math → Gemini 2.5 Pro")
+        print(f"🧮 [Routing] {subject or 'complex math'} → Gemini 2.5 Pro")
         return gemini_pro_chain
-    print(f"💬 [Routing] Theory/simple → Gemini 2.5 Flash")
-    return flash_chain
+    print(f"💬 [Routing] Theory/simple → Gemini Flash solve → Gemini Flash Lite rewrite")
+    return two_step_output_chain
 
 
 # ── TOC SHORT-CIRCUIT ──
@@ -210,10 +256,11 @@ TOC_KEYWORDS = [
 ]
 
 SUBJECT_ALIASES = {
-    "biology": ["biology", "bio", "জীববিজ্ঞান", "জীব বিজ্ঞান", "জিববিজ্ঞান"],
-    "geography": ["geography", "geo", "bugol", "bhugol", "ভূগোল", "ভুগোল", "bugol o poribesh"],
+    "biology":    ["biology", "bio", "জীববিজ্ঞান", "জীব বিজ্ঞান", "জিববিজ্ঞান"],
+    "geography":  ["geography", "geo", "bugol", "bhugol", "ভূগোল", "ভুগোল", "bugol o poribesh"],
     "accounting": ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
-    "physics": ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
+    "physics":    ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
+    "math":       ["math", "mathematics", "গণিত", "gonit", "algebra", "geometry", "বীজগণিত", "জ্যামিতি", "পরিমিতি", "পরিসংখ্যান", "ত্রিকোণমিতি"],
 }
 
 
@@ -235,6 +282,9 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "শব্দ", "sound", "আলো", "light", "তাপ", "heat", "চাপ", "pressure",
         "ক্ষমতা", "power", "কাজ", "work", "শক্তি", "energy",
         "প্রতিসরণ", "refraction", "প্রতিফলন", "reflection",
+        "ট্রান্সফর্মার", "transformer", "রোধ", "resistance", "বর্তনী", "circuit",
+        "ভোল্টেজ", "voltage", "কারেন্ট", "current", "লেন্স", "lens",
+        "মহাকর্ষ", "gravity", "পরমাণু", "atom", "তেজস্ক্রিয়", "radioactive",
     ],
     "chemistry": [
         "পরমাণু", "atom", "অণু", "molecule", "রাসায়নিক", "chemical",
@@ -253,6 +303,14 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "হিসাব", "লেজার", "ledger", "জাবেদা", "journal", "ক্রেডিট", "credit",
         "ডেবিট", "debit", "ব্যালেন্স শিট", "balance sheet", "মুনাফা", "profit",
         "ক্ষতি", "loss", "আর্থিক", "financial", "trial balance", "নগদ",
+    ],
+    "math": [
+        "গণিত", "বীজগণিত", "জ্যামিতি", "ত্রিকোণমিতি", "পরিমিতি", "পরিসংখ্যান",
+        "সমীকরণ", "equation", "সংখ্যা", "লগারিদম", "logarithm", "সূচক",
+        "ত্রিভুজ", "triangle", "বৃত্ত", "circle", "কোণ", "angle",
+        "অনুপাত", "ratio", "ধারা", "series", "ফাংশন", "function",
+        "বর্গমূল", "sqrt", "উৎপাদক", "factor", "সম্ভাবনা", "probability",
+        "গড়", "মধ্যক", "প্রচুরক", "mean", "median", "mode", "অজিভ",
     ],
 }
 
@@ -571,6 +629,18 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
     ]
     has_study_session = len(study_messages) >= 4  # meaningful conversation
 
+    # Guard: if conversation is mostly meta (about Dipti herself / app / subjects list),
+    # not about actual subject matter — refuse to generate quiz
+    if has_study_session:
+        _META = ["দীপ্তি", "dipti", "কোন বিষয়", "কোন subject", "ki ki", "কী কী",
+                 "kon kon", "কী পড়াও", "কী পড়ান", "app", "কে তৈরি", "কে বানিয়েছে"]
+        _meta_hits = sum(
+            1 for m in study_messages[-8:]
+            if any(p.lower() in str(m.get('content', '')).lower() for p in _META)
+        )
+        if _meta_hits >= len(study_messages[-8:]) // 2:
+            return {"no_topic": True}
+
     convo = "\n".join(
         f"{'ছাত্র' if m['role']=='user' else 'দীপ্তি'}: {str(m.get('content',''))[:300]}"
         for m in study_messages[-12:]
@@ -609,7 +679,10 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
 
 নিয়ম:
 - {source_rule}
-- প্রতিটি প্রশ্ন আলাদা concept cover করবে — একই ধারণা ভিন্নভাবে জিজ্ঞেস করবে না
+- প্রশ্নটি অবশ্যই SSC NCTB পাঠ্যক্রমের বিষয়বস্তু (জীববিজ্ঞান, পদার্থ, রসায়ন, ভূগোল, হিসাব) থেকে হবে
+- Dipti AI, এই app, বা "দীপ্তি আপু কী পড়ান" ধরনের কোনো প্রশ্ন করবে না — এটা quiz নয়
+- প্রতিটি প্রশ্ন আলাদা concept ও আলাদা fact cover করবে
+- আগের প্রশ্নে যে concept, term বা fact ছিল — সেটা ভিন্নভাবেও জিজ্ঞেস করবে না
 - যদি নতুন আলাদা প্রশ্ন তৈরি করা সম্ভব না হয়, শুধু {{"exhausted": true}} দাও
 - প্রশ্ন ও explanation-এ "কথোপকথন অনুসারে" বা "Dipti বলেছে" জাতীয় কিছু লিখবে না
 - প্রশ্নটি সরাসরি factual হবে
@@ -645,8 +718,8 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
 STREAM_INFO = {
     "science": {
         "name": "বিজ্ঞান বিভাগ",
-        "subjects": ["biology", "physics", "chemistry"],
-        "label": "Biology, Physics, Chemistry, Higher Math",
+        "subjects": ["biology", "physics", "chemistry", "math"],
+        "label": "Biology, Physics, Chemistry, Math",
     },
     "commerce": {
         "name": "ব্যবসায় শিক্ষা বিভাগ",
@@ -734,6 +807,28 @@ def _transliterate_name_to_bangla(name: str) -> str:
         # skip other chars (spaces, hyphens etc.)
 
     return ''.join(result) or name
+
+
+_NAME_CORRECTION_RE = re.compile(
+    r'(?:'
+    r'(?:amr|amar|ami|my)\s+name\s+(?:is\s+)?(\w+)'       # "amr name libo" / "my name is libo"
+    r'|name\s+(\w+)\s+not'                                   # "name libo not ibo"
+    r'|আমার\s+নাম\s+([^\s।,.!?]+)'                         # "আমার নাম লিবো"
+    r'|নাম\s+([^\s।,.!?]+)\s*[,।]?\s*(?:ভুল|নয়|না|কিন্তু)' # "নাম বসন্ত, ভুল"
+    r')',
+    re.IGNORECASE
+)
+
+def detect_name_correction(message: str) -> str | None:
+    """Returns the corrected name if the student is correcting their name, else None."""
+    m = _NAME_CORRECTION_RE.search(message)
+    if m:
+        name = next((g for g in m.groups() if g), None)
+        if name:
+            name = name.strip().rstrip('.!?,।')
+            if len(name) >= 2:
+                return name
+    return None
 
 
 def build_system_prompt(nctb_context: str, project_instructions: str = "", stream: str = "", student_name: str = "", student_profile: dict = None) -> str:
@@ -868,10 +963,12 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         "text": system_with_context,
         "cache_control": {"type": "ephemeral"},
     }])]
+    has_image = False
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
             if img_url:
+                has_image = True
                 messages.append(HumanMessage(content=[
                     {"type": "image_url", "image_url": {"url": img_url}},
                     {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
@@ -881,6 +978,31 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         elif msg["role"] == "assistant":
             messages.append(AIMessage(content=msg["content"]))
     messages.append(HumanMessage(content=user_input))
+
+    # Image in history: Gemini Flash extracts problem → Gemini Flash solves → Flash Lite rewrites
+    if has_image:
+        print("🖼️ [Image Pipeline] Step 1: Gemini extracts problem from image")
+        extract_msgs = messages[:-1] + [HumanMessage(content=(
+            "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা। "
+            "শুধু extract করো, কোনো solution দেবে না।"
+        ))]
+        extracted = vision_chain.invoke(extract_msgs)
+
+        # Strip images from history, rebuild with extracted text for Gemini Flash
+        text_messages = []
+        for msg in messages[:-1]:
+            if isinstance(msg, HumanMessage) and isinstance(msg.content, list):
+                text_parts = [p.get("text", "") for p in msg.content
+                              if isinstance(p, dict) and p.get("type") == "text"]
+                text_messages.append(HumanMessage(content="\n".join(filter(None, text_parts)) or "[image]"))
+            else:
+                text_messages.append(msg)
+        text_messages.append(HumanMessage(content=(
+            f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}"
+        )))
+
+        print("🖼️ [Image Pipeline] Step 2: Gemini Flash solves → Flash Lite rewrites")
+        return two_step_output_chain.invoke(text_messages)
 
     selected_chain = pick_chain(user_input, subject=subject)
     return selected_chain.invoke(messages)

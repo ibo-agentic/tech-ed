@@ -349,15 +349,26 @@ def student_opening():
     """Return Dipti's personalised opening line, streak, and weak topics for a new chat session."""
     from memory import get_student_profile, get_dipti_opening, save_last_stream, get_or_init_streak
     user_id = session['user_id']
-    student_name = session.get('name', '')
+    student_name = session.get('preferred_name') or session.get('name', '')
     current_stream = request.args.get('stream', '')
     profile = get_student_profile(user_id)
     opening = get_dipti_opening(profile, student_name, current_stream=current_stream)
     streak = get_or_init_streak(user_id, profile)
     if current_stream:
         threading.Thread(target=save_last_stream, args=(user_id, current_stream), daemon=True).start()
-    # Return last 2 weak topics filtered to current stream (frontend shows practice chip)
-    weak_topics = (profile.get('weak_topics') or [])[-2:] if profile else []
+    # Return weak topics filtered to the current stream so physics topics
+    # don't appear in arts/commerce projects and vice versa
+    all_weak = (profile.get('weak_topics') or []) if profile else []
+    if current_stream and all_weak:
+        from chain import STREAM_INFO, detect_subject_from_question
+        allowed = set(STREAM_INFO.get(current_stream, {}).get('subjects', []))
+        filtered = [
+            t for t in all_weak
+            if detect_subject_from_question(t, fallback=None) in allowed
+        ]
+        weak_topics = filtered[-2:]
+    else:
+        weak_topics = all_weak[-2:]
     return jsonify({'opening': opening, 'streak': streak, 'weak_topics': weak_topics})
 
 
@@ -465,7 +476,17 @@ def ask_stream():
     plan = session.get('plan', 'free')
     guest_count = session.get('guest_messages', 0)
     history_session = session.get('history', [])
-    student_name = session.get('name', '')
+    # preferred_name in session wins over login-time name (persists name corrections)
+    student_name = session.get('preferred_name') or session.get('name', '')
+
+    # Detect name correction upfront from the message itself — update session immediately
+    if is_logged_in and user_message:
+        from chain import detect_name_correction
+        _nc = detect_name_correction(user_message)
+        if _nc:
+            student_name = _nc
+            session['preferred_name'] = _nc
+            session.modified = True
 
     # Guest limit check
     if not is_logged_in and guest_count >= 5:
@@ -870,6 +891,7 @@ def ask_image():
 
     from memory import get_student_profile
     student_profile = get_student_profile(user_id)
+    _img_student_name = student_profile.get('preferred_name') or session.get('name', '') if student_profile else session.get('name', '')
 
     try:
         answer, show_chips = get_answer_with_image(
@@ -877,7 +899,7 @@ def ask_image():
             project_instructions=project_instructions,
             subject=subject,
             stream=stream,
-            student_name=session.get('name', ''),
+            student_name=_img_student_name,
             student_profile=student_profile,
         )
     except Exception as e:
