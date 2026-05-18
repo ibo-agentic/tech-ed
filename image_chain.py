@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "rag"))
 from query import get_relevant_chunks
 
 # Reuse the LLM clients from chain.py — single source of truth
-from chain import flash_llm, vision_llm, gemini_pro_llm, gpt54_mini_llm, two_step_output_chain
+from chain import flash_llm, vision_llm, gemini_pro_llm, gpt54_mini_llm
 
 load_dotenv()
 
@@ -56,7 +56,7 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     if subject == "accounting_hard":
         print(f"🧮 [Image Routing] complex accounting → Gemini 2.5 Pro")
         return pro_vision_chain, "accounting"
-    print(f"💬 [Image Routing] {subject} → Gemini Flash Lite (vision)")
+    print(f"⚡ [Image Routing] {subject} → Gemini 2.5 Flash")
     return flash_vision_chain, subject
 
 
@@ -158,8 +158,9 @@ def get_answer_with_image(
             }]),
             HumanMessage(content=f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}"),
         ]
-        print("🖼️ [Image Pipeline] Step 2: DeepSeek solves → Gemini Flash Lite rewrites")
-        answer = two_step_output_chain.invoke(solve_messages)
+        print("🖼️ [Image Pipeline] Step 2: Gemini 2.5 Flash solves")
+        from chain import flash_chain
+        answer = flash_chain.invoke(solve_messages)
         return answer, True
 
     content = [

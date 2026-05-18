@@ -226,28 +226,10 @@ def is_complex_math(user_input: str) -> bool:
     return False
 
 
-def pick_chain(user_input: str, subject: str = ""):
-    """Select which LLM based on detected subject + question type.
-
-    Physics → always Flash (subject is authoritative over keyword heuristics)
-    Math → Flash
-    Accounting + complex math → Pro
-    Everything else → Flash
-    """
-    # Subject is the primary gate — never send physics to Pro
-    if subject == "physics" or is_physics_question(user_input):
-        print(f"⚛️ [Routing] Physics → Gemini Flash solve → Gemini Flash Lite rewrite")
-        return two_step_output_chain
-    # Math uses Flash — fast and accurate enough for NCTB level
-    if subject == "math":
-        print(f"📐 [Routing] Math → Gemini 2.5 Flash")
-        return flash_chain
-    # Accounting always goes to Pro — complex ledger/journal precision needed
-    if subject == "accounting" or is_complex_math(user_input):
-        print(f"🧮 [Routing] {subject or 'complex math'} → Gemini 2.5 Pro")
-        return gemini_pro_chain
-    print(f"💬 [Routing] Theory/simple → Gemini Flash solve → Gemini Flash Lite rewrite")
-    return two_step_output_chain
+def pick_chain(_user_input: str, subject: str = ""):
+    """All subjects → Gemini 2.5 Flash."""
+    print(f"⚡ [Routing] {subject or 'general'} → Gemini 2.5 Flash")
+    return flash_chain
 
 
 # ── TOC SHORT-CIRCUIT ──
@@ -1001,8 +983,10 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
             f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}"
         )))
 
-        print("🖼️ [Image Pipeline] Step 2: Gemini Flash solves → Flash Lite rewrites")
-        return two_step_output_chain.invoke(text_messages)
+        selected = pick_chain(user_input, subject=subject)
+        label = "Flash Lite rewrite" if selected is two_step_output_chain else "Flash direct"
+        print(f"🖼️ [Image Pipeline] Step 2: Gemini Flash solves → {label}")
+        return selected.invoke(text_messages)
 
     selected_chain = pick_chain(user_input, subject=subject)
     return selected_chain.invoke(messages)

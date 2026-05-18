@@ -310,15 +310,18 @@
     .mermaid-wrap svg{max-width:100%;height:auto;font-family:'Sora',sans-serif;}
     .mermaid-error{font-size:11px;color:var(--text3);font-family:monospace;white-space:pre-wrap;padding:8px;background:var(--bg3);border-radius:var(--radius-sm);border:1px dashed var(--border);}
     @media(max-width:480px){.mermaid-wrap{padding:8px 4px;}.mermaid-wrap svg{font-size:11px;}}
+    .svg-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;margin:10px 0;overflow-x:auto;text-align:center;}
+    .svg-wrap svg{max-width:100%;height:auto;}
+    @media(max-width:480px){.svg-wrap{padding:10px 6px;}}
 
     #scroll-btn{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);color:var(--text2);border-radius:16px;padding:5px 14px;font-size:11px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s;font-family:'Sora',sans-serif;font-weight:600;z-index:20;white-space:nowrap;}
     #scroll-btn.visible{opacity:1;pointer-events:auto;}
-    #nav-btn{position:absolute;top:50%;right:5px;transform:translateY(-50%);width:13px;height:13px;background:var(--green);border:none;border-radius:50%;cursor:pointer;display:none;z-index:20;padding:0;animation:navPing 1.8s ease-in-out infinite;}
-    #nav-btn:hover{transform:translateY(-50%) scale(1.4);}
-    #nav-btn.open{animation:none;opacity:.5;transform:translateY(-50%);}
-    @keyframes navPing{0%{box-shadow:0 0 0 0 rgba(13,228,160,.8);}65%{box-shadow:0 0 0 9px rgba(13,228,160,0);}100%{box-shadow:0 0 0 0 rgba(13,228,160,0);}}
-    #nav-panel{position:absolute;top:50%;right:26px;transform:translateY(-50%) scale(.95);transform-origin:right center;width:260px;max-height:70vh;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.45);display:flex;flex-direction:column;z-index:21;overflow:hidden;opacity:0;pointer-events:none;transition:transform .18s cubic-bezier(.34,1.56,.64,1),opacity .15s;}
-    #nav-panel.open{transform:translateY(-50%) scale(1);opacity:1;pointer-events:auto;}
+    #nav-btn{width:13px;height:13px;background:#f85149;border:none;border-radius:50%;cursor:pointer;display:none;z-index:20;padding:0;flex-shrink:0;animation:navPing 1.8s ease-in-out infinite;position:relative;}
+    #nav-btn:hover{transform:scale(1.3);}
+    #nav-btn.open{animation:none;opacity:.5;}
+    @keyframes navPing{0%{box-shadow:0 0 0 0 rgba(248,81,73,.8);}65%{box-shadow:0 0 0 9px rgba(248,81,73,0);}100%{box-shadow:0 0 0 0 rgba(248,81,73,0);}}
+    #nav-panel{position:absolute;top:52px;right:14px;width:260px;max-height:70vh;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.45);display:flex;flex-direction:column;z-index:21;overflow:hidden;transform:scale(.95) translateY(-6px);transform-origin:top right;opacity:0;pointer-events:none;transition:transform .18s cubic-bezier(.34,1.56,.64,1),opacity .15s;}
+    #nav-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:auto;}
     .nav-panel-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;}
     .nav-panel-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-family:'Sora',sans-serif;}
     .nav-close-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 5px;border-radius:4px;transition:color .13s;line-height:1;}
@@ -330,7 +333,7 @@
     .nav-item:hover{background:var(--bg3);}
     .nav-num{width:18px;height:18px;background:rgba(13,228,160,.12);color:var(--green);border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:'Sora',sans-serif;}
     .nav-text{font-size:12px;color:var(--text2);line-height:1.45;word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;}
-    @media(max-width:480px){ #nav-panel{width:calc(100vw - 56px);right:24px;}}
+    @media(max-width:480px){ #nav-panel{width:calc(100vw - 28px);right:14px;top:54px;}}
 
     #input-area{background:var(--bg2);border-top:1px solid var(--border);padding:10px 14px 8px;padding-bottom:calc(8px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
     #image-preview-strip{display:none;max-width:100%;margin:0 0 7px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
@@ -707,7 +710,10 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
         <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:2px;" onclick="toggleSidebar()">☰</button>
         <span style="font-size:16px;font-weight:800;color:var(--text);cursor:pointer;" onclick="location.reload()">Dipti AI</span>
-        <button class="chat-topic-action" title="New chat" onclick="newChat()" style="font-size:13px;">✏️</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="nav-btn-mobile" onclick="toggleNav()" title="প্রশ্নের তালিকা" style="width:11px;height:11px;background:#f85149;border-radius:50%;cursor:pointer;display:none;flex-shrink:0;animation:navPing 1.8s ease-in-out infinite;"></span>
+          <button class="chat-topic-action" title="New chat" onclick="newChat()" style="font-size:13px;">✏️</button>
+        </div>
       </div>
     </div>
 
@@ -717,6 +723,7 @@
       <button class="stream-badge" id="stream-badge" onclick="newChat()" title="New chat" style="display:none;"></button>
       <div class="chat-topic-spacer"></div>
       <span id="streak-badge" style="display:none;" title="পড়ার streak"></span>
+      <button id="nav-btn" onclick="toggleNav()" title="প্রশ্নের তালিকা"></button>
       <button class="chat-topic-action" title="Theme" onclick="toggleTheme()">☀️</button>
       <button class="chat-topic-action" title="New chat" onclick="newChat()">✏️</button>
       <button class="chat-topic-action" title="Account" onclick="showAccountModal()" id="account-btn">👤</button>
@@ -797,7 +804,6 @@
       </div>
       <div id="nav-list"></div>
     </div>
-    <button id="nav-btn" onclick="toggleNav()" title="প্রশ্নের তালিকা"></button>
 
     <div id="input-area">
       <div id="image-preview-strip">
@@ -1214,10 +1220,10 @@ async function loadChatById(chatId){
         if(storedMcq){
           chatBox.appendChild(renderStoredMcqBubble(storedMcq));
         }else{
-          const div=createBotWrapper(marked.parse(m.content));
+          const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content))));
           chatBox.appendChild(div);
           const bub=div.querySelector('.bubble');
-          renderMath(bub);renderMermaid(bub);
+          renderMath(bub);renderMermaid(bub);renderSVG(bub);
         }
       }
     });
@@ -1541,6 +1547,28 @@ function createBotWrapper(html){
 
 function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
 
+function preprocessMath(text){
+  // Any line that is ONLY $...$ → upgrade to display $$...$$
+  return text.replace(/^[ \t]*\$([^$\n]+)\$[ \t]*$/gm,(m,eq)=>`$$${eq}$$`);
+}
+
+const RECT_SVG=`<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;background:#161b22;border-radius:8px;"><rect x="30" y="30" width="260" height="120" fill="rgba(13,228,160,.08)" stroke="#0de4a0" stroke-width="2.5"/><text x="160" y="20" text-anchor="middle" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">দৈর্ঘ্য (l)</text><text x="160" y="170" text-anchor="middle" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">দৈর্ঘ্য (l)</text><text x="12" y="95" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif" transform="rotate(-90,12,95)">প্রস্থ (w)</text><text x="310" y="95" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif" transform="rotate(90,310,95)">প্রস্থ (w)</text><text x="160" y="92" text-anchor="middle" fill="#e6edf3" font-size="15" font-family="Sora,sans-serif">আয়তক্ষেত্র</text><text x="160" y="114" text-anchor="middle" fill="#0de4a0" font-size="12" font-family="Sora,sans-serif">৪টি কোণ = ৯০° | বিপরীত বাহু সমান</text><text x="35" y="28" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="270" y="28" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="35" y="148" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="270" y="148" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text></svg>`;
+const TRI_SVG=`<svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;background:#161b22;border-radius:8px;"><polygon points="150,20 280,190 20,190" fill="rgba(13,228,160,.08)" stroke="#0de4a0" stroke-width="2"/><text x="150" y="14" text-anchor="middle" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">A (শীর্ষ)</text><text x="10" y="207" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">B</text><text x="282" y="207" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">C</text><text x="150" y="213" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Sora,sans-serif">ভূমি (BC)</text><text x="150" y="118" text-anchor="middle" fill="#e6edf3" font-size="14" font-family="Sora,sans-serif">ত্রিভুজ</text><line x1="150" y1="20" x2="150" y2="190" stroke="#f0a030" stroke-width="1" stroke-dasharray="4,3"/><text x="158" y="110" fill="#f0a030" font-size="11" font-family="Sora,sans-serif">উচ্চতা (h)</text></svg>`;
+const CIRCLE_SVG=`<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;background:#161b22;border-radius:8px;"><circle cx="120" cy="120" r="90" fill="rgba(13,228,160,.08)" stroke="#0de4a0" stroke-width="2.5"/><line x1="120" y1="120" x2="210" y2="120" stroke="#f0a030" stroke-width="1.5" stroke-dasharray="4,3"/><circle cx="120" cy="120" r="3" fill="#f0a030"/><text x="165" y="113" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif">ব্যাসার্ধ (r)</text><line x1="30" y1="120" x2="210" y2="120" stroke="#0de4a0" stroke-width="1" stroke-dasharray="2,4" opacity="0.4"/><text x="120" y="127" text-anchor="middle" fill="#e6edf3" font-size="15" font-family="Sora,sans-serif">বৃত্ত</text><text x="120" y="222" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">ব্যাস = 2r | পরিধি = 2πr</text></svg>`;
+const COORD_SVG=`<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;background:#161b22;border-radius:8px;font-family:Sora,sans-serif;"><defs><pattern id="cg" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0L0 0 0 20" fill="none" stroke="#ffffff0d" stroke-width="0.8"/></pattern><marker id="ca" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e6edf3"/></marker></defs><rect width="300" height="300" fill="url(#cg)"/><line x1="15" y1="150" x2="282" y2="150" stroke="#e6edf3" stroke-width="1.5" marker-end="url(#ca)"/><line x1="150" y1="285" x2="150" y2="18" stroke="#e6edf3" stroke-width="1.5" marker-end="url(#ca)"/><text x="286" y="154" fill="#e6edf3" font-size="12">X</text><text x="8" y="154" fill="#e6edf3" font-size="11">X'</text><text x="154" y="14" fill="#e6edf3" font-size="12">Y</text><text x="154" y="294" fill="#e6edf3" font-size="11">Y'</text><text x="155" y="163" fill="#e6edf3" font-size="11">O</text><line x1="130" y1="146" x2="130" y2="154" stroke="#e6edf3" stroke-width="1"/><text x="126" y="164" fill="#f0a030" font-size="9">-1</text><line x1="170" y1="146" x2="170" y2="154" stroke="#e6edf3" stroke-width="1"/><text x="168" y="164" fill="#f0a030" font-size="9">1</text><line x1="190" y1="146" x2="190" y2="154" stroke="#e6edf3" stroke-width="1"/><text x="188" y="164" fill="#f0a030" font-size="9">2</text><line x1="146" y1="130" x2="154" y2="130" stroke="#e6edf3" stroke-width="1"/><text x="132" y="134" fill="#f0a030" font-size="9">1</text><line x1="146" y1="110" x2="154" y2="110" stroke="#e6edf3" stroke-width="1"/><text x="132" y="114" fill="#f0a030" font-size="9">2</text><line x1="146" y1="170" x2="154" y2="170" stroke="#e6edf3" stroke-width="1"/><text x="128" y="174" fill="#f0a030" font-size="9">-1</text></svg>`;
+
+function fixGeometryMermaid(text){
+  // Convert any remaining Mermaid blocks to SVG fallbacks
+  return text.replace(/```mermaid\n([\s\S]*?)```/g,(match,src)=>{
+    if(/লেখচিত্র|coordinate|সরলরেখা.*বিন্দু|বিন্দু.*লেখ|graph.*point|plot/i.test(src)) return '```svg\n'+COORD_SVG+'\n```';
+    if(/আয়তক্ষেত্র|rectangle|rect\b|মাঠ|বাগান|জমি|field|path|রাস্তা/i.test(src)) return '```svg\n'+RECT_SVG+'\n```';
+    if(/ত্রিভুজ|triangle|tri\b/i.test(src)) return '```svg\n'+TRI_SVG+'\n```';
+    if(/বৃত্ত|circle/i.test(src)) return '```svg\n'+CIRCLE_SVG+'\n```';
+    // Any other Mermaid block — let Mermaid render it (xychart-beta bar/histogram still works)
+    return match;
+  });
+}
+
 function fixBareMermaid(text){
   const lines=text.split('\n');
   const out=[];let inFence=false;let i=0;
@@ -1593,6 +1621,31 @@ async function renderMermaid(el){
   }
 }
 
+function renderSVG(el){
+  el.querySelectorAll('pre > code.language-svg').forEach(block=>{
+    const raw=block.textContent.trim();
+    // Sanitize: strip scripts and event handlers
+    const clean=raw
+      .replace(/<script[\s\S]*?<\/script>/gi,'')
+      .replace(/\bon\w+\s*=/gi,'data-x=')
+      .replace(/javascript:/gi,'');
+    const wrap=document.createElement('div');
+    wrap.className='svg-wrap';
+    // Force SVG to fit dark theme if it has no explicit background
+    wrap.innerHTML=clean;
+    const svg=wrap.querySelector('svg');
+    if(svg){
+      if(!svg.getAttribute('width')&&!svg.style.width) svg.style.maxWidth='100%';
+      svg.style.height='auto';
+      // Inject dark-theme defaults only if SVG has no background rect
+      if(!svg.querySelector('rect[fill="#ffffff"],rect[fill="white"]')){
+        svg.style.background='transparent';
+      }
+    }
+    block.parentElement.replaceWith(wrap);
+  });
+}
+
 function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
@@ -1600,12 +1653,14 @@ function addBotMessage(text, showChips=false){
   // Ensure a blank line before bullet/list items so marked.js parses them as
   // block-level lists rather than inline text with literal * characters.
   text = text.replace(/([^\n])\n([ \t]*[*\-] )/g, '$1\n\n$2');
+  text=preprocessMath(text);
+  text=fixGeometryMermaid(text);
   text=fixBareMermaid(text);
   const html=marked.parse(text);
   const div=createBotWrapper(html);
   const bub=div.querySelector('.bubble');
   bub.style.lineHeight=/[\u0980-\u09FF]/.test(text)?'2.1':'1.85';
-  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);
+  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);renderSVG(bub);
   if(showChips==='image_question'){
     const chips=document.createElement('div');chips.className='reply-chips';
     chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'img_solve')">\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \uD83D\uDCDD</button><button class="reply-chip" onclick="useChip(this,'img_teach')">\u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDCD6</button>`;
@@ -2157,9 +2212,12 @@ function navPush(text, msgEl){
 function navReset(){navItems=[];_rebuildNav();closeNav();}
 function _rebuildNav(){
   const btn=document.getElementById('nav-btn');
+  const btnM=document.getElementById('nav-btn-mobile');
   const list=document.getElementById('nav-list');
-  if(!btn||!list) return;
-  btn.style.display=navItems.length>=2?'flex':'none';
+  if(!list) return;
+  const show=navItems.length>=2;
+  if(btn) btn.style.display=show?'inline-flex':'none';
+  if(btnM) btnM.style.display=show?'inline-flex':'none';
   list.innerHTML='';
   navItems.forEach((item,i)=>{
     const el=document.createElement('button');
@@ -2171,13 +2229,15 @@ function _rebuildNav(){
 }
 function toggleNav(){
   const p=document.getElementById('nav-panel');
-  const b=document.getElementById('nav-btn');
   p?.classList.toggle('open');
-  b?.classList.toggle('open',p?.classList.contains('open'));
+  const isOpen=p?.classList.contains('open');
+  document.getElementById('nav-btn')?.classList.toggle('open',isOpen);
+  document.getElementById('nav-btn-mobile')?.classList.toggle('open',isOpen);
 }
 function closeNav(){
   document.getElementById('nav-panel')?.classList.remove('open');
   document.getElementById('nav-btn')?.classList.remove('open');
+  document.getElementById('nav-btn-mobile')?.classList.remove('open');
 }
 document.addEventListener('click',e=>{
   const panel=document.getElementById('nav-panel');
@@ -2348,7 +2408,7 @@ async function sendMessage(){
       }
       const d=await r.json();
       if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
-      const reply=d.reply||'দুঃখিত, সমস্যা হয়েছে।';
+      const reply=(d.reply||'দুঃখিত, সমস্যা হয়েছে।').replace(/\s*\[[SC]\]\s*$/,'').trimEnd();
       if(d.chat_id)currentChatId=d.chat_id;
       removeTyping();addBotMessage(reply, d.chips||false);
       removeImage();
