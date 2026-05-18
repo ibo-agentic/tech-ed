@@ -512,7 +512,7 @@ def ask_stream():
                 if chapter_info:
                     # Specific chapter → show section-level roadmap
                     chapter_num, chapter_title = chapter_info
-                    yield sse({"type": "stage", "text": "পড়ার roadmap তৈরি করছি... 📚"})
+                    yield sse({"type": "stage", "text": "চল, তোমার জন্য একটা দারুণ পড়ার রোডম্যাপ সাজিয়ে ফেলি... 📚🌱"})
                     sections = generate_section_list(roadmap_subject, chapter_num, chapter_title)
                     if sections:
                         yield sse({
@@ -560,8 +560,8 @@ def ask_stream():
                 # If no subject was explicitly named or content-detected, ask rather than guess wrong
                 if not subject_confirmed:
                     clarify = (
-                        "কোন বিষয়ের অধ্যায়ের তালিকা দেখতে চাও? 😊\n\n"
-                        "বলো — **জীববিজ্ঞান**, **পদার্থবিজ্ঞান**, **রসায়ন**, **হিসাববিজ্ঞান** নাকি **ভূগোল**?"
+                        "তুমি কোন বিষয়ের অধ্যায়ের তালিকা দেখতে চাচ্ছ বলো তো? 😊\n\n"
+                        "ঝটপট জানিয়ে দাও — **জীববিজ্ঞান**, **পদার্থবিজ্ঞান**, **রসায়ন**, **হিসাববিজ্ঞান** নাকি **ভূগোল**?"
                     )
                     current_chat_id = None
                     if is_logged_in:
@@ -651,7 +651,7 @@ def ask_stream():
                 _quiz_total = 1
             if _is_chip or _quiz_total > 0:
                 from chain import generate_quiz_mcq
-                yield sse({"type": "stage", "text": "প্রশ্ন তৈরি করছি... 🎯"})
+                yield sse({"type": "stage", "text": "একটু দাঁড়াও, প্রশ্নটা রেডি করে নিচ্ছি... 🎯"})
                 current_chat_id = None
                 messages_list = []
                 if is_logged_in:
@@ -663,13 +663,13 @@ def ask_stream():
                     history = history_session[-10:]
                 mcq = generate_quiz_mcq(history, subject=effective_subject, user_query=user_message if not _is_chip else '')
                 if not mcq:
-                    yield sse({"type": "reply", "reply": "এই মুহূর্তে প্রশ্ন তৈরি করতে পারছি না। একটু পড়ে আবার চেষ্টা করো! 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    yield sse({"type": "reply", "reply": "এই মুহূর্তে প্রশ্নটা রেডি করতে পারছি না রে। একটু পরে এসে আবার চেষ্টা করো তো! 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                     return
                 if mcq.get("exhausted"):
-                    yield sse({"type": "reply", "reply": "এই topic-এ আপাতত আর নতুন প্রশ্ন নেই! 🎯 আরো বিষয় পড়লে আরো quiz দিতে পারব। চলো এগিয়ে যাই?", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    yield sse({"type": "reply", "reply": "এই টপিকে, আপাতত আর নতুন প্রশ্ন নেই! 🎯 আরো বিষয় পড়লে আরো quiz দিতে পারবো। ঠিক আছে?", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                     return
                 if mcq.get("no_topic"):
-                    yield sse({"type": "reply", "reply": "কোন chapter বা topic নিয়ে quiz দেব বলো! যেমন: 'জীবন পাঠ থেকে quiz দাও' বা 'chapter 3 er quiz dao' 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    yield sse({"type": "reply", "reply": "কোন অধ্যায় বা বিষয় নিয়ে কুইজ দেব বলো? 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                     return
                 opts = mcq['options']
                 mcq_history_text = f"🎯 Quiz\n{mcq['question']}\nA) {opts['A']}\nB) {opts['B']}\nC) {opts['C']}\nD) {opts['D']}\n[সঠিক উত্তর: {mcq['correct']}]"
@@ -882,7 +882,7 @@ def ask_image():
         )
     except Exception as e:
         print(f"[ask-image] error: {e}")
-        return jsonify({"error": "ছবিটা process করতে সমস্যা হচ্ছে। একটু পরে আবার চেষ্টা করো অথবা ছবিটা আবার পাঠাও।"}), 500
+        return jsonify({"error": "ছবিটা একটু ঝাপসা এসেছে রে, ঠিকঠাক পড়া যাচ্ছে না। একটু ভালো আলোতে সোজা করে আরেকবার ছবি তুলে পাঠাও তো—আপু এখনই সমাধান করে দিচ্ছি! 📸🌱"}), 500
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
     user_msg = {
@@ -921,7 +921,7 @@ def transcribe():
         result = client.audio.transcriptions.create(
             model='whisper-1',
             file=('audio.webm', audio.stream, audio.content_type or 'audio/webm'),
-            prompt='বাংলা ভাষা। হ্যালো ম্যাম, আমাকে বায়োলজি, পদার্থবিজ্ঞান, রসায়ন, গণিত, ভূগোল শেখান। রেচন প্রক্রিয়া, কোষ বিভাজন, সালোকসংশ্লেষণ।',
+            prompt='বাংলা ভাষা। হ্যালো দীপ্তি আপু, আমাকে জীববিজ্ঞান, পদার্থবিজ্ঞান, রসায়ন, গণিত, ভূগোল বুঝিয়ে দাও। রেচন প্রক্রিয়া, কোষ বিভাজন, সালোকসংশ্লেষণ।',
             temperature=0,
         )
         return jsonify({'text': result.text})

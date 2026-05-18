@@ -1,4 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0d1117"/>
-  <text x="256" y="360" font-size="300" text-anchor="middle" fill="#0de4a0" font-family="serif">✦</text>
+  <defs>
+    <linearGradient id="b1" x1="150" y1="178" x2="375" y2="178" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5599FF"/>
+      <stop offset="100%" stop-color="#8877EE"/>
+    </linearGradient>
+    <linearGradient id="b2" x1="85" y1="256" x2="415" y2="256" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F5A820"/>
+      <stop offset="100%" stop-color="#C07810"/>
+    </linearGradient>
+    <linearGradient id="b3" x1="118" y1="334" x2="385" y2="334" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9B6BD5"/>
+      <stop offset="100%" stop-color="#7750BB"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="#111"/>
+
+  <!-- Top bar: blue-indigo -->
+  <rect x="150" y="152" width="225" height="52" rx="26" fill="url(#b1)"/>
+  <circle cx="375" cy="178" r="30" fill="#111"/>
+  <circle cx="375" cy="178" r="19" fill="#6699FF"/>
+
+  <!-- Middle bar: orange-gold (widest) -->
+  <rect x="85" y="230" width="330" height="52" rx="26" fill="url(#b2)"/>
+  <circle cx="415" cy="256" r="30" fill="#111"/>
+  <circle cx="415" cy="256" r="19" fill="#F5A820"/>
+
+  <!-- Bottom bar: purple -->
+  <rect x="118" y="308" width="267" height="52" rx="26" fill="url(#b3)"/>
+  <circle cx="385" cy="334" r="30" fill="#111"/>
+  <circle cx="385" cy="334" r="19" fill="#9B6BD5"/>
 </svg>
