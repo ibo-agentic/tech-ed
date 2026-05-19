@@ -33,12 +33,17 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
         {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
         {"type": "text", "text": (
             "One word only. Classify this image:\n"
-            "- accounting_hard: ONLY if it contains actual numbers to calculate "
-            "(e.g. ledger entries, trial balance with figures, income statement with amounts, "
-            "cash flow with numbers). Must have REAL DATA to compute.\n"
-            "- accounting_simple: accounting theory/concept question with NO numbers to calculate "
-            "(e.g. 'how to prepare X', 'discuss Y', 'what is Z', definition questions).\n"
-            "- biology, geography, physics, or other: for those subjects.\n"
+            "- accounting_hard: contains actual numbers to calculate "
+            "(ledger, trial balance, income statement, cash flow with figures).\n"
+            "- accounting_simple: accounting theory with NO numbers (definitions, discussion).\n"
+            "- math: ANY of these — geometry theorems/proofs, algebra equations, statistics, "
+            "trigonometry, coordinate geometry, number systems (natural/integer/rational/irrational/real), "
+            "fractions P/Q, sets, functions, উপপাদ্য, জ্যামিতি, সমীকরণ, পরিসংখ্যান, "
+            "সংখ্যা, মূলদ, অমূলদ, বাস্তব সংখ্যা, স্বাভাবিক সংখ্যা, পূর্ণসংখ্যা.\n"
+            "- biology: cells, plants, animals, human body, ecosystems.\n"
+            "- physics: motion, force, electricity, optics, waves.\n"
+            "- chemistry: atoms, molecules, reactions, periodic table.\n"
+            "- geography: maps, climate, rivers, population, landforms.\n"
             "Reply with exactly one word."
         )},
     ])
@@ -47,6 +52,8 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
         return "accounting_hard"
     if "accounting" in result:
         return "accounting_simple"
+    if any(w in result for w in ("math", "geometry", "উপপাদ্য", "জ্যামিতি", "সংখ্যা", "number", "algebra", "trigon")):
+        return "math"
     return result
 
 
@@ -122,7 +129,7 @@ def get_answer_with_image(
     # Stream mismatch check — return redirect before hitting the LLM
     mismatch = check_stream_mismatch(stream, subject)
     if mismatch:
-        return mismatch, False
+        return mismatch, False, subject
 
     # Fetch RAG context using detected subject
     query_for_rag = user_input if user_input else "প্রশ্ন"
@@ -161,7 +168,7 @@ def get_answer_with_image(
         print("🖼️ [Image Pipeline] Step 2: Gemini 2.5 Flash solves")
         from chain import flash_chain
         answer = flash_chain.invoke(solve_messages)
-        return answer, True
+        return answer, True, subject
 
     content = [
         {
@@ -204,13 +211,13 @@ def get_answer_with_image(
     # ── Verification (accounting only) ──
     if subject != "accounting":
         chips = "image_question" if (not user_input or user_input == _DEFAULT_CAPTION) else True
-        return answer, chips
+        return answer, chips, subject
 
     is_valid, errors = verify_accounting_answer(answer)
 
     if is_valid:
         print(f"✅ [Verify] Accounting math checks out")
-        return answer, False
+        return answer, False, subject
     
     # ── First attempt failed verification — retry with explicit fix prompt ──
     print(f"⚠️ [Verify] Math errors detected: {errors}")
@@ -235,7 +242,7 @@ def get_answer_with_image(
     
     if is_valid_retry:
         print(f"✅ [Verify] Retry successful — math now balances")
-        return retry_answer, False
+        return retry_answer, False, subject
     
     # ── Both attempts failed — honest fallback ──
     print(f"❌ [Verify] Both attempts failed: {retry_errors}")
@@ -249,4 +256,4 @@ def get_answer_with_image(
         f"⚠️ **সতর্কতা:** এই উত্তরে calculation error থাকতে পারে। "
         f"বইয়ের সমাধান দেখে নিজে verify করে নিও — exam-এ এই answer copy করো না যতক্ষণ না নিজে check করেছ।"
     )
-    return fallback, False
+    return fallback, False, subject

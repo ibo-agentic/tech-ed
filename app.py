@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from chain import get_answer
 from auth import auth_bp, login_required, check_message_limit, increment_message_count, get_admin_client
 from image_chain import get_answer_with_image
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import base64
 import os
 import threading
@@ -21,6 +23,17 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 )
 app.register_blueprint(auth_bp)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
+@app.errorhandler(429)
+def rate_limit_handler(_e):
+    return jsonify(error="অনেক বেশি অনুরোধ করা হয়েছে। একটু অপেক্ষা করো।"), 429
 
 
 # ── CONSTANTS ──
@@ -64,18 +77,45 @@ def save_messages(chat_id, messages):
     }).eq('id', chat_id).execute()
 
 
+_DEFAULT_IMAGE_CAPTION = "এই ছবিটি দেখে বুঝিয়ে দাও।"
+
 def auto_title(chat_id, user_message):
     try:
         msg = user_message.strip()
-        if len(msg) < 10:
-            return  # Too short to be a meaningful title (greetings, "ok", etc.)
+        if len(msg) < 10 or msg == _DEFAULT_IMAGE_CAPTION:
+            return
         admin = get_admin_client()
-        # Only update if still at the default title — don't overwrite a real title
         current = admin.table('chats').select('title').eq('id', chat_id).execute()
         if current.data and current.data[0].get('title', 'New Chat') != 'New Chat':
             return
         title = msg[:50] + ('...' if len(msg) > 50 else '')
         admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
+    except Exception:
+        pass
+
+
+def auto_title_image(chat_id, subject: str, answer: str):
+    """Generate a meaningful title for image chats from detected subject + answer."""
+    try:
+        admin = get_admin_client()
+        current = admin.table('chats').select('title').eq('id', chat_id).execute()
+        if current.data and current.data[0].get('title', 'New Chat') != 'New Chat':
+            return
+        subject_map = {
+            'biology': 'জীববিজ্ঞান', 'physics': 'পদার্থবিজ্ঞান',
+            'chemistry': 'রসায়ন', 'math': 'গণিত',
+            'accounting': 'হিসাববিজ্ঞান', 'geography': 'ভূগোল',
+        }
+        subj_label = subject_map.get(subject, subject.title())
+        # Find first meaningful sentence in the answer (skip headers/tables/empty lines)
+        for line in answer.split('\n'):
+            line = line.strip().lstrip('#*>|- ').strip()
+            if len(line) > 20 and not line.startswith('|') and not line.startswith('---'):
+                snippet = line[:40] + ('...' if len(line) > 40 else '')
+                title = f"{subj_label}: {snippet}"
+                admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
+                return
+        admin.table('chats').update({'title': subj_label}).eq('id', chat_id).execute()
     except Exception:
         pass
 
@@ -327,6 +367,7 @@ def delete_chat(chat_id):
     return jsonify({'success': True})
 
 
+
 # ─── MEMORY ROUTES ───
 
 @app.route("/save-quiz-result", methods=["POST"])
@@ -451,6 +492,7 @@ def ask():
 
 
 @app.route("/ask-stream", methods=["POST"])
+@limiter.limit("20 per minute; 300 per day")
 def ask_stream():
     """
     Server-Sent Events endpoint that streams thinking stages + final reply.
@@ -520,6 +562,18 @@ def ask_stream():
             # 3. Resolve: explicit > content-detected > frontend activeSubject
             subject_confirmed = bool(explicit_subject or content_subject)
             effective_subject = explicit_subject or content_subject or subject
+
+            # 4. Stream-consistency guard: if subject wasn't confirmed by detection,
+            #    ensure it belongs to the current stream (prevents stale cross-stream subjects).
+            _STREAM_SUBJECTS = {
+                'science':  {'biology', 'physics', 'chemistry', 'math'},
+                'commerce': {'accounting', 'math'},
+                'arts':     {'geography', 'math'},
+            }
+            _STREAM_DEFAULTS = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
+            if not subject_confirmed and stream and stream in _STREAM_SUBJECTS:
+                if effective_subject not in _STREAM_SUBJECTS[stream]:
+                    effective_subject = _STREAM_DEFAULTS[stream]
 
             # ── ROADMAP: must run BEFORE mismatch check (no subject needed) ──
             if is_roadmap_request(user_message):
@@ -679,9 +733,9 @@ def ask_stream():
                     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                     current_chat_id = chat['id']
                     messages_list = chat.get('messages', [])
-                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-10:]]
+                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-6:]]
                 else:
-                    history = history_session[-10:]
+                    history = history_session[-6:]
                 mcq = generate_quiz_mcq(history, subject=effective_subject, user_query=user_message if not _is_chip else '')
                 if not mcq:
                     yield sse({"type": "reply", "reply": "এই মুহূর্তে প্রশ্নটা রেডি করতে পারছি না রে। একটু পরে এসে আবার চেষ্টা করো তো! 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
@@ -777,15 +831,30 @@ def ask_stream():
                 chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                 current_chat_id = chat['id']
                 messages_list = chat.get('messages', [])
-                recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
+                # Narrow window when subject isn't keyword-confirmed to prevent topic bleed
+                recent_count = 4 if not subject_confirmed else 10
+                recent = messages_list[-recent_count:] if len(messages_list) > recent_count else messages_list
                 history = [
                     {k: v for k, v in m.items() if k in ("role", "content", "image_url")}
                     for m in recent
                 ]
             else:
-                history = history_session[-10:]
+                recent_count = 4 if not subject_confirmed else 10
+                history = history_session[-recent_count:]
 
-            reply = run_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
+            from chain import stream_llm
+            import time as _time
+            reply = ""
+            _t_llm_start = _time.time()
+            _first_token_time = None
+            for chunk in stream_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile):
+                if chunk:
+                    if _first_token_time is None:
+                        _first_token_time = _time.time()
+                    reply += chunk
+                    yield sse({"type": "token", "text": chunk})
+            _t_llm_end = _time.time()
+            print(f"⏱️  LLM: {_t_llm_end - _t_llm_start:.2f}s | first token: {(_first_token_time - _t_llm_start):.2f}s | chars: {len(reply)} (~{len(reply)//4} tokens)")
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
@@ -803,6 +872,7 @@ def ask_stream():
                 "chat_id": current_chat_id,
                 "chapters_found": chapters_found if is_biology else [],
                 "chips": chips_value,
+                "subject": effective_subject,
             })
 
             # ── SESSION WRAP-UP: trigger when student says goodbye after a real session ──
@@ -835,6 +905,7 @@ def ask_stream():
 
 @app.route("/ask-image", methods=["POST"])
 @login_required
+@limiter.limit("10 per minute; 100 per day")
 def ask_image():
     from storage import upload_image
 
@@ -894,7 +965,7 @@ def ask_image():
     _img_student_name = student_profile.get('preferred_name') or session.get('name', '') if student_profile else session.get('name', '')
 
     try:
-        answer, show_chips = get_answer_with_image(
+        answer, show_chips, detected_subject = get_answer_with_image(
             user_message, history, image_base64, image_type,
             project_instructions=project_instructions,
             subject=subject,
@@ -918,8 +989,11 @@ def ask_image():
     messages.append({"role": "assistant", "content": answer})
 
     threading.Thread(
-        target=background_save,
-        args=(current_chat_id, messages, user_message, user_id),
+        target=lambda: (
+            save_messages(current_chat_id, messages),
+            auto_title_image(current_chat_id, detected_subject, answer),
+            increment_message_count(user_id),
+        ),
         daemon=True
     ).start()
 
@@ -928,6 +1002,7 @@ def ask_image():
         "chat_id": current_chat_id,
         "image_url": image_url,
         "chips": show_chips,
+        "subject": detected_subject,
     })
 
 

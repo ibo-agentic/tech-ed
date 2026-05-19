@@ -256,6 +256,14 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "ক্রোমোজোম", "chromosome", "জিন", "gene", "dna", "rna",
         "মাইটোসিস", "mitosis", "মিয়োসিস", "meiosis",
         "জীব", "টিস্যু", "tissue", "অঙ্গ", "organ",
+        "নিউক্লিয়াস", "nucleus", "কেন্দ্রিকা", "সাইটোপ্লাজম", "cytoplasm",
+        "রাইবোজোম", "ribosome", "ক্লোরোপ্লাস্ট", "chloroplast",
+        "অসমোসিস", "osmosis", "অভিস্রবণ", "ব্যাপন", "diffusion",
+        "পরিবহন", "উদ্দীপনা", "স্নায়ু", "nerve", "নিউরন", "neuron",
+        "ফুলকা", "gill", "ফার্ন", "fern", "শৈবাল", "algae", "ছত্রাক", "fungi",
+        "খাদ্যশৃঙ্খল", "food chain", "খাদ্যজাল", "food web",
+        "রোগ", "disease", "প্রতিরোধ", "immunity", "অ্যান্টিবডি", "antibody",
+        "হরমোন", "hormone", "এনজাইম", "enzyme",
     ],
     "physics": [
         "বেগ", "velocity", "ত্বরণ", "acceleration", "বল", "force",
@@ -267,6 +275,21 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "ট্রান্সফর্মার", "transformer", "রোধ", "resistance", "বর্তনী", "circuit",
         "ভোল্টেজ", "voltage", "কারেন্ট", "current", "লেন্স", "lens",
         "মহাকর্ষ", "gravity", "পরমাণু", "atom", "তেজস্ক্রিয়", "radioactive",
+        # additional SSC physics terms
+        "দর্পণ", "mirror", "সরণ", "displacement", "গতি", "motion",
+        "কম্পাঙ্ক", "frequency", "বিস্তার", "amplitude", "তরঙ্গদৈর্ঘ্য", "wavelength",
+        "তড়িৎ", "electric", "চার্জ", "charge", "কুলম্ব", "coulomb",
+        "ওহম", "ohm", "অ্যাম্পিয়ার", "ampere", "ওয়াট", "watt",
+        "ফ্লেমিং", "fleming", "ডায়নামো", "dynamo", "মোটর", "motor",
+        "দোলক", "pendulum", "স্থিতিস্থাপকতা", "elasticity",
+        "আপেক্ষিক", "relative", "ঘনত্ব", "density", "প্লবতা", "buoyancy",
+        "সান্দ্রতা", "viscosity", "পৃষ্ঠটান", "surface tension",
+        "ক্যালোরি", "calorie", "তাপধারণ", "specific heat",
+        "আলোকবিদ্যা", "optics", "বর্ণালি", "spectrum", "প্রিজম", "prism",
+        "তড়িৎচুম্বক", "electromagnetic", "ফটোন", "photon",
+        "নিউক্লিয়", "nuclear", "ফিশন", "fission", "ফিউশন", "fusion",
+        "অর্ধপরিবাহী", "semiconductor", "ডায়োড", "diode", "ট্রানজিস্টর",
+        "পদার্থবিজ্ঞান", "পদার্থ", "physics",
     ],
     "chemistry": [
         "পরমাণু", "atom", "অণু", "molecule", "রাসায়নিক", "chemical",
@@ -274,6 +297,12 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "অ্যাসিড", "acid", "ক্ষার", "base", "লবণ", "salt",
         "ইলেকট্রন", "electron", "প্রোটন", "proton", "নিউট্রন", "neutron",
         "পর্যায় সারণি", "periodic table",
+        "রসায়ন", "chemistry", "জারণ", "oxidation", "বিজারণ", "reduction",
+        "তড়িৎ বিশ্লেষণ", "electrolysis", "গ্যাস", "gas", "বাষ্প", "vapour",
+        "দ্রবণ", "solution", "দ্রাবক", "solvent", "দ্রাব্যতা", "solubility",
+        "কার্বন", "carbon", "হাইড্রোজেন", "hydrogen", "অক্সিজেন", "oxygen",
+        "নাইট্রোজেন", "nitrogen", "ধাতু", "metal", "অধাতু", "nonmetal",
+        "সমযোজী", "covalent", "আয়নিক", "ionic", "হাইড্রোকার্বন", "hydrocarbon",
     ],
     "geography": [
         "ভূগোল", "মানচিত্র", "map", "জলবায়ু", "climate", "নদী", "river",
@@ -632,8 +661,9 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
 
     if has_study_session:
         # Studying mode: quiz only from conversation, no RAG
-        # If questions already asked outnumber study messages, topic is exhausted
-        if len(asked) >= max(3, len(study_messages) // 2):
+        # Exhaust only after asking at least 5 questions AND covering as many questions as the student sent messages
+        student_turns = sum(1 for m in study_messages if m['role'] == 'user')
+        if len(asked) >= max(5, student_turns):
             return {"exhausted": True}
         content_block = f"ছাত্র এই session-এ যা পড়েছে:\n{convo}"
         source_rule = "শুধুমাত্র উপরের কথোপকথনে যা আলোচনা হয়েছে সেখান থেকে প্রশ্ন তৈরি করো — textbook থেকে নতুন কিছু আনবে না"
@@ -655,13 +685,20 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
     if asked:
         asked_block = "\n\nইতিমধ্যে এই প্রশ্ন ও concept গুলো cover হয়েছে — একই concept ভিন্নভাবে জিজ্ঞেস করো না:\n" + "\n".join(f"- {q}" for q in asked)
 
+    _subject_bn = {
+        'biology': 'জীববিজ্ঞান', 'physics': 'পদার্থবিজ্ঞান', 'chemistry': 'রসায়ন',
+        'math': 'গণিত', 'accounting': 'হিসাববিজ্ঞান', 'geography': 'ভূগোল',
+    }.get(subject, subject)
+
     prompt = f"""তুমি SSC পরীক্ষার প্রশ্ন তৈরি করছ।
+
+বিষয়: **{_subject_bn}** — শুধুমাত্র এই বিষয়ের প্রশ্ন তৈরি করো। অন্য বিষয় (জীববিজ্ঞান, পদার্থ, রসায়ন, ভূগোল, গণিত, হিসাব) থেকে প্রশ্ন করা যাবে না।
 
 {content_block}{asked_block}
 
 নিয়ম:
 - {source_rule}
-- প্রশ্নটি অবশ্যই SSC NCTB পাঠ্যক্রমের বিষয়বস্তু (জীববিজ্ঞান, পদার্থ, রসায়ন, ভূগোল, হিসাব) থেকে হবে
+- প্রশ্নটি অবশ্যই **{_subject_bn}** বিষয়ের হবে — অন্য কোনো বিষয় থেকে নয়
 - Dipti AI, এই app, বা "দীপ্তি আপু কী পড়ান" ধরনের কোনো প্রশ্ন করবে না — এটা quiz নয়
 - প্রতিটি প্রশ্ন আলাদা concept ও আলাদা fact cover করবে
 - আগের প্রশ্নে যে concept, term বা fact ছিল — সেটা ভিন্নভাবেও জিজ্ঞেস করবে না
@@ -990,6 +1027,36 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
 
     selected_chain = pick_chain(user_input, subject=subject)
     return selected_chain.invoke(messages)
+
+
+def stream_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile=None):
+    """
+    Streaming version of run_llm — yields string chunks as the LLM generates them.
+    Image URLs in history are stripped — the bot's previous response already contains
+    the extracted content, so re-running OCR extraction is unnecessary.
+    """
+    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
+    messages = [SystemMessage(content=[{
+        "type": "text",
+        "text": system_with_context,
+        "cache_control": {"type": "ephemeral"},
+    }])]
+
+    for msg in history:
+        if msg["role"] == "user":
+            # Strip image URLs from history — keep caption text only
+            if msg.get("image_url"):
+                messages.append(HumanMessage(content=msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"))
+            else:
+                messages.append(HumanMessage(content=msg["content"]))
+        elif msg["role"] == "assistant":
+            messages.append(AIMessage(content=msg["content"]))
+    messages.append(HumanMessage(content=user_input))
+
+    selected_chain = pick_chain(user_input, subject=subject)
+    for chunk in selected_chain.stream(messages):
+        if chunk:
+            yield chunk
 
 
 def get_answer(user_input, history, project_instructions: str = "", subject: str = "biology"):
