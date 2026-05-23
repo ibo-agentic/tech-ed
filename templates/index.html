@@ -260,7 +260,7 @@
     .bot .bubble th{background:var(--bg3);font-weight:600;color:var(--blue);}
     .bot .bubble td:first-child{text-align:left;}
     .bot .bubble td:last-child{text-align:right;}
-    .bot .bubble pre{overflow-x:auto;max-width:100%;background:var(--bg3);padding:9px 11px;border-radius:var(--radius-xs);margin:8px 0;scrollbar-width:none;}
+    .bot .bubble pre{overflow-x:auto;max-width:100%;background:var(--bg3);padding:9px 11px;border-radius:var(--radius-xs);margin:8px 0;scrollbar-width:none;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;}
     .bot .bubble pre::-webkit-scrollbar{display:none;}
     .bot .bubble *{scrollbar-width:none;}
     .bot .bubble *::-webkit-scrollbar{display:none;}
@@ -337,6 +337,7 @@
     @media(max-width:480px){.mermaid-wrap{padding:8px 4px;}.mermaid-wrap svg{font-size:11px;}}
     /* overflow:hidden clips SVG content that leaks outside viewBox (e.g. rotated axis labels) */
     .svg-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;margin:10px 0;overflow:hidden;text-align:center;position:relative;scrollbar-width:none;}
+    pre:has(>code.language-svg){display:none;}
     .svg-wrap::-webkit-scrollbar{display:none;}
     .svg-wrap svg{max-width:100%;height:auto;}
     .svg-replay-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 12px;background:rgba(13,228,160,.1);border:1px solid rgba(13,228,160,.3);border-radius:20px;color:var(--green);font-size:12px;font-family:var(--font);cursor:pointer;transition:background .2s;}
@@ -1254,7 +1255,7 @@ async function loadChatById(chatId){
         if(storedMcq){
           chatBox.appendChild(renderStoredMcqBubble(storedMcq));
         }else{
-          const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content.replace(/^([ \t]*)•[ \t]+/gm,'$1* ')))));
+          const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content.replace(/^([ \t]*)•[ \t]+/gm,'$1* ').replace(/^ {4,}([*\-] )/gm,'  $1')))));
           chatBox.appendChild(div);
           const bub=div.querySelector('.bubble');
           renderMath(bub);renderMermaid(bub);renderSVG(bub);
@@ -1686,7 +1687,18 @@ function renderSVG(el){
     wrap.innerHTML=clean;
     const svg=wrap.querySelector('svg');
     if(svg){
-      if(!svg.getAttribute('width')&&!svg.style.width) svg.style.maxWidth='100%';
+      const svgMaxW=svg.style.maxWidth;
+      if(svgMaxW && svgMaxW!=='100%'){
+        // AI specified a max-width (e.g. 380px) — honour it on the wrapper so the
+        // background/border box is also constrained, not just the SVG element.
+        wrap.style.maxWidth=svgMaxW;
+        wrap.style.margin='10px auto';
+        svg.style.maxWidth='100%';
+        svg.style.width='100%';
+        svg.style.display='block';
+      } else if(!svg.getAttribute('width')&&!svg.style.width){
+        svg.style.maxWidth='100%';
+      }
       svg.style.height='auto';
       if(!svg.querySelector('rect[fill="#ffffff"],rect[fill="white"]')){
         svg.style.background='transparent';
@@ -1744,6 +1756,9 @@ function addBotMessage(text, showChips=false){
   if(showChips==='image_question') initTeachProgress(text);
   // Convert Unicode bullet • to markdown list marker so marked.js creates proper <li>
   text = text.replace(/^([ \t]*)•[ \t]+/gm, '$1* ');
+  // Collapse 4+-space-indented list markers — marked.js treats them as <pre><code>
+  // (indented code blocks) instead of nested list items, causing dark boxes + cut-off text.
+  text = text.replace(/^ {4,}([*\-] )/gm, '  $1');
   // Ensure a blank line before bullet/list items and headings so marked.js parses
   // them as block-level elements (breaks:true eats single newlines as <br>).
   text = text.replace(/([^\n])\n([ \t]*[*\-] )/g, '$1\n\n$2');
@@ -1797,11 +1812,25 @@ let _imageFollowUp = false;
 let _imageTeachMode = false;
 let _streamDiv = null, _streamBub = null, _streamText = '';
 let _streamPending = '', _streamRafId = null;
+function _safeStreamText(s){
+  // Drop any trailing unclosed $$ block
+  const dd = s.lastIndexOf('$$');
+  if(dd !== -1){
+    const before = s.slice(0, dd), after = s.slice(dd + 2);
+    if(!after.includes('$$')) s = before;
+  }
+  // Drop any trailing unclosed $ inline
+  const singles = (s.match(/\$/g)||[]).length;
+  if(singles % 2 === 1){ const i = s.lastIndexOf('$'); s = s.slice(0, i); }
+  return s;
+}
 function _flushStream(){
   _streamRafId = null;
   if(!_streamBub || !_streamPending) return;
   _streamPending = '';
-  _streamBub.innerHTML = marked.parse(_streamText, {breaks:true, gfm:true});
+  const safe = preprocessMath(_safeStreamText(_streamText));
+  _streamBub.innerHTML = marked.parse(safe, {breaks:true, gfm:true});
+  renderMath(_streamBub);renderSVG(_streamBub);
   if(chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 120)
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -2108,12 +2137,7 @@ function useChip(btn, action){
     sendMessage();
   }else if(action==='quiz'){
     input.value='Quiz \u0995\u09B0\u09CB \uD83C\uDFAF';
-    if(_guideMode && _guideCurrentIdx >= 0){
-      const section=_guideSections[_guideCurrentIdx];
-      _chipSendOverride=`${section} \u09A5\u09C7\u0995\u09C7 \u098F\u0995\u099F\u09BE quiz \u09A6\u09BE\u0993`;
-    }else{
-      _chipSendOverride='__QUIZ__';
-    }
+    _chipSendOverride='__QUIZ__';
     sendMessage();
   }else if(action==='done'){
     input.value='\u09AC\u09C1\u099D\u09C7\u099B\u09BF';
@@ -2122,7 +2146,7 @@ function useChip(btn, action){
     sendMessage();
   }else if(action==='img_solve'){
     input.value='\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993';
-    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09B2\u09C7\u0996\u09CB \u2014 \u0995, \u0996, \u0997, \u0998 \u09B8\u09AC \u0985\u0982\u09B6 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7\u0964 \u0995\u09CB\u09A8\u09CB follow-up \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
+    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09B2\u09C7\u0996\u09CB \u2014 \u0995, \u0996, \u0997, \u0998 \u09B8\u09AC \u0985\u0982\u09B6 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7\u0964 \u09B6\u09C1\u09A7\u09C1\u09AE\u09BE\u09A4\u09CD\u09B0 \u099B\u09AC\u09BF\u09A4\u09C7 \u09AF\u09BE \u09A6\u09C7\u0996\u09BE \u0997\u09C7\u099B\u09C7 \u09B8\u09C7\u0987 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB solve \u0995\u09B0\u09CB \u2014 NCTB \u09AC\u0987 \u09AC\u09BE context \u09A5\u09C7\u0995\u09C7 \u0985\u09A4\u09BF\u09B0\u09BF\u0995\u09CD\u09A4 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7 \u09AF\u09CB\u0997 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u09AF\u09A6\u09BF \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u0995\u09CB\u09A8\u09CB \u09A4\u09A5\u09CD\u09AF \u099B\u09AC\u09BF\u09A4\u09C7 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A8\u09BE \u09B9\u09AF\u09BC, \u09AC\u09B2\u09CB \u201C\u099B\u09AC\u09BF\u09A4\u09C7 \u098F\u0987 \u0985\u0982\u09B6 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09AC\u09CB\u099D\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09A8\u09BE\u201D \u2014 \u0985\u09A8\u09C1\u09AE\u09BE\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u0995\u09CB\u09A8\u09CB follow-up \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
     _imageFollowUp=true; _imageTeachMode=false; resetTeachProgress();
     sendMessage();
   }else if(action==='img_teach'){
@@ -2494,6 +2518,8 @@ function confirmStream(){
   localStorage.setItem('activeStream', activeStream);
   document.getElementById('stream-overlay').classList.remove('active');
   updateStreamBadge();
+  // Persist to profile so stream survives device changes
+  fetch('/save-stream', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({stream:activeStream})}).catch(()=>{});
   // If picker was triggered by New Chat, continue creating it now
   if(_streamPickerFromNewChat){ _streamPickerFromNewChat=false; _doNewChat(); }
 }
@@ -2835,6 +2861,12 @@ async function checkLoginState(){
     const d=await r.json();
     if(d.logged_in){
       updateUserUI(d);
+      // Restore stream from profile — survives device changes / cleared localStorage
+      if(d.stream && !activeStream){
+        activeStream = d.stream;
+        localStorage.setItem('activeStream', activeStream);
+        updateStreamBadge();
+      }
       await loadProjects();
       await loadAllChats();
       if(d.needs_verification&&d.email)showVerifyScreen(d.email);
@@ -2855,6 +2887,10 @@ async function checkLoginState(){
               chips.innerHTML=`<button class="reply-chip" data-topic="${escapeHtml(topic)}" onclick="useChip(this,'weak_topic_review')">${escapeHtml(topic)} আবার দেখি 📚</button><button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয় পড়ব</button>`;
               chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
             },600);
+          }
+          // First-time user: auto-show stream picker if no stream set yet
+          if(!activeStream){
+            setTimeout(()=>openStreamPicker(false), 800);
           }
         }
       }).catch(()=>{});

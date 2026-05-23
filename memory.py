@@ -228,9 +228,9 @@ def save_quiz_result(user_id: str, score: int, total: int):
 
 
 def save_last_stream(user_id: str, stream: str):
-    """Record which stream was active so openings don't bleed across streams."""
+    """Persist stream permanently to profile (survives device changes) and as last-used."""
     if stream:
-        _upsert(user_id, {'last_stream': stream})
+        _upsert(user_id, {'last_stream': stream, 'stream': stream})
 
 
 def save_session_promise(user_id: str, promise: str, messages: list):

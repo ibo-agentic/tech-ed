@@ -61,9 +61,9 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     """Detect subject from image and return (chain, detected_subject)."""
     subject = detect_subject_from_image(image_base64, image_type)
     if subject == "accounting_hard":
-        print(f"🧮 [Image Routing] complex accounting → Gemini 2.5 Pro")
+        print(f"[Image Routing] complex accounting -> Gemini 2.5 Pro")
         return pro_vision_chain, "accounting"
-    print(f"⚡ [Image Routing] {subject} → Gemini 2.5 Flash")
+    print(f"[Image Routing] {subject} -> Gemini 2.5 Flash")
     return flash_vision_chain, subject
 
 
@@ -153,21 +153,27 @@ def get_answer_with_image(
             elif msg["role"] == "assistant":
                 messages.append(AIMessage(content=msg["content"]))
 
-    # Non-accounting + user has a real question → extract then DeepSeek solve
+    # Non-accounting + user has a real question → solve directly with vision
     if subject != "accounting" and user_input and user_input != _DEFAULT_CAPTION:
-        print("🖼️ [Image Pipeline] Step 1: Gemini extracts problem from image")
-        extracted = extract_problem_from_image(image_base64, image_type, user_input)
-        solve_messages = [
-            SystemMessage(content=[{
-                "type": "text",
-                "text": system_with_context,
-                "cache_control": {"type": "ephemeral"},
-            }]),
-            HumanMessage(content=f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}"),
-        ]
-        print("🖼️ [Image Pipeline] Step 2: Gemini 2.5 Flash solves")
-        from chain import flash_chain
-        answer = flash_chain.invoke(solve_messages)
+        print("[Image Pipeline] Direct vision solve")
+        messages.append(HumanMessage(content=[
+            {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
+            {"type": "text", "text": user_input},
+        ]))
+        answer = selected_chain.invoke(messages)
+        # If model still refuses due to image quality, force a solve retry
+        _blur_signals = ["ঝাপসা", "অস্পষ্ট", "পড়তে পারছি না", "blurry", "unclear", "can't read"]
+        if any(s in answer for s in _blur_signals):
+            print("[Image Pipeline] Blur response detected — forcing solve retry")
+            retry_msgs = messages[:-1] + [HumanMessage(content=[
+                {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
+                {"type": "text", "text": (
+                    f"{user_input}\n\n"
+                    "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই সম্পূর্ণ সমাধান দাও। "
+                    "ছবির quality নিয়ে কিছু বলবে না — সরাসরি solve করো।"
+                )},
+            ])]
+            answer = selected_chain.invoke(retry_msgs)
         return answer, True, subject
 
     content = [
@@ -208,20 +214,31 @@ def get_answer_with_image(
     # ── First attempt ──
     answer = selected_chain.invoke(messages)
 
-    # ── Verification (accounting only) ──
+    # ── Blur-response guard (non-accounting) ──
     if subject != "accounting":
+        _blur_signals = ["ঝাপসা", "অস্পষ্ট", "পড়তে পারছি না", "blurry", "unclear", "can't read"]
+        if any(s in answer for s in _blur_signals):
+            print("[Image Pipeline] Blur response on default path — forcing solve retry")
+            retry_content = [
+                {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
+                {"type": "text", "text": (
+                    "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই পড়ো ও সমাধান দাও। "
+                    "ছবির quality নিয়ে কিছু বলবে না — সরাসরি কাজ করো।"
+                )},
+            ]
+            answer = selected_chain.invoke(messages[:-1] + [HumanMessage(content=retry_content)])
         chips = "image_question" if (not user_input or user_input == _DEFAULT_CAPTION) else True
         return answer, chips, subject
 
     is_valid, errors = verify_accounting_answer(answer)
 
     if is_valid:
-        print(f"✅ [Verify] Accounting math checks out")
+        print(f"[Verify] Accounting math checks out")
         return answer, False, subject
-    
+
     # ── First attempt failed verification — retry with explicit fix prompt ──
-    print(f"⚠️ [Verify] Math errors detected: {errors}")
-    print(f"🔄 [Verify] Asking Pro to recalculate...")
+    print(f"[Verify] Math errors detected: {errors}")
+    print(f"[Verify] Asking Pro to recalculate...")
     
     retry_message = HumanMessage(content=(
         f"তোমার আগের উত্তরে math এ ভুল আছে:\n\n"
@@ -241,11 +258,11 @@ def get_answer_with_image(
     is_valid_retry, retry_errors = verify_accounting_answer(retry_answer)
     
     if is_valid_retry:
-        print(f"✅ [Verify] Retry successful — math now balances")
+        print(f"[Verify] Retry successful — math now balances")
         return retry_answer, False, subject
-    
+
     # ── Both attempts failed — honest fallback ──
-    print(f"❌ [Verify] Both attempts failed: {retry_errors}")
+    print(f"[Verify] Both attempts failed: {retry_errors}")
     
     fallback = (
         f"আপু/ভাই, এই অঙ্কটা আমি দুইবার চেষ্টা করেছি কিন্তু math ঠিকমতো verify করতে পারছি না 🌱\n\n"

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(python -c \"print\\('hello'\\)\")",
+      "Bash(py -c \"print\\('hello'\\)\")",
+      "Bash(py trim_prompt.py)",
+      "Bash(py trim_prompt2.py)",
+      "Bash(py trim_cleanup.py)",
+      "Bash(del trim_prompt.py trim_prompt2.py trim_cleanup.py)",
+      "Bash(Remove-Item trim_prompt.py, trim_prompt2.py, trim_cleanup.py -ErrorAction SilentlyContinue)",
+      "Bash(Write-Host \"Cleaned up\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Ibo\\.claude\\projects\\c--Bangla-bangla-edtech\\memory"
+    ]
+  }
+}

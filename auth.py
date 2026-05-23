@@ -724,12 +724,15 @@ def me():
             'email':              session.get('email')
         }), 401
 
+    from memory import get_student_profile
+    profile = get_student_profile(user_id)
     return jsonify({
         'logged_in': True,
         'user_id':   user_id,
         'name':      session.get('preferred_name') or session['name'],
         'plan':      session.get('plan', 'free'),
-        'verified':  session.get('verified', False)
+        'verified':  session.get('verified', False),
+        'stream':    (profile or {}).get('stream', ''),
     })
 
 

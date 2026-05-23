@@ -228,7 +228,7 @@ def is_complex_math(user_input: str) -> bool:
 
 def pick_chain(_user_input: str, subject: str = ""):
     """All subjects → Gemini 2.5 Flash."""
-    print(f"⚡ [Routing] {subject or 'general'} → Gemini 2.5 Flash")
+    print(f"[Routing] {subject or 'general'} -> Gemini 2.5 Flash")
     return flash_chain
 
 
@@ -1000,7 +1000,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
 
     # Image in history: Gemini Flash extracts problem → Gemini Flash solves → Flash Lite rewrites
     if has_image:
-        print("🖼️ [Image Pipeline] Step 1: Gemini extracts problem from image")
+        print("[Image Pipeline] Step 1: Gemini extracts problem from image")
         extract_msgs = messages[:-1] + [HumanMessage(content=(
             "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা। "
             "শুধু extract করো, কোনো solution দেবে না।"
@@ -1022,7 +1022,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
 
         selected = pick_chain(user_input, subject=subject)
         label = "Flash Lite rewrite" if selected is two_step_output_chain else "Flash direct"
-        print(f"🖼️ [Image Pipeline] Step 2: Gemini Flash solves → {label}")
+        print(f"[Image Pipeline] Step 2: Gemini Flash solves -> {label}")
         return selected.invoke(text_messages)
 
     selected_chain = pick_chain(user_input, subject=subject)
@@ -1044,9 +1044,12 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
 
     for msg in history:
         if msg["role"] == "user":
-            # Strip image URLs from history — keep caption text only
-            if msg.get("image_url"):
-                messages.append(HumanMessage(content=msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"))
+            img_url = msg.get("image_url")
+            if img_url:
+                messages.append(HumanMessage(content=[
+                    {"type": "image_url", "image_url": {"url": img_url}},
+                    {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
+                ]))
             else:
                 messages.append(HumanMessage(content=msg["content"]))
         elif msg["role"] == "assistant":
@@ -1070,7 +1073,7 @@ def get_answer(user_input, history, project_instructions: str = "", subject: str
     if is_toc_question(user_input):
         toc_reply = build_toc_response(detected_subject)
         if toc_reply:
-            print(f"🎯 [TOC] Direct response for subject={detected_subject}")
+            print(f"[TOC] Direct response for subject={detected_subject}")
             return {
                 "reply": toc_reply,
                 "chapters_found": ["অধ্যায় তালিকা (Table of Contents)"]
@@ -1080,16 +1083,16 @@ def get_answer(user_input, history, project_instructions: str = "", subject: str
     t0 = time.time()
     nctb_context, chapters_found = do_rag_lookup(user_input, subject=detected_subject)
 
-    print(f"\n📚 [DEBUG] User asked: {user_input}")
-    print(f"📚 [DEBUG] Detected subject: {detected_subject}")
-    print(f"📚 [DEBUG] Chapters found: {chapters_found}")
-    print(f"📚 [DEBUG] Context length: {len(nctb_context)} chars")
+    print(f"[DEBUG] User asked: {user_input}")
+    print(f"[DEBUG] Detected subject: {detected_subject}")
+    print(f"[DEBUG] Chapters found: {chapters_found}")
+    print(f"[DEBUG] Context length: {len(nctb_context)} chars")
 
     t1 = time.time()
     reply = run_llm(user_input, history, nctb_context, project_instructions, subject=detected_subject)
     t2 = time.time()
 
-    print(f"⏱️  RAG: {t1-t0:.2f}s | LLM: {t2-t1:.2f}s | TOTAL: {t2-t0:.2f}s\n")
+    print(f"RAG: {t1-t0:.2f}s | LLM: {t2-t1:.2f}s | TOTAL: {t2-t0:.2f}s")
 
     return {
         "reply": reply,

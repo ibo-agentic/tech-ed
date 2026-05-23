@@ -1,3 +1,16 @@
+import sys
+import io
+import os
+
+# Force UTF-8 for all console output on Windows (prevents charmap errors from emoji/Bengali)
+os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+elif hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context, send_from_directory
 from dotenv import load_dotenv
 from chain import get_answer
@@ -413,6 +426,18 @@ def student_opening():
     return jsonify({'opening': opening, 'streak': streak, 'weak_topics': weak_topics})
 
 
+@app.route("/save-stream", methods=["POST"])
+@login_required
+def save_stream():
+    """Persist the student's stream selection to their profile permanently."""
+    stream = request.json.get("stream", "").strip()
+    if stream not in ("science", "commerce", "arts"):
+        return jsonify({"error": "invalid stream"}), 400
+    from memory import save_last_stream
+    threading.Thread(target=save_last_stream, args=(session['user_id'], stream), daemon=True).start()
+    return jsonify({"ok": True})
+
+
 # ─── ASK ROUTES ───
 
 @app.route("/ask", methods=["POST"])
@@ -464,7 +489,7 @@ def ask():
     messages = chat.get('messages', [])
 
     recent = messages[-10:] if len(messages) > 10 else messages
-    history = [{"role": m["role"], "content": m["content"]} for m in recent]
+    history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in recent]
 
     result = get_answer(user_message, history, project_instructions=project_instructions, subject=subject)
 
@@ -691,7 +716,7 @@ def ask_stream():
                     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                     current_chat_id = chat['id']
                     messages_list = chat.get('messages', [])
-                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-10:]]
+                    history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in messages_list[-10:]]
                     if project_id:
                         project_instructions = get_project_instructions(project_id, user_id)
                 nctb_context, _ = do_rag_lookup(section_name, subject=effective_subject)
@@ -777,7 +802,7 @@ def ask_stream():
                     # Needs LLM but still skip RAG
                     if is_logged_in:
                         recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
-                        history = [{"role": m["role"], "content": m["content"]} for m in recent]
+                        history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in recent]
                     else:
                         history = history_session[-10:]
                     reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
@@ -854,7 +879,7 @@ def ask_stream():
                     reply += chunk
                     yield sse({"type": "token", "text": chunk})
             _t_llm_end = _time.time()
-            print(f"⏱️  LLM: {_t_llm_end - _t_llm_start:.2f}s | first token: {(_first_token_time - _t_llm_start):.2f}s | chars: {len(reply)} (~{len(reply)//4} tokens)")
+            print(f"LLM: {_t_llm_end - _t_llm_start:.2f}s | first token: {(_first_token_time - _t_llm_start):.2f}s | chars: {len(reply)} (~{len(reply)//4} tokens)")
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
@@ -890,7 +915,8 @@ def ask_stream():
                         ).start()
 
         except Exception as e:
-            print(f"[ask-stream] error: {e}")
+            import traceback
+            traceback.print_exc()
             yield sse({"type": "error", "error": str(e)})
 
     return Response(
@@ -907,6 +933,7 @@ def ask_stream():
 @login_required
 @limiter.limit("10 per minute; 100 per day")
 def ask_image():
+    print("[ask-image] request received", flush=True)
     from storage import upload_image
 
     image_file = request.files.get("image")
@@ -934,17 +961,22 @@ def ask_image():
     image_bytes = image_file.read()
     image_type = image_file.content_type or "image/jpeg"
 
-    # Fix EXIF rotation + enhance contrast/sharpness for dark/blurry exam photos
+    # Fix EXIF rotation; only enhance if image is actually dark (not clear screenshots)
     try:
-        from PIL import Image, ImageOps, ImageEnhance
+        from PIL import Image, ImageOps, ImageEnhance, ImageStat
         import io as _io
         pil_img = ImageOps.exif_transpose(Image.open(_io.BytesIO(image_bytes)))
         # RGBA/P mode can't be saved as JPEG — convert to RGB
         if pil_img.mode not in ("RGB", "L"):
             pil_img = pil_img.convert("RGB")
-        # Boost contrast and sharpness so text is easier for the LLM to read
-        pil_img = ImageEnhance.Contrast(pil_img).enhance(1.4)
-        pil_img = ImageEnhance.Sharpness(pil_img).enhance(2.0)
+        # Measure brightness — only boost dark/low-contrast exam photos, skip clear screenshots
+        mean_brightness = ImageStat.Stat(pil_img.convert("L")).mean[0]
+        if mean_brightness < 160:
+            pil_img = ImageEnhance.Contrast(pil_img).enhance(1.3)
+            pil_img = ImageEnhance.Sharpness(pil_img).enhance(1.5)
+            print(f"[image-preprocess] dark image (brightness={mean_brightness:.0f}) — enhanced")
+        else:
+            print(f"[image-preprocess] clear image (brightness={mean_brightness:.0f}) — no enhancement")
         buf = _io.BytesIO()
         pil_img.save(buf, format="JPEG", quality=90)
         image_bytes = buf.getvalue()
@@ -974,8 +1006,16 @@ def ask_image():
             student_profile=student_profile,
         )
     except Exception as e:
-        print(f"[ask-image] error: {e}")
-        return jsonify({"error": "ছবিটা একটু ঝাপসা এসেছে রে, ঠিকঠাক পড়া যাচ্ছে না। একটু ভালো আলোতে সোজা করে আরেকবার ছবি তুলে পাঠাও তো—আপু এখনই সমাধান করে দিচ্ছি! 📸🌱"}), 500
+        import traceback; traceback.print_exc()
+        err_str = str(e).lower()
+        if any(k in err_str for k in ("quota", "429", "rate", "resource_exhausted", "resourceexhausted")):
+            msg = "এই মুহূর্তে সার্ভার একটু ব্যস্ত রে — ১ মিনিট পরে আবার চেষ্টা করো! ⏳"
+        elif any(k in err_str for k in ("timeout", "deadline", "unavailable", "503")):
+            msg = "সার্ভার সাড়া দিচ্ছে না, একটু পরে আবার চেষ্টা করো। 🔄"
+        else:
+            msg = "ছবিটা প্রসেস করতে সমস্যা হলো — আবার চেষ্টা করো অথবা ছবি আবার তুলে পাঠাও। 📸"
+        print(f"[ask-image] classified error: {type(e).__name__}: {e}")
+        return jsonify({"error": msg}), 500
 
     # Persist message WITH image URL — this is the fix for "image disappears on reload"
     user_msg = {
