@@ -373,12 +373,12 @@
     #remove-image-btn{background:transparent;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:2px;border-radius:4px;flex-shrink:0;}
     #file-input{display:none;}
     /* ── Unified input card ── */
-    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;}
+    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;}
     #input-card:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(13,228,160,.07);}
     #user-input{width:100%;background:transparent;border:none;outline:none;padding:13px 16px 6px;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;max-height:140px;line-height:1.6;font-size:max(14px,16px);display:block;box-sizing:border-box;}
     #user-input::placeholder{color:var(--text3);}
     /* ── Toolbar inside card ── */
-    #input-toolbar{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 8px;gap:4px;}
+    #input-toolbar{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 10px;gap:4px;}
     #toolbar-left,#toolbar-right{display:flex;align-items:center;gap:2px;}
     .tool-btn{width:32px;height:32px;background:transparent;border:none;border-radius:8px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
     .tool-btn:hover{background:var(--bg3);color:var(--text2);}
@@ -387,6 +387,8 @@
     #send-btn{width:34px;height:34px;flex-shrink:0;background:var(--green);border:none;border-radius:10px;color:#0d1117;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
     #send-btn:hover{background:var(--green2);transform:scale(1.06);}
     #send-btn:disabled{background:var(--bg4);cursor:not-allowed;transform:none;color:var(--text3);}
+    #stop-btn{width:34px;height:34px;flex-shrink:0;background:var(--bg4);border:1.5px solid var(--border3);border-radius:10px;color:var(--text2);cursor:pointer;transition:all .15s;display:none;align-items:center;justify-content:center;}
+    #stop-btn:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
     #mic-btn{width:32px;height:32px;flex-shrink:0;background:transparent;border:none;border-radius:8px;color:var(--text3);cursor:pointer;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
     #mic-btn:hover{background:var(--bg3);color:var(--text2);}
     #model-picker-btn{background:transparent;border:none;border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px;font-family:'Sora',sans-serif;transition:background .15s,color .15s;white-space:nowrap;}
@@ -927,6 +929,9 @@
             <span class="char-count" id="char-count"></span>
             <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </button>
+            <button id="stop-btn" onclick="stopStream()" title="থামাও">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
             </button>
             <button id="send-btn" onclick="sendMessage()" title="পাঠাও">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
@@ -1950,6 +1955,16 @@ let _imageFollowUp = false;
 let _imageTeachMode = false;
 let _streamDiv = null, _streamBub = null, _streamText = '';
 let _streamPending = '', _streamRafId = null;
+let _streamAbort = null;
+
+const stopBtn = document.getElementById('stop-btn');
+function _setStreaming(on){
+  sendBtn.style.display = on ? 'none' : 'flex';
+  stopBtn.style.display = on ? 'flex' : 'none';
+}
+function stopStream(){
+  if(_streamAbort){ _streamAbort.abort(); _streamAbort = null; }
+}
 function _safeStreamText(s){
   // Drop any trailing unclosed $$ block
   const dd = s.lastIndexOf('$$');
@@ -2796,19 +2811,22 @@ async function sendMessage(){
       if(currentProjectId)body.project_id=currentProjectId;
       if(_socraticMode)body.socratic=true;
 
+      _streamAbort = new AbortController();
+      _setStreaming(true);
       const r=await fetch('/ask-stream',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(body)
+        body:JSON.stringify(body),
+        signal:_streamAbort.signal
       });
 
       // Handle non-streaming errors (401, 429)
       if(!r.ok){
         const errData = await r.json().catch(()=>({error:'Server error'}));
         removeTyping();
-        if(errData.login_required){showGuestLimitCard();sendBtn.disabled=false;return;}
+        _setStreaming(false); sendBtn.disabled=false;
+        if(errData.login_required){showGuestLimitCard();return;}
         showRetryError(errData.error||'কিছু সমস্যা হয়েছে।');
-        sendBtn.disabled=false;
         return;
       }
 
@@ -2883,13 +2901,20 @@ async function sendMessage(){
           }
         }
       }catch(e){
-        console.error('[SSE stream error]', e);
+        const aborted = e.name === 'AbortError';
+        if(!aborted) console.error('[SSE stream error]', e);
         streamError = true;
         if(_streamRafId){ cancelAnimationFrame(_streamRafId); _streamRafId=null; }
+        // If we already started streaming, seal what we have
+        if(_streamBub && _streamText){
+          _streamBub.classList.remove('streaming');
+          _streamBub.innerHTML = renderMarkdown(_streamText);
+          postRenderMath(_streamBub);
+        }
         _streamDiv=null; _streamBub=null; _streamText=''; _streamPending='';
-        removeTyping();
-        showRetryError('সংযোগ বিচ্ছিন্ন হয়েছে।');
-        sendBtn.disabled=false;
+        _setStreaming(false); sendBtn.disabled=false; _streamAbort=null;
+        if(!aborted){ removeTyping(); showRetryError('সংযোগ বিচ্ছিন্ন হয়েছে।'); }
+        else { removeTyping(); }
         return;
       }
 
@@ -2978,7 +3003,7 @@ async function sendMessage(){
     removeTyping();
     showRetryError('সংযোগে সমস্যা হয়েছে।');
   }
-  sendBtn.disabled=false;input.focus();
+  _setStreaming(false); _streamAbort=null; sendBtn.disabled=false; input.focus();
 }
 
 // ── MODEL PICKER ──
