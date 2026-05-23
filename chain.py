@@ -1014,15 +1014,20 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
                     {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
                 ]))
             elif img_url and not vision_supported:
-                print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
-                try:
-                    extracted = vision_chain.invoke([HumanMessage(content=[
-                        {"type": "image_url", "image_url": {"url": img_url}},
-                        {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
-                    ])])
-                    text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
-                except Exception:
-                    text = msg.get("content") or "[ছবি পড়া যায়নি]"
+                if img_url in _img_extract_cache:
+                    print("[Hybrid] Cache hit — skipping re-extraction", flush=True)
+                    extracted = _img_extract_cache[img_url]
+                else:
+                    print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
+                    try:
+                        extracted = vision_chain.invoke([HumanMessage(content=[
+                            {"type": "image_url", "image_url": {"url": img_url}},
+                            {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
+                        ])])
+                        _img_extract_cache[img_url] = extracted
+                    except Exception:
+                        extracted = msg.get("content") or "[ছবি পড়া যায়নি]"
+                text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
                 messages.append(HumanMessage(content=text))
             else:
                 messages.append(HumanMessage(content=msg["content"]))
@@ -1087,16 +1092,20 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
                     {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
                 ]))
             elif img_url and not vision_supported:
-                # Gemini Flash extracts image → DeepSeek gets the text
-                print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
-                try:
-                    extracted = vision_chain.invoke([HumanMessage(content=[
-                        {"type": "image_url", "image_url": {"url": img_url}},
-                        {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
-                    ])])
-                    text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
-                except Exception:
-                    text = msg.get("content") or "[ছবি পড়া যায়নি]"
+                if img_url in _img_extract_cache:
+                    print("[Hybrid] Cache hit — skipping re-extraction", flush=True)
+                    extracted = _img_extract_cache[img_url]
+                else:
+                    print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
+                    try:
+                        extracted = vision_chain.invoke([HumanMessage(content=[
+                            {"type": "image_url", "image_url": {"url": img_url}},
+                            {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
+                        ])])
+                        _img_extract_cache[img_url] = extracted
+                    except Exception:
+                        extracted = msg.get("content") or "[ছবি পড়া যায়নি]"
+                text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
                 messages.append(HumanMessage(content=text))
             else:
                 messages.append(HumanMessage(content=msg["content"]))
