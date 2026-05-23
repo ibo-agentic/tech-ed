@@ -1038,7 +1038,7 @@ def ask_image():
     image_bytes = image_file.read()
     image_type = image_file.content_type or "image/jpeg"
 
-    # Fix EXIF rotation; only enhance if image is actually dark (not clear screenshots)
+    # Fix EXIF rotation, resize, and enhance if dark
     try:
         from PIL import Image, ImageOps, ImageEnhance, ImageStat
         import io as _io
@@ -1046,20 +1046,26 @@ def ask_image():
         # RGBA/P mode can't be saved as JPEG — convert to RGB
         if pil_img.mode not in ("RGB", "L"):
             pil_img = pil_img.convert("RGB")
+        # Resize large images — phone photos can be 8MB+, this caps memory usage
+        MAX_SIDE = 1280
+        if max(pil_img.size) > MAX_SIDE:
+            pil_img.thumbnail((MAX_SIDE, MAX_SIDE), Image.LANCZOS)
+            print(f"[image-preprocess] resized to {pil_img.size}", flush=True)
         # Measure brightness — only boost dark/low-contrast exam photos, skip clear screenshots
         mean_brightness = ImageStat.Stat(pil_img.convert("L")).mean[0]
         if mean_brightness < 160:
             pil_img = ImageEnhance.Contrast(pil_img).enhance(1.3)
             pil_img = ImageEnhance.Sharpness(pil_img).enhance(1.5)
-            print(f"[image-preprocess] dark image (brightness={mean_brightness:.0f}) — enhanced")
+            print(f"[image-preprocess] dark image (brightness={mean_brightness:.0f}) — enhanced", flush=True)
         else:
-            print(f"[image-preprocess] clear image (brightness={mean_brightness:.0f}) — no enhancement")
+            print(f"[image-preprocess] clear image (brightness={mean_brightness:.0f}) — no enhancement", flush=True)
         buf = _io.BytesIO()
-        pil_img.save(buf, format="JPEG", quality=90)
+        pil_img.save(buf, format="JPEG", quality=85)
         image_bytes = buf.getvalue()
         image_type = "image/jpeg"
+        print(f"[image-preprocess] final size: {len(image_bytes)//1024}KB", flush=True)
     except Exception as e:
-        print(f"[image-preprocess] warning: {e}")  # keep original bytes on failure
+        print(f"[image-preprocess] warning: {e}", flush=True)  # keep original bytes on failure
 
     image_base64 = base64.b64encode(image_bytes).decode("utf-8")
 
