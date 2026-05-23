@@ -366,7 +366,7 @@
     @media(max-width:480px){ #nav-panel{width:calc(100vw - 28px);right:14px;top:54px;}}
 
     #input-area{background:var(--bg);padding:6px 10px 0px;padding-bottom:calc(0px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
-    #image-preview-strip{display:none;max-width:100%;margin:0 0 6px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
+    #image-preview-strip{display:none;max-width:760px;width:100%;margin:0 auto 6px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
     #image-preview-strip.visible{display:flex;}
     #preview-thumb{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;}
     #preview-name{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -375,11 +375,11 @@
     #chat-spacer{display:none;}
     #chat-box:has(#welcome-screen) > #chat-spacer{display:block;flex:1;min-height:0;}
     /* ── Claude-style input card ── */
-    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:14px 14px 10px;}
+    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;padding:10px 14px 8px;}
     #input-card:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(13,228,160,.07);}
-    #user-input{width:100%;background:transparent;border:none;outline:none;padding:0;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;min-height:52px;max-height:200px;line-height:1.65;font-size:15px;display:block;box-sizing:border-box;overflow-y:hidden;}
+    #user-input{width:100%;background:transparent;border:none;outline:none;padding:2px 0 0;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;height:22px;min-height:22px;max-height:200px;line-height:1.45;font-size:15px;display:block;box-sizing:border-box;overflow-y:hidden;}
     #user-input::placeholder{color:var(--text3);}
-    .input-toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+    .input-toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:4px;}
     .toolbar-right{display:flex;align-items:center;gap:4px;}
     .tool-btn{width:30px;height:30px;background:transparent;border:none;border-radius:50%;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
     .tool-btn:hover{background:var(--bg3);color:var(--text2);}
@@ -422,7 +422,7 @@
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
-    .disclaimer-bar{text-align:center;margin:2px 0 3px;font-size:9px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1;}
+    .disclaimer-bar{text-align:center;margin:3px 0 4px;font-size:11px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;}
     .error-bubble{background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius-sm);padding:9px 13px;font-size:12.5px;color:var(--danger);display:flex;align-items:center;justify-content:space-between;gap:9px;}
 
     /* MODALS */
@@ -560,7 +560,7 @@
       .chat-topic-bar{display:none;}
       #chat-box{padding:12px 12px 8px;gap:12px;}
       #input-area{padding:8px 10px calc(8px + var(--safe-bottom));}
-      #input-card{border-radius:16px;padding:12px 12px 8px;}
+      #input-card{border-radius:16px;padding:10px 12px 8px;}
       .user .bubble{max-width:85%;}
       .bot .bubble{font-size:13px;padding:10px 13px;}
       .message-actions{opacity:1;}
@@ -935,7 +935,7 @@
         </div>
       </div>
 
-      <p class="disclaimer-bar">দীপ্তি ভুল করতে পারে — বই দেখে মিলিয়ে নিও</p>
+      <p class="disclaimer-bar">দীপ্তি আপুও মাঝেমাঝে ভুল করতে পারে — তাই মেইন বইয়ের সাথে মিলিয়ে দিও কিন্তু &nbsp;✦&nbsp; Dipti AI &nbsp;•&nbsp; © 2026 Sheelbi</p>
     </div>
 
   </div>
@@ -1198,6 +1198,7 @@
 const chatBox=document.getElementById('chat-box');
 const input=document.getElementById('user-input');
 const sendBtn=document.getElementById('send-btn');
+if(input)autoResize(input);
 const attachBtn=document.getElementById('attach-btn');
 const strip=document.getElementById('image-preview-strip');
 const scrollBtn=document.getElementById('scroll-btn');
@@ -1640,8 +1641,8 @@ function toggleTheme(){
   if(mb)mb.textContent=icon;
   if(db)db.textContent=icon;
 }
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,200)+'px';}
-function updateCharCount(el){const n=el.value.length;document.getElementById('char-count').textContent=n>30?n+' chars':'';}
+function autoResize(el){el.style.height='1px';el.style.height=Math.min(el.scrollHeight,200)+'px';}
+function updateCharCount(el){const n=el.value.length;const cc=document.getElementById('char-count');if(cc)cc.textContent=n>30?n+' chars':'';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function filterChats(q){q=q.toLowerCase();document.querySelectorAll('.chat-item').forEach(el=>{const title=el.querySelector('.chat-item-title')?.textContent.toLowerCase()||'';el.style.display=title.includes(q)?'':'none';});}
 
@@ -2745,7 +2746,7 @@ async function sendMessage(){
   _lastSentText = text;
   _lastSentFile = fileSnap || null;
   input.value='';input.style.height='auto';sendBtn.disabled=true;
-  document.getElementById('char-count').textContent='';
+  const _cc=document.getElementById('char-count');if(_cc)_cc.textContent='';
   document.querySelectorAll('.reply-chips').forEach(c=>c.remove());
   addUserBubble(display,imgSnap);showTyping();
 
