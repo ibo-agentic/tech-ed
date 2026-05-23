@@ -12,7 +12,8 @@
       "Bash(py trim_cleanup.py)",
       "Bash(del trim_prompt.py trim_prompt2.py trim_cleanup.py)",
       "Bash(Remove-Item trim_prompt.py, trim_prompt2.py, trim_cleanup.py -ErrorAction SilentlyContinue)",
-      "Bash(Write-Host \"Cleaned up\")"
+      "Bash(Write-Host \"Cleaned up\")",
+      "WebSearch"
     ],
     "additionalDirectories": [
       "c:\\Users\\Ibo\\.claude\\projects\\c--Bangla-bangla-edtech\\memory"

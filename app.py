@@ -106,7 +106,20 @@ def auto_title(chat_id, user_message):
         current = admin.table('chats').select('title').eq('id', chat_id).execute()
         if current.data and current.data[0].get('title', 'New Chat') != 'New Chat':
             return
-        title = msg[:50] + ('...' if len(msg) > 50 else '')
+        try:
+            from chain import flash_llm
+            from langchain_core.messages import HumanMessage
+            from langchain_core.output_parsers import StrOutputParser
+            _prompt = (
+                f"নিচের বার্তা থেকে ২-৪ শব্দের একটি ছোট topic title দাও। "
+                f"বাংলা বা English যেটায় বার্তাটি লেখা। শুধু title, কোনো extra text বা চিহ্ন না।\n\n"
+                f"বার্তা: {msg[:300]}"
+            )
+            title = (flash_llm | StrOutputParser()).invoke([HumanMessage(content=_prompt)]).strip()[:60]
+            if not title:
+                raise ValueError("empty")
+        except Exception:
+            title = msg[:50] + ('...' if len(msg) > 50 else '')
         admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
     except Exception:
         pass
@@ -465,6 +478,7 @@ def student_progress():
         'topics_studied':   len(schedule),
         'review_due':       [e['topic'] for e in due],
         'last_topic':       profile.get('last_session_topic') or '',
+        'email_summary':    profile.get('email_summary', True),
     })
 
 
@@ -497,10 +511,10 @@ def ask():
     # Guest user
     if 'user_id' not in session:
         count = session.get('guest_messages', 0)
-        if count >= 5:
+        if count >= 7:
             return jsonify({
                 "login_required": True,
-                "error": "You've used your 5 free messages. Please login to continue!"
+                "error": "You've used your 7 free messages. Please login to continue!"
             }), 401
         session['guest_messages'] = count + 1
         if "history" not in session:
@@ -576,6 +590,7 @@ def ask_stream():
     subject = data.get("subject", "biology")
     stream = data.get("stream", "")
     socratic = bool(data.get("socratic", False))
+    preferred_model = data.get("model", "") if data.get("model") in ("gemini", "deepseek") else ""
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -588,6 +603,7 @@ def ask_stream():
     history_session = session.get('history', [])
     # preferred_name in session wins over login-time name (persists name corrections)
     student_name = session.get('preferred_name') or session.get('name', '')
+    _preferred_model = preferred_model  # capture for generator closure
 
     # Detect name correction upfront from the message itself — update session immediately
     if is_logged_in and user_message:
@@ -599,10 +615,10 @@ def ask_stream():
             session.modified = True
 
     # Guest limit check
-    if not is_logged_in and guest_count >= 5:
+    if not is_logged_in and guest_count >= 7:
         return jsonify({
             "login_required": True,
-            "error": "You've used your 5 free messages. Please login to continue!"
+            "error": "You've used your 7 free messages. Please login to continue!"
         }), 401
 
     # Logged-in limit check
@@ -786,7 +802,8 @@ def ask_stream():
                 )
                 reply = run_llm(guide_query, history, nctb_context, _spi(project_instructions),
                                 stream=stream, student_name=student_name,
-                                subject=effective_subject, student_profile=student_profile)
+                                subject=effective_subject, student_profile=student_profile,
+                                preferred_model=_preferred_model)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": section_name})
                     messages_list.append({"role": "assistant", "content": reply})
@@ -864,7 +881,7 @@ def ask_stream():
                         history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in recent]
                     else:
                         history = history_session[-10:]
-                    reply = run_llm(user_message, history, nctb_context="", project_instructions=_spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
+                    reply = run_llm(user_message, history, nctb_context="", project_instructions=_spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": user_message})
                     messages_list.append({"role": "assistant", "content": reply})
@@ -931,7 +948,7 @@ def ask_stream():
             reply = ""
             _t_llm_start = _time.time()
             _first_token_time = None
-            for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile):
+            for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model):
                 if chunk:
                     if _first_token_time is None:
                         _first_token_time = _time.time()
@@ -1151,6 +1168,39 @@ def service_worker():
     response.headers['Service-Worker-Allowed'] = '/'
     response.headers['Cache-Control'] = 'no-cache'
     return response
+
+@app.route("/toggle-email-summary", methods=["POST"])
+@login_required
+def toggle_email_summary():
+    data = request.get_json() or {}
+    enabled = bool(data.get("enabled", True))
+    user_id = session['user_id']
+    from memory import _upsert
+    threading.Thread(target=_upsert, args=(user_id, {'email_summary': enabled}), daemon=True).start()
+    return jsonify({'ok': True, 'enabled': enabled})
+
+
+@app.route("/send-test-summary", methods=["POST"])
+@login_required
+def send_test_summary():
+    """Send a test summary email to the logged-in user immediately."""
+    user_id = session['user_id']
+    email   = session.get('email', '')
+    name    = session.get('preferred_name') or session.get('name', '')
+    if not email:
+        return jsonify({'ok': False, 'error': 'No email in session'}), 400
+    from memory import get_student_profile
+    from email_summary import send_student_summary
+    try:
+        profile = get_student_profile(user_id) or {}
+        ok      = send_student_summary(email, name, profile)
+        return jsonify({'ok': ok})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+
+from email_summary import start_scheduler
+start_scheduler()
 
 if __name__ == "__main__":
     app.run(debug=True, threaded=True, use_reloader=False)

@@ -273,6 +273,17 @@
     .reply-chip.review-due{border-color:#f59e0b;color:#f59e0b;}
     .reply-chip.review-due:hover{background:rgba(245,158,11,.1);}
     @media(max-width:480px){.reply-chip{font-size:11px;padding:4px 10px;}.reply-chips{gap:5px;padding-left:0;}}
+    .model-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .12s;}
+    .model-opt:hover{background:var(--bg3);}
+    .model-opt.active{background:var(--bg3);}
+    .model-opt-icon{font-size:18px;flex-shrink:0;}
+    .model-opt-name{font-size:12px;font-weight:600;color:var(--text);}
+    .model-opt-desc{font-size:10.5px;color:var(--text3);margin-top:1px;}
+    .guest-limit-bubble{background:linear-gradient(135deg,rgba(232,100,60,.12),rgba(240,163,94,.08));border:1px solid rgba(232,100,60,.3);border-radius:16px;padding:16px 18px;max-width:400px;}
+    .guest-limit-bubble .gl-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;}
+    .guest-limit-bubble .gl-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;}
+    .guest-limit-bubble .gl-btn{background:linear-gradient(135deg,#e8643c,#f0a35e);color:#fff;border:none;border-radius:22px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;width:100%;transition:opacity .15s;}
+    .guest-limit-bubble .gl-btn:hover{opacity:.88;}
     .roadmap-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;max-width:420px;}
     .roadmap-header{font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .roadmap-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
@@ -486,6 +497,10 @@
     .logout-email{font-size:12px;color:var(--text3);margin-bottom:6px;}
     .logout-plan-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid rgba(13,228,160,.2);color:var(--green);border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:600;margin-bottom:22px;}
     .logout-divider{height:1px;background:var(--border);margin:0 -28px 18px;}
+    #email-summary-slider{background:var(--bg4);}
+    #email-summary-slider::before{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;left:3px;top:3px;transition:.2s;}
+    #email-summary-toggle:checked+#email-summary-slider{background:var(--green);}
+    #email-summary-toggle:checked+#email-summary-slider::before{transform:translateX(18px);}
     .logout-btn-group{display:flex;flex-direction:column;gap:8px;}
     .logout-btn{width:100%;padding:11px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;font-family:'Sora',sans-serif;cursor:pointer;transition:all .15s;border:none;}
     .logout-btn.danger{background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.25);color:var(--danger);}
@@ -871,7 +886,7 @@
       </div>
       <div id="input-row">
         <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
-        <button class="inp-icon-btn" id="attach-btn" title="ছবি যোগ করো" onclick="document.getElementById('file-input').click()">📎</button>
+        <button class="inp-icon-btn" id="attach-btn" title="ছবি যোগ করো" onclick="handleAttachClick()">📎</button>
         <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this);stopMicOnType()"></textarea>
         <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
@@ -881,7 +896,22 @@
         </button>
       </div>
 
-      <div class="hint-bar" style="justify-content:flex-end;">
+      <div class="hint-bar" style="justify-content:space-between;">
+        <div style="position:relative;">
+          <button id="model-picker-btn" onclick="toggleModelPicker()" style="background:none;border:1px solid var(--border2);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'Sora',sans-serif;transition:border-color .15s;" title="Model বেছে নাও">
+            <span id="model-icon">⚡</span><span id="model-label">Gemini</span><span style="opacity:.5;font-size:9px;">▾</span>
+          </button>
+          <div id="model-dropdown" style="display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:6px;min-width:210px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:200;">
+            <div class="model-opt" data-model="gemini" onclick="selectModel('gemini')">
+              <span class="model-opt-icon">⚡</span>
+              <div><div class="model-opt-name">Standard</div><div class="model-opt-desc">পড়া বোঝাতে খুব ভালো, তবে কঠিন অঙ্কে ভুল করে ফেলতে পারে</div></div>
+            </div>
+            <div class="model-opt" data-model="deepseek" onclick="selectModel('deepseek')">
+              <span class="model-opt-icon">🧮</span>
+              <div><div class="model-opt-name">Math+</div><div class="model-opt-desc">অঙ্কের জন্য ভালো, কিন্তু বাংলায় দুর্বল। উত্তরটা একটু মিলিয়ে নেওয়া ভালো</div></div>
+            </div>
+          </div>
+        </div>
         <span class="char-count" id="char-count"></span>
       </div>
       <div class="disclaimer-bar">দীপ্তি আপুও মাঝেমাঝে ভুল করতে পারে—তাই মেইন বইয়ের সাথে মিলিয়ে নিও কিন্তু! ✦ Dipti AI &nbsp;·&nbsp; <span style="opacity:.5;">© 2026 Sheelbi</span></div>
@@ -1003,6 +1033,21 @@
     <div class="logout-name" id="logout-display-name">User</div>
     <div class="logout-email" id="logout-display-email">—</div>
     <div class="logout-plan-badge"><span>✦</span><span id="logout-plan-label">Free Plan</span></div>
+    <div class="logout-divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 14px;gap:10px;">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);">📧 Daily summary email</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">রাত ৯টায় আজকের পড়ার summary</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;">
+        <input type="checkbox" id="email-summary-toggle" onchange="toggleEmailSummary(this.checked)" style="opacity:0;width:0;height:0;">
+        <span id="email-summary-slider" style="position:absolute;inset:0;border-radius:22px;cursor:pointer;transition:.2s;"></span>
+      </label>
+    </div>
+    <div style="padding:0 4px 14px;">
+      <button onclick="sendTestSummary()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'Sora',sans-serif;" id="test-summary-btn">📨 Test email পাঠাও</button>
+      <span id="test-summary-msg" style="font-size:11px;color:var(--green);margin-left:8px;display:none;">Sent! ✓</span>
+    </div>
     <div class="logout-divider"></div>
     <div class="logout-btn-group">
       <button class="logout-btn danger" onclick="confirmLogout()">🚪 Log out</button>
@@ -1994,6 +2039,7 @@ let _vmLevelRAF = null;
 // if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){ document.getElementById('mic-btn').style.display = 'flex'; }
 
 function openVoiceModal(){
+  if(!loggedInUser){showLoginPrompt(false);return;}
   document.getElementById('voice-panel').classList.add('open');
   _vmSetState('idle');
 }
@@ -2711,12 +2757,12 @@ async function sendMessage(){
       if(!r.ok){
         const errData=await r.json().catch(()=>({error:'সার্ভার এরর — একটু পর আবার চেষ্টা করো।'}));
         removeTyping();
-        if(errData.login_required){showLoginPrompt(true);sendBtn.disabled=false;return;}
+        if(errData.login_required){removeTyping();showGuestLimitCard();sendBtn.disabled=false;return;}
         showRetryError(errData.error||'কিছু সমস্যা হয়েছে।');
         sendBtn.disabled=false;return;
       }
       const d=await r.json();
-      if(d.login_required){removeTyping();showLoginPrompt(true);sendBtn.disabled=false;return;}
+      if(d.login_required){removeTyping();showGuestLimitCard();sendBtn.disabled=false;return;}
       const reply=(d.reply||'দুঃখিত, সমস্যা হয়েছে।').replace(/\s*\[[SC]\]\s*$/,'').trimEnd();
       if(d.chat_id)currentChatId=d.chat_id;
       if(d.subject){activeSubject=d.subject;localStorage.setItem('activeSubject',activeSubject);}
@@ -2724,7 +2770,7 @@ async function sendMessage(){
       removeImage();
     }else{
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
-      const body={message:apiText, subject: activeSubject, stream: activeStream};
+      const body={message:apiText, subject: activeSubject, stream: activeStream, model: selectedModel};
       if(currentChatId)body.chat_id=currentChatId;
       if(currentProjectId)body.project_id=currentProjectId;
       if(_socraticMode)body.socratic=true;
@@ -2739,7 +2785,7 @@ async function sendMessage(){
       if(!r.ok){
         const errData = await r.json().catch(()=>({error:'Server error'}));
         removeTyping();
-        if(errData.login_required){showLoginPrompt(true);sendBtn.disabled=false;return;}
+        if(errData.login_required){showGuestLimitCard();sendBtn.disabled=false;return;}
         showRetryError(errData.error||'কিছু সমস্যা হয়েছে।');
         sendBtn.disabled=false;
         return;
@@ -2914,6 +2960,41 @@ async function sendMessage(){
   sendBtn.disabled=false;input.focus();
 }
 
+// ── MODEL PICKER ──
+const _MODELS = {
+  gemini:   {icon:'⚡', label:'Standard'},
+  deepseek: {icon:'🧮', label:'Math+'},
+};
+let selectedModel = 'gemini'; // always default to Standard on load
+
+function _applyModelUI(){
+  const m = _MODELS[selectedModel] || _MODELS.gemini;
+  document.getElementById('model-icon').textContent  = m.icon;
+  document.getElementById('model-label').textContent = m.label;
+  document.querySelectorAll('.model-opt').forEach(el=>{
+    el.classList.toggle('active', el.dataset.model === selectedModel);
+  });
+}
+function toggleModelPicker(){
+  const dd = document.getElementById('model-dropdown');
+  dd.style.display = dd.style.display==='none' ? 'block' : 'none';
+}
+function selectModel(key){
+  selectedModel = key;
+  localStorage.setItem('selectedModel', key);
+  _applyModelUI();
+  document.getElementById('model-dropdown').style.display='none';
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#model-picker-btn') && !e.target.closest('#model-dropdown'))
+    document.getElementById('model-dropdown').style.display='none';
+});
+_applyModelUI();
+
+function handleAttachClick(){
+  if(!loggedInUser){showLoginPrompt(false);return;}
+  document.getElementById('file-input').click();
+}
 function handleFileSelect(e){const f=e.target.files[0];if(!f)return;selectedFile=f;const r=new FileReader();r.onload=ev=>{document.getElementById('preview-thumb').src=ev.target.result;};r.readAsDataURL(f);document.getElementById('preview-name').textContent=f.name;strip.classList.add('visible');attachBtn.classList.add('has-image');input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';}
 function removeImage(){selectedFile=null;document.getElementById('file-input').value='';document.getElementById('preview-thumb').src='';document.getElementById('preview-name').textContent='';strip.classList.remove('visible');attachBtn.classList.remove('has-image');input.placeholder='বাংলা বা English এ লিখুন...';}
 
@@ -2924,6 +3005,32 @@ function showAccountModal(){
   document.getElementById('logout-display-email').textContent=loggedInUser.email||'—';
   document.getElementById('logout-plan-label').textContent=loggedInUser.plan==='pro'?'Pro Plan':'Free Plan · 10/day';
   document.getElementById('logout-overlay').classList.add('active');
+  // Load email summary preference
+  fetch('/student-progress').then(r=>r.json()).then(d=>{
+    const tog=document.getElementById('email-summary-toggle');
+    if(tog) tog.checked = d.email_summary !== false;
+  }).catch(()=>{});
+}
+
+async function toggleEmailSummary(enabled){
+  try{
+    await fetch('/toggle-email-summary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});
+  }catch(e){}
+}
+
+async function sendTestSummary(){
+  const btn=document.getElementById('test-summary-btn');
+  const msg=document.getElementById('test-summary-msg');
+  btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const r=await fetch('/send-test-summary',{method:'POST'});
+    const d=await r.json();
+    msg.textContent=d.ok?'Sent! ✓':'Failed ✗';
+    msg.style.color=d.ok?'var(--green)':'var(--danger)';
+    msg.style.display='';
+    setTimeout(()=>{msg.style.display='none';},4000);
+  }catch(e){msg.textContent='Error';msg.style.display='';}
+  btn.disabled=false; btn.textContent='📨 Test email পাঠাও';
 }
 
 const SUBJECT_LABELS={biology:'জীববিজ্ঞান',physics:'পদার্থবিজ্ঞান',chemistry:'রসায়ন',accounting:'হিসাববিজ্ঞান',geography:'ভূগোল',math:'গণিত',general:'সাধারণ'};
@@ -3005,10 +3112,31 @@ async function checkLoginState(){
   }catch(e){}
 }
 
+function showGuestLimitCard(){
+  if(document.getElementById('guest-limit-card')) return; // already shown
+  const msgs=document.getElementById('messages');
+  if(!msgs) return;
+  const wrap=document.createElement('div');
+  wrap.className='message bot';
+  wrap.id='guest-limit-card';
+  wrap.innerHTML=`
+    <div class="disha-avatar-wrap">${makeDiptiSVG(38)}</div>
+    <div class="bot-col">
+      <div class="disha-name-row"><span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span></div>
+      <div class="guest-limit-bubble">
+        <div class="gl-title">৭টি free message শেষ! 🎉</div>
+        <div class="gl-sub">দীপ্তি আপুর সাথে পড়া চালিয়ে যেতে login করো।<br>প্রতিদিন <strong>১০টি প্রশ্ন</strong> — সম্পূর্ণ বিনামূল্যে।</div>
+        <button class="gl-btn" onclick="showLoginPrompt(false)">Login করো →</button>
+      </div>
+    </div>`;
+  msgs.appendChild(wrap);
+  wrap.scrollIntoView({behavior:'smooth',block:'end'});
+  showLoginPrompt(true);
+}
 function showLoginPrompt(limit){
   if(loggedInUser){showAccountModal();return;}
   const sub=document.getElementById('login-modal-sub');
-  if(limit&&sub)sub.innerHTML='You used your free messages! Login to continue.<br><strong>10 questions/day</strong> at no cost.';
+  if(limit&&sub)sub.innerHTML='তুমি ৭টি free message ব্যবহার করেছ! পড়া চালিয়ে যেতে login করো।<br><strong>প্রতিদিন ১০টি প্রশ্ন</strong> সম্পূর্ণ বিনামূল্যে।';
   else if(sub)sub.innerHTML='Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.';
   document.getElementById('login-card').classList.add('dismissible');
   document.getElementById('login-overlay').classList.add('active');

@@ -65,8 +65,15 @@ gpt54_mini_llm = ChatOpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.5,
 )
+deepseek_llm = ChatOpenAI(
+    model="deepseek/deepseek-v4-flash",
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    temperature=0.6,
+)
 
 parser = StrOutputParser()
+_img_extract_cache: dict[str, str] = {}  # url → extracted text, avoids re-running Gemini on same image
 flash_chain = flash_llm | parser
 output_chain = output_llm | parser
 vision_chain = vision_llm | parser
@@ -74,6 +81,13 @@ haiku_chain = haiku_llm | parser
 sonnet_chain = sonnet_llm | parser
 gemini_pro_chain = gemini_pro_llm | parser
 gpt54_mini_chain = gpt54_mini_llm | parser
+deepseek_chain = deepseek_llm | parser
+
+# Student-selectable models
+_STUDENT_CHAINS = {
+    "gemini": flash_chain,
+    "deepseek": deepseek_chain,
+}
 
 
 def rewrite_to_bangla(draft: str) -> str:
@@ -226,9 +240,15 @@ def is_complex_math(user_input: str) -> bool:
     return False
 
 
-def pick_chain(_user_input: str, subject: str = ""):
-    """All subjects → Gemini 2.5 Flash."""
-    print(f"[Routing] {subject or 'general'} -> Gemini 2.5 Flash")
+def pick_chain(_user_input: str, subject: str = "", preferred_model: str = ""):
+    if preferred_model == "deepseek":
+        if is_math_question(_user_input):
+            print(f"[Model] Math detected → DeepSeek V4 Flash", flush=True)
+            return deepseek_chain
+        else:
+            print(f"[Model] Theory detected → Gemini 2.5 Flash (DeepSeek mode)", flush=True)
+            return flash_chain
+    print(f"[Routing] {subject or 'general'} -> Gemini 2.5 Flash", flush=True)
     return flash_chain
 
 
@@ -969,7 +989,7 @@ def do_rag_lookup(user_input: str, subject: str = "biology"):
     return nctb_context, chapters_found
 
 
-def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile: dict = None):
+def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile: dict = None, preferred_model: str = ""):
     """
     Run the LLM with already-retrieved context. Auto-picks Flash or Pro.
     Returns the final reply string.
@@ -983,15 +1003,27 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         "cache_control": {"type": "ephemeral"},
     }])]
     has_image = False
+    vision_supported = preferred_model not in ("deepseek",)
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
-            if img_url:
+            if img_url and vision_supported:
                 has_image = True
                 messages.append(HumanMessage(content=[
                     {"type": "image_url", "image_url": {"url": img_url}},
                     {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
                 ]))
+            elif img_url and not vision_supported:
+                print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
+                try:
+                    extracted = vision_chain.invoke([HumanMessage(content=[
+                        {"type": "image_url", "image_url": {"url": img_url}},
+                        {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
+                    ])])
+                    text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
+                except Exception:
+                    text = msg.get("content") or "[ছবি পড়া যায়নি]"
+                messages.append(HumanMessage(content=text))
             else:
                 messages.append(HumanMessage(content=msg["content"]))
         elif msg["role"] == "assistant":
@@ -1025,38 +1057,54 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         print(f"[Image Pipeline] Step 2: Gemini Flash solves -> {label}")
         return selected.invoke(text_messages)
 
-    selected_chain = pick_chain(user_input, subject=subject)
+    selected_chain = pick_chain(user_input, subject=subject, preferred_model=preferred_model)
     return selected_chain.invoke(messages)
 
 
-def stream_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile=None):
+def stream_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile=None, preferred_model: str = ""):
     """
     Streaming version of run_llm — yields string chunks as the LLM generates them.
     Image URLs in history are stripped — the bot's previous response already contains
     the extracted content, so re-running OCR extraction is unnecessary.
     """
     system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
+    if preferred_model == "deepseek":
+        system_with_context = "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese characters. Never use any script other than Bengali and English.\n\n" + system_with_context
     messages = [SystemMessage(content=[{
         "type": "text",
         "text": system_with_context,
         "cache_control": {"type": "ephemeral"},
     }])]
 
+    vision_supported = preferred_model not in ("deepseek",)
+
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
-            if img_url:
+            if img_url and vision_supported:
                 messages.append(HumanMessage(content=[
                     {"type": "image_url", "image_url": {"url": img_url}},
                     {"type": "text", "text": msg["content"] or "এই ছবিটি দেখে বুঝিয়ে দাও।"},
                 ]))
+            elif img_url and not vision_supported:
+                # Gemini Flash extracts image → DeepSeek gets the text
+                print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
+                try:
+                    extracted = vision_chain.invoke([HumanMessage(content=[
+                        {"type": "image_url", "image_url": {"url": img_url}},
+                        {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
+                    ])])
+                    text = f"[ছবির content:]\n{extracted}\n\n{msg.get('content', '')}".strip()
+                except Exception:
+                    text = msg.get("content") or "[ছবি পড়া যায়নি]"
+                messages.append(HumanMessage(content=text))
             else:
                 messages.append(HumanMessage(content=msg["content"]))
         elif msg["role"] == "assistant":
             messages.append(AIMessage(content=msg["content"]))
     messages.append(HumanMessage(content=user_input))
 
-    selected_chain = pick_chain(user_input, subject=subject)
+    selected_chain = pick_chain(user_input, subject=subject, preferred_model=preferred_model)
     for chunk in selected_chain.stream(messages):
         if chunk:
             yield chunk
