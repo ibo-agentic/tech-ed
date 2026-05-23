@@ -372,6 +372,8 @@
     #preview-name{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     #remove-image-btn{background:transparent;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:2px;border-radius:4px;flex-shrink:0;}
     #file-input{display:none;}
+    #chat-spacer{display:none;}
+    #chat-box:has(#welcome-screen) > #chat-spacer{display:block;flex:1;min-height:0;}
     /* ── Unified input card — single row ── */
     #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:999px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;display:flex;align-items:flex-end;padding:5px 6px 5px 10px;gap:2px;}
     #input-card:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(13,228,160,.07);}
@@ -820,7 +822,7 @@
 
     <div id="chat-area-wrap">
     <div id="chat-box">
-      <div id="chat-spacer" style="flex:1;min-height:0;"></div>
+      <div id="chat-spacer"></div>
       <div class="welcome" id="welcome-screen">
         <h2 id="initial-greeting">Welcome 👋</h2>
         <p class="welcome-sub" id="initial-subtext">আজ কী শিখতে চাও?<br><span style="color:var(--text3);font-size:11px;">তোমাদের SSC সিলেবাসের বিজ্ঞান, বাণিজ্য ও মানবিকের যেকোনো কঠিন টপিক একদম পানির মতো সহজ করে বুঝিয়ে দেবো! 🌱</span></p>
