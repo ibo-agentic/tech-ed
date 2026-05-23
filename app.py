@@ -92,10 +92,15 @@ def save_messages(chat_id, messages):
 
 _DEFAULT_IMAGE_CAPTION = "এই ছবিটি দেখে বুঝিয়ে দাও।"
 
+_GOODBYE_WORDS = {"bye", "thanks", "thank", "ধন্যবাদ", "রাখি", "বিদায়", "যাচ্ছি", "শুক্রিয়া", "done", "শেষ"}
+
 def auto_title(chat_id, user_message):
     try:
         msg = user_message.strip()
         if len(msg) < 10 or msg == _DEFAULT_IMAGE_CAPTION:
+            return
+        # Don't title a chat with a goodbye message
+        if all(w.lower() in _GOODBYE_WORDS for w in msg.split()):
             return
         admin = get_admin_client()
         current = admin.table('chats').select('title').eq('id', chat_id).execute()
@@ -400,8 +405,8 @@ def save_quiz_result_route():
 @app.route("/student-opening", methods=["GET"])
 @login_required
 def student_opening():
-    """Return Dipti's personalised opening line, streak, and weak topics for a new chat session."""
-    from memory import get_student_profile, get_dipti_opening, save_last_stream, get_or_init_streak
+    """Return Dipti's personalised opening line, streak, weak topics, and spaced-review due list."""
+    from memory import get_student_profile, get_dipti_opening, save_last_stream, get_or_init_streak, get_due_reviews
     user_id = session['user_id']
     student_name = session.get('preferred_name') or session.get('name', '')
     current_stream = request.args.get('stream', '')
@@ -410,20 +415,57 @@ def student_opening():
     streak = get_or_init_streak(user_id, profile)
     if current_stream:
         threading.Thread(target=save_last_stream, args=(user_id, current_stream), daemon=True).start()
-    # Return weak topics filtered to the current stream so physics topics
-    # don't appear in arts/commerce projects and vice versa
+    # Weak topics filtered to current stream
     all_weak = (profile.get('weak_topics') or []) if profile else []
     if current_stream and all_weak:
         from chain import STREAM_INFO, detect_subject_from_question
         allowed = set(STREAM_INFO.get(current_stream, {}).get('subjects', []))
-        filtered = [
-            t for t in all_weak
-            if detect_subject_from_question(t, fallback=None) in allowed
-        ]
+        filtered = [t for t in all_weak if detect_subject_from_question(t, fallback=None) in allowed]
         weak_topics = filtered[-2:]
     else:
         weak_topics = all_weak[-2:]
-    return jsonify({'opening': opening, 'streak': streak, 'weak_topics': weak_topics})
+    # Spaced repetition: topics due for review today
+    due_entries = get_due_reviews(profile)
+    review_due = [e['topic'] for e in due_entries]
+    return jsonify({'opening': opening, 'streak': streak, 'weak_topics': weak_topics, 'review_due': review_due})
+
+
+@app.route("/mark-reviewed", methods=["POST"])
+@login_required
+def mark_reviewed():
+    """Advance a topic's spaced repetition interval after the student reviews it."""
+    data = request.get_json() or {}
+    topic = (data.get('topic') or '').strip()
+    if not topic:
+        return jsonify({'ok': False}), 400
+    user_id = session['user_id']
+    from memory import get_student_profile, mark_topic_reviewed
+    profile = get_student_profile(user_id)
+    threading.Thread(target=mark_topic_reviewed, args=(user_id, topic, profile), daemon=True).start()
+    return jsonify({'ok': True})
+
+
+@app.route("/student-progress", methods=["GET"])
+@login_required
+def student_progress():
+    """Return full learning profile for the progress panel in the sidebar."""
+    from memory import get_student_profile, get_due_reviews, get_or_init_streak
+    user_id = session['user_id']
+    profile = get_student_profile(user_id)
+    if not profile:
+        return jsonify({'ok': True, 'empty': True})
+    schedule = profile.get('topic_schedule') or []
+    due = get_due_reviews(profile)
+    return jsonify({
+        'ok': True,
+        'session_count':    profile.get('session_count') or 0,
+        'streak':           get_or_init_streak(user_id, profile),
+        'weak_topics':      (profile.get('weak_topics') or [])[-5:],
+        'strong_topics':    (profile.get('strong_topics') or [])[-5:],
+        'topics_studied':   len(schedule),
+        'review_due':       [e['topic'] for e in due],
+        'last_topic':       profile.get('last_session_topic') or '',
+    })
 
 
 @app.route("/save-stream", methods=["POST"])

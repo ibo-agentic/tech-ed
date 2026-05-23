@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -154,6 +154,7 @@ def update_student_profile(user_id: str, messages: list):
             update_data['last_session_date'] = datetime.now(timezone.utc).isoformat()
 
         _upsert(user_id, update_data)
+        _schedule_topics(user_id, signals.get('topics_studied') or [], ex)
         print(f"[memory] Updated profile for {user_id} — studied: {signals.get('topics_studied')}")
 
     except Exception as e:
@@ -255,9 +256,66 @@ def save_session_promise(user_id: str, promise: str, messages: list):
             update_data['last_session_date'] = datetime.now(timezone.utc).isoformat()
 
         _upsert(user_id, update_data)
+        if signals:
+            _schedule_topics(user_id, signals.get('topics_studied') or [], ex)
         print(f"[memory] Session saved. Promise: {promise}")
     except Exception as e:
         print(f"[memory] save_session_promise error: {e}")
+
+
+_INTERVALS = [1, 3, 7, 14, 30, 60]  # spaced repetition intervals in days
+
+
+def _today() -> str:
+    return datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+
+def _schedule_topics(user_id: str, topics: list, profile: dict | None):
+    """Add newly studied topics to the spaced repetition schedule (background-safe)."""
+    if not topics:
+        return
+    existing = list((profile or {}).get('topic_schedule') or [])
+    existing_names = {e['topic'] for e in existing}
+    tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%d')
+    added = [
+        {'topic': t, 'next_review': tomorrow, 'interval': 1, 'count': 0}
+        for t in topics if t and t not in existing_names
+    ]
+    if not added:
+        return
+    updated = (existing + added)[-20:]
+    try:
+        _upsert(user_id, {'topic_schedule': updated})
+    except Exception as e:
+        print(f"[memory] schedule_topics error: {e}")
+
+
+def get_due_reviews(profile: dict | None) -> list[dict]:
+    """Return topic schedule entries due today or overdue, most overdue first."""
+    if not profile:
+        return []
+    schedule = profile.get('topic_schedule') or []
+    today = _today()
+    due = [e for e in schedule if e.get('next_review', '9999') <= today]
+    due.sort(key=lambda e: e.get('next_review', '9999'))
+    return due[:3]
+
+
+def mark_topic_reviewed(user_id: str, topic: str, profile: dict | None):
+    """Advance a topic's interval after the student reviews it."""
+    schedule = list((profile or {}).get('topic_schedule') or [])
+    for entry in schedule:
+        if entry.get('topic') == topic:
+            count = entry.get('count', 0) + 1
+            new_interval = _INTERVALS[min(count, len(_INTERVALS) - 1)]
+            entry['count'] = count
+            entry['interval'] = new_interval
+            entry['next_review'] = (datetime.now(timezone.utc) + timedelta(days=new_interval)).strftime('%Y-%m-%d')
+            break
+    try:
+        _upsert(user_id, {'topic_schedule': schedule})
+    except Exception as e:
+        print(f"[memory] mark_reviewed error: {e}")
 
 
 def get_dipti_opening(profile: dict | None, student_name: str = "", current_stream: str = "") -> str:

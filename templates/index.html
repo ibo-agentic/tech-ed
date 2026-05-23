@@ -81,6 +81,18 @@
     .sb-section-add{width:20px;height:20px;background:transparent;border:none;color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s;border-radius:4px;}
     .sb-section-add:hover{color:var(--green);background:var(--bg3);}
     .sb-projects-list{padding:0 8px 4px;display:flex;flex-direction:column;gap:2px;max-height:200px;overflow-y:auto;}
+    .sb-progress-section{border-top:1px solid var(--border);margin-top:2px;}
+    .sb-progress-header{padding:8px 14px 6px;}
+    .sb-progress-body{padding:2px 12px 8px;display:flex;flex-direction:column;gap:6px;}
+    .sb-progress-stat{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2);}
+    .sb-progress-stat span{color:var(--text3);}
+    .sb-topic-list{display:flex;flex-direction:column;gap:3px;margin-top:2px;}
+    .sb-topic-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sb-topic-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .sb-topic-dot.weak{background:#f59e0b;}
+    .sb-topic-dot.strong{background:var(--green);}
+    .sb-topic-dot.due{background:#818cf8;}
+    .sb-progress-empty{font-size:11px;color:var(--text3);padding:2px 0;}
     .sb-projects-list::-webkit-scrollbar{width:3px;}
     .sb-projects-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 
@@ -258,6 +270,8 @@
     .reply-chip:hover{border-color:var(--green);color:var(--green);background:rgba(13,228,160,.07);}
     .reply-chip.primary{border-color:var(--green);color:var(--green);}
     .reply-chip.primary:hover{background:rgba(13,228,160,.12);}
+    .reply-chip.review-due{border-color:#f59e0b;color:#f59e0b;}
+    .reply-chip.review-due:hover{background:rgba(245,158,11,.1);}
     @media(max-width:480px){.reply-chip{font-size:11px;padding:4px 10px;}.reply-chips{gap:5px;padding-left:0;}}
     .roadmap-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;max-width:420px;}
     .roadmap-header{font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -696,6 +710,29 @@
       <span class="all-chats-icon">💬</span>
       <span class="all-chats-name">All Chats</span>
       <span class="all-chats-count" id="all-chats-count">0</span>
+    </div>
+
+    <div class="sb-progress-section" id="sb-progress-section" style="display:none;">
+      <div class="sb-progress-header">
+        <span class="sb-section-label">📊 PROGRESS</span>
+      </div>
+      <div class="sb-progress-body" id="sb-progress-body">
+        <div class="sb-progress-stat"><span>📚</span><span id="prog-topics">0</span> topic পড়েছি</div>
+        <div class="sb-progress-stat"><span>💬</span><span id="prog-sessions">0</span> session</div>
+        <div id="prog-due-wrap" style="display:none;">
+          <div class="sb-section-label" style="padding:4px 0 2px;">Review due</div>
+          <div class="sb-topic-list" id="prog-due-list"></div>
+        </div>
+        <div id="prog-weak-wrap" style="display:none;">
+          <div class="sb-section-label" style="padding:4px 0 2px;">দুর্বল topic</div>
+          <div class="sb-topic-list" id="prog-weak-list"></div>
+        </div>
+        <div id="prog-strong-wrap" style="display:none;">
+          <div class="sb-section-label" style="padding:4px 0 2px;">ভালো topic</div>
+          <div class="sb-topic-list" id="prog-strong-list"></div>
+        </div>
+        <div class="sb-progress-empty" id="prog-empty" style="display:none;">এখনো কোনো topic পড়া হয়নি।</div>
+      </div>
     </div>
 
     <div class="sb-projects-section">
@@ -1162,6 +1199,54 @@ async function loadProjects(){
   if(!loggedInUser){projects=[];renderProjects();return;}
   try{const r=await fetch('/projects');if(!r.ok)return;const d=await r.json();projects=d.projects||[];renderProjects();}catch(e){console.error(e);}
 }
+
+async function loadProgress(){
+  if(!loggedInUser){document.getElementById('sb-progress-section').style.display='none';return;}
+  document.getElementById('sb-progress-section').style.display='';
+  try{
+    const r=await fetch('/student-progress');
+    if(!r.ok)return;
+    const d=await r.json();
+    if(!d.ok)return;
+    if(d.empty){
+      document.getElementById('prog-topics').textContent='0';
+      document.getElementById('prog-sessions').textContent='0';
+      document.getElementById('prog-empty').style.display='';
+      return;
+    }
+    document.getElementById('prog-topics').textContent=d.topics_studied||0;
+    document.getElementById('prog-sessions').textContent=d.session_count||0;
+    const _makeItem=(topic,dotClass)=>{
+      const div=document.createElement('div');div.className='sb-topic-item';
+      div.innerHTML=`<span class="sb-topic-dot ${dotClass}"></span>${escapeHtml(topic)}`;
+      return div;
+    };
+    // Review due
+    const dueWrap=document.getElementById('prog-due-wrap');
+    const dueList=document.getElementById('prog-due-list');
+    if(d.review_due&&d.review_due.length>0){
+      dueList.innerHTML='';d.review_due.forEach(t=>dueList.appendChild(_makeItem(t,'due')));
+      dueWrap.style.display='';
+    } else {dueWrap.style.display='none';}
+    // Weak topics
+    const weakWrap=document.getElementById('prog-weak-wrap');
+    const weakList=document.getElementById('prog-weak-list');
+    if(d.weak_topics&&d.weak_topics.length>0){
+      weakList.innerHTML='';d.weak_topics.forEach(t=>weakList.appendChild(_makeItem(t,'weak')));
+      weakWrap.style.display='';
+    } else {weakWrap.style.display='none';}
+    // Strong topics
+    const strongWrap=document.getElementById('prog-strong-wrap');
+    const strongList=document.getElementById('prog-strong-list');
+    if(d.strong_topics&&d.strong_topics.length>0){
+      strongList.innerHTML='';d.strong_topics.forEach(t=>strongList.appendChild(_makeItem(t,'strong')));
+      strongWrap.style.display='';
+    } else {strongWrap.style.display='none';}
+    // Empty state
+    const hasAny=(d.topics_studied||0)>0||(d.weak_topics||[]).length>0||(d.strong_topics||[]).length>0;
+    document.getElementById('prog-empty').style.display=hasAny?'none':'';
+  }catch(e){}
+}
 async function loadAllChats(){
   if(!loggedInUser){allChatsList=[];renderHistory();return;}
   try{
@@ -1457,8 +1542,14 @@ function _doNewChat(){
           const sb=document.getElementById('streak-badge');
           if(sb){sb.textContent=`🔥 ${d.streak} দিন`;sb.style.display='';}
         }
-        // Weak-topic practice chip
-        if(d.weak_topics && d.weak_topics.length > 0){
+        // Spaced review due chips (highest priority — show first)
+        if(d.review_due && d.review_due.length > 0){
+          setTimeout(()=>{
+            const chips = document.createElement('div'); chips.className='reply-chips';
+            chips.innerHTML=d.review_due.map(t=>`<button class="reply-chip review-due" data-topic="${escapeHtml(t)}" onclick="useChip(this,'spaced_review')">📅 ${escapeHtml(t)} review করি</button>`).join('')+`<button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয়</button>`;
+            chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+          },600);
+        } else if(d.weak_topics && d.weak_topics.length > 0){
           setTimeout(()=>{
             const topic = d.weak_topics[d.weak_topics.length - 1];
             const chips = document.createElement('div'); chips.className='reply-chips';
@@ -2168,8 +2259,15 @@ function useChip(btn, action){
     sendMessage();
   }else if(action==='weak_topic_review'){
     const topic=btn.dataset.topic||'';
+    if(loggedInUser&&topic)fetch('/mark-reviewed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic})}).catch(()=>{});
     input.value=topic;
     _chipSendOverride=`${topic} topic \u099F\u09BE remind \u0995\u09B0\u09CB \u09A4\u09BE\u09B0\u09AA\u09B0 quiz \u09A6\u09BE\u0993`;
+    sendMessage();
+  }else if(action==='spaced_review'){
+    const topic=btn.dataset.topic||'';
+    if(loggedInUser&&topic)fetch('/mark-reviewed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({topic})}).catch(()=>{});
+    input.value=topic;
+    _chipSendOverride=`${topic} topic \u099F\u09BE spaced review \u0995\u09B0\u09CB \u2014 \u09AE\u09C2\u09B2 points \u09B8\u0982\u0995\u09CD\u09B7\u09C7\u09AA\u09C7 \u09AC\u09B2\u09CB, common \u09AD\u09C1\u09B2 \u0989\u09B2\u09CD\u09B2\u09C7\u0996 \u0995\u09B0\u09CB, \u09A4\u09BE\u09B0\u09AA\u09B0 \u09E8\u099F\u09BE quick question \u0995\u09B0\u09CB\u0964`;
     sendMessage();
   }else if(action==='new_topic'){
     _chipSendOverride='আমি নতুন একটা বিষয় পড়তে চাই। আমার জন্য কোন topic সবচেয়ে দরকারি সেটা suggest করো এবং পড়ানো শুরু করো।';
@@ -2688,6 +2786,8 @@ async function sendMessage(){
             }else if(evt.type==='wrapup'){
               // Session wrap-up arrives after the main reply — show as a second bot message
               if(evt.reply) setTimeout(()=>addBotMessage(evt.reply, false), 800);
+              // Refresh progress panel since session profile was just updated
+              setTimeout(loadProgress, 2000);
             }else if(evt.type==='roadmap'){
               removeTyping();
               renderRoadmapCard(evt);
@@ -2869,6 +2969,7 @@ async function checkLoginState(){
       }
       await loadProjects();
       await loadAllChats();
+      loadProgress();
       if(d.needs_verification&&d.email)showVerifyScreen(d.email);
       // Show Dipti's personalised opening on the initial welcome screen
       const _sp = activeStream ? `?stream=${encodeURIComponent(activeStream)}` : '';
@@ -2880,7 +2981,13 @@ async function checkLoginState(){
             const sb=document.getElementById('streak-badge');
             if(sb){sb.textContent=`🔥 ${data.streak} দিন`;sb.style.display='';}
           }
-          if(data.weak_topics && data.weak_topics.length > 0){
+          if(data.review_due && data.review_due.length > 0){
+            setTimeout(()=>{
+              const chips = document.createElement('div'); chips.className='reply-chips';
+              chips.innerHTML=data.review_due.map(t=>`<button class="reply-chip review-due" data-topic="${escapeHtml(t)}" onclick="useChip(this,'spaced_review')">📅 ${escapeHtml(t)} review করি</button>`).join('')+`<button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয়</button>`;
+              chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+            },600);
+          } else if(data.weak_topics && data.weak_topics.length > 0){
             setTimeout(()=>{
               const topic = data.weak_topics[data.weak_topics.length - 1];
               const chips = document.createElement('div'); chips.className='reply-chips';
@@ -2929,7 +3036,7 @@ async function handleCardSubmit(){
     const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
     if(d.success){
       if(d.needs_verification){hideLoginPrompt();showVerifyScreen(email);}
-      else{showCardSuccess(`Welcome${d.name?', '+d.name:''}! 👋`);updateUserUI({name:d.name,email,plan:d.plan||'free'});await loadProjects();await loadAllChats();setTimeout(()=>{hideLoginPrompt();input.focus();},1200);}
+      else{showCardSuccess(`Welcome${d.name?', '+d.name:''}! 👋`);updateUserUI({name:d.name,email,plan:d.plan||'free'});await loadProjects();await loadAllChats();loadProgress();setTimeout(()=>{hideLoginPrompt();input.focus();},1200);}
     }else{showCardError(d.error||'Something went wrong.');}
   }catch(e){showCardError('Server error.');}
   finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}
