@@ -60,33 +60,11 @@
 
     /* LEFT SIDEBAR */
     .left-sidebar{width:var(--left-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .25s ease,transform .25s ease;}
-    .left-sidebar.collapsed{width:56px;}
-    .left-sidebar.collapsed .sb-logo-text,
-    .left-sidebar.collapsed .sb-search,
-    .left-sidebar.collapsed .all-chats-name,
-    .left-sidebar.collapsed .all-chats-count,
-    .left-sidebar.collapsed .project-name,
-    .left-sidebar.collapsed .project-count,
-    .left-sidebar.collapsed .project-settings-btn,
-    .left-sidebar.collapsed .sb-section-label,
-    .left-sidebar.collapsed .sb-section-add,
-    .left-sidebar.collapsed .sb-history-section,
-    .left-sidebar.collapsed .sb-empty-hint,
-    .left-sidebar.collapsed .sb-projects-list,
-    .left-sidebar.collapsed #sidebar-chat-list,
-    .left-sidebar.collapsed #new-chat-btn-label,
-    .left-sidebar.collapsed .profile-info{display:none;}
-    .left-sidebar.collapsed .sb-logo-row{justify-content:center;padding:14px 8px;}
-    .left-sidebar.collapsed .sb-new-chat-btn{justify-content:center;padding:9px;}
-    .left-sidebar.collapsed .all-chats-item,
-    .left-sidebar.collapsed .project-item{justify-content:center;padding:8px;margin:1px 6px;}
-    .left-sidebar.collapsed .profile-section{justify-content:center;padding:10px 8px;}
-
+    .left-sidebar.collapsed{width:0;min-width:0;border-right:none;}
     .sb-logo-row{display:flex;align-items:center;gap:9px;padding:16px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative;}
     .sb-logo-text{font-size:16px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
     .sidebar-collapse-btn{margin-left:auto;width:22px;height:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
     .sidebar-collapse-btn:hover{border-color:var(--blue);color:var(--blue);}
-    .left-sidebar.collapsed .sidebar-collapse-btn{margin-left:0;}
 
     .sb-search{padding:10px 10px 8px;}
     .sb-search-inner{display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 10px;}
@@ -382,6 +360,10 @@
 
     #mic-btn{width:38px;height:38px;flex-shrink:0;min-width:38px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:15px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
     #mic-btn:hover{border-color:var(--blue);color:var(--blue);}
+    #socratic-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text2);font-size:12px;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:'Sora',sans-serif;}
+    #socratic-btn:hover{border-color:var(--accent);color:var(--accent);}
+    #socratic-btn.active{background:rgba(99,102,241,.15);border-color:var(--accent);color:var(--accent);font-weight:600;}
+    #socratic-label{font-size:11px;}
 
     /* ── Voice Panel (floating, chat stays visible) ── */
     #voice-panel{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:500;width:min(420px,calc(100vw - 32px));background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:14px 16px;box-shadow:0 8px 40px rgba(0,0,0,.6);animation:vpSlideUp .22s ease both;}
@@ -530,8 +512,9 @@
     @media(max-width:700px){
       .left-sidebar{position:fixed;top:0;left:0;bottom:0;z-index:40;transform:translateX(-100%);width:var(--left-w)!important;}
       .left-sidebar.open{transform:translateX(0);}
-      .left-sidebar.collapsed{width:var(--left-w)!important;}
+      .left-sidebar.collapsed{width:var(--left-w)!important;transform:translateX(-100%);}
       .sidebar-collapse-btn{display:none;}
+      #sb-toggle-btn{display:none;}
       .right-sidebar{display:none!important;}
       .mobile-bottom-nav{display:flex;}
       .main-search-bar{display:flex;}
@@ -695,7 +678,6 @@
         <circle cx="385" cy="334" r="19" fill="#9B6BD5"/>
       </svg>
       <div class="sb-logo-text" style="cursor:pointer;" onclick="location.reload()">Dipti AI</div>
-      <button class="sidebar-collapse-btn" id="collapse-btn" onclick="toggleSidebarCollapse()" title="Collapse sidebar">‹</button>
     </div>
 
     <div class="sb-search">
@@ -747,17 +729,20 @@
         <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:2px;" onclick="toggleSidebar()">☰</button>
         <span style="font-size:16px;font-weight:800;color:var(--text);cursor:pointer;" onclick="location.reload()">Dipti AI</span>
         <div style="display:flex;align-items:center;gap:8px;">
+          <button id="socratic-btn-mobile" onclick="toggleSocratic()" title="সক্রেটিক মোড" style="background:none;border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap;">🧠 <span id="socratic-label-mobile">Off</span></button>
           <button class="chat-topic-action" id="theme-btn-mobile" title="Theme" onclick="toggleTheme()" style="font-size:15px;">🌙</button>
         </div>
       </div>
     </div>
 
     <div class="chat-topic-bar" id="chat-topic-bar">
+      <button class="chat-topic-action" id="sb-toggle-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar" style="font-size:16px;opacity:.7;">☰</button>
       <div class="chat-topic-bar-title" id="topic-bar-title">New Chat</div>
       <span class="chat-topic-tag" id="topic-bar-tag" style="display:none;">Dipti AI</span>
       <button class="stream-badge" id="stream-badge" onclick="newChat()" title="New chat" style="display:none;"></button>
       <div class="chat-topic-spacer"></div>
       <span id="streak-badge" style="display:none;" title="পড়ার streak"></span>
+      <button id="socratic-btn" onclick="toggleSocratic()" title="সক্রেটিক মোড — on: ধাপে ধাপে শেখা / off: সরাসরি উত্তর">🧠 <span id="socratic-label">Off</span></button>
       <button class="chat-topic-action" id="theme-btn-desktop" title="Theme" onclick="toggleTheme()">🌙</button>
       <button class="chat-topic-action" title="Account" onclick="showAccountModal()" id="account-btn">👤</button>
     </div>
@@ -1136,17 +1121,13 @@ const PROJECT_ICONS=['📁','📚','🔬','⚗️','🗣️','🧮','💡','📝
 // SIDEBAR COLLAPSE
 function toggleSidebarCollapse(){
   const sb=document.getElementById('sidebar');
-  const btn=document.getElementById('collapse-btn');
   sb.classList.toggle('collapsed');
   const c=sb.classList.contains('collapsed');
-  btn.textContent=c?'›':'‹';
-  btn.title=c?'Expand sidebar':'Collapse sidebar';
-  try{localStorage.setItem('Dipti AI_sidebar_collapsed',c?'1':'0');}catch(e){}
+  try{localStorage.setItem('Dipti_sidebar_collapsed',c?'1':'0');}catch(e){}
 }
 try{
-  if(localStorage.getItem('Dipti AI_sidebar_collapsed')==='1'){
+  if(localStorage.getItem('Dipti_sidebar_collapsed')==='1'){
     document.getElementById('sidebar').classList.add('collapsed');
-    document.getElementById('collapse-btn').textContent='›';
   }
 }catch(e){}
 
@@ -2198,6 +2179,23 @@ function useChip(btn, action){
 }
 
 let _quizSession = null; // {total, answered, score}
+let _socraticMode = false;
+function toggleSocratic(){
+  _socraticMode = !_socraticMode;
+  const btn = document.getElementById('socratic-btn');
+  const lbl = document.getElementById('socratic-label');
+  const btnM = document.getElementById('socratic-btn-mobile');
+  const lblM = document.getElementById('socratic-label-mobile');
+  if(btn) btn.classList.toggle('active', _socraticMode);
+  if(lbl) lbl.textContent = _socraticMode ? 'On' : 'Off';
+  if(lblM) lblM.textContent = _socraticMode ? 'On' : 'Off';
+  if(btnM) btnM.style.borderColor = _socraticMode ? 'var(--accent)' : 'var(--border2)';
+  if(btnM) btnM.style.color = _socraticMode ? 'var(--accent)' : 'var(--text2)';
+  const msg = _socraticMode
+    ? '**সক্রেটিক মোড চালু** 🧠\nএখন আমি সরাসরি উত্তর না দিয়ে তোমাকে ধাপে ধাপে ভাবতে help করব।'
+    : '**সক্রেটিক মোড বন্ধ।**\nএখন আবার সরাসরি উত্তর দিব।';
+  addBotMessage(msg, false);
+}
 
 function parseStoredMcq(text){
   if(!text||!text.startsWith('🎯 Quiz\n'))return null;
@@ -2609,6 +2607,7 @@ async function sendMessage(){
       if(currentProjectId)fd.append('project_id',currentProjectId);
       fd.append('subject', activeSubject || 'biology');
       if(activeStream) fd.append('stream', activeStream);
+      if(_socraticMode) fd.append('socratic', '1');
       const r=await fetch('/ask-image',{method:'POST',body:fd});
       stopImageStages();
       if(!r.ok){
@@ -2630,6 +2629,7 @@ async function sendMessage(){
       const body={message:apiText, subject: activeSubject, stream: activeStream};
       if(currentChatId)body.chat_id=currentChatId;
       if(currentProjectId)body.project_id=currentProjectId;
+      if(_socraticMode)body.socratic=true;
 
       const r=await fetch('/ask-stream',{
         method:'POST',

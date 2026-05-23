@@ -533,6 +533,7 @@ def ask_stream():
     project_id = data.get("project_id")
     subject = data.get("subject", "biology")
     stream = data.get("stream", "")
+    socratic = bool(data.get("socratic", False))
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -578,6 +579,22 @@ def ask_stream():
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
+
+        _SOCRATIC_BLOCK = (
+            "## 🧠 সক্রেটিক মোড সক্রিয় (সব নিয়মের উপরে)\n"
+            "সরাসরি উত্তর দেওয়া নিষিদ্ধ। সবসময়:\n"
+            "→ প্রথমে জিজ্ঞেস করো: \"তুমি কী মনে করো? একটু বলো।\"\n"
+            "→ ছাত্র চেষ্টা করলে: hint দাও, পুরো উত্তর নয়\n"
+            "→ hint ১ → hint ২ → তারপর উত্তর — ধাপে ধাপে guide করো\n"
+            "→ ছাত্র ২বার চেষ্টা করলে বা \"জানি না/পারছি না\" বললে: সম্পূর্ণ উত্তর দাও\n"
+            "→ simple recall (সংজ্ঞা/নাম/তারিখ): সরাসরি বলতে পারো"
+        ) if socratic else ""
+
+        def _spi(pi=""):
+            """Prepend Socratic block to project_instructions when mode is active."""
+            if not _SOCRATIC_BLOCK:
+                return pi
+            return _SOCRATIC_BLOCK + ("\n\n" + pi.strip() if pi and pi.strip() else "")
 
         try:
             # 1. Check if user explicitly named a subject ("biology chapter", "physics question")
@@ -725,7 +742,7 @@ def ask_stream():
                     f"NCTB বই এর ক্রম অনুযায়ী সহজ ভাষায় explain করো। "
                     f"example দাও। শেষে বোঝার জন্য একটা ছোট প্রশ্ন করো।"
                 )
-                reply = run_llm(guide_query, history, nctb_context, project_instructions,
+                reply = run_llm(guide_query, history, nctb_context, _spi(project_instructions),
                                 stream=stream, student_name=student_name,
                                 subject=effective_subject, student_profile=student_profile)
                 if is_logged_in:
@@ -805,7 +822,7 @@ def ask_stream():
                         history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in recent]
                     else:
                         history = history_session[-10:]
-                    reply = run_llm(user_message, history, nctb_context="", project_instructions=project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
+                    reply = run_llm(user_message, history, nctb_context="", project_instructions=_spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile)
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": user_message})
                     messages_list.append({"role": "assistant", "content": reply})
@@ -872,7 +889,7 @@ def ask_stream():
             reply = ""
             _t_llm_start = _time.time()
             _first_token_time = None
-            for chunk in stream_llm(user_message, history, nctb_context, project_instructions, stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile):
+            for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile):
                 if chunk:
                     if _first_token_time is None:
                         _first_token_time = _time.time()
@@ -952,6 +969,7 @@ def ask_image():
 
     subject = request.form.get("subject", "biology")
     stream  = request.form.get("stream", "")
+    socratic_img = bool(request.form.get("socratic", ""))
 
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
@@ -995,6 +1013,18 @@ def ask_image():
     from memory import get_student_profile
     student_profile = get_student_profile(user_id)
     _img_student_name = student_profile.get('preferred_name') or session.get('name', '') if student_profile else session.get('name', '')
+
+    if socratic_img:
+        _sb = (
+            "## 🧠 সক্রেটিক মোড সক্রিয় (সব নিয়মের উপরে)\n"
+            "সরাসরি উত্তর দেওয়া নিষিদ্ধ। সবসময়:\n"
+            "→ প্রথমে জিজ্ঞেস করো: \"তুমি কী মনে করো? একটু বলো।\"\n"
+            "→ ছাত্র চেষ্টা করলে: hint দাও, পুরো উত্তর নয়\n"
+            "→ hint ১ → hint ২ → তারপর উত্তর — ধাপে ধাপে guide করো\n"
+            "→ ছাত্র ২বার চেষ্টা করলে বা \"জানি না/পারছি না\" বললে: সম্পূর্ণ উত্তর দাও\n"
+            "→ simple recall (সংজ্ঞা/নাম/তারিখ): সরাসরি বলতে পারো"
+        )
+        project_instructions = _sb + ("\n\n" + project_instructions.strip() if project_instructions.strip() else "")
 
     try:
         answer, show_chips, detected_subject = get_answer_with_image(
