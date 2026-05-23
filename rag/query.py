@@ -1,24 +1,47 @@
 import os
-from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
 from dotenv import load_dotenv
 
 load_dotenv()
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = Chroma(persist_directory="chroma_db", embedding_function=embeddings)
-
 # Tuned for text-embedding-3-small + Bangla queries.
 # Real subject questions score ~1.0-1.2, casual chat scores 1.4+.
 RELEVANCE_THRESHOLD = 1.20
+
+_vectorstore = None
+_chroma_unavailable = False
+
+
+def _get_vectorstore():
+    global _vectorstore, _chroma_unavailable
+    if _chroma_unavailable:
+        return None
+    if _vectorstore is not None:
+        return _vectorstore
+    if not os.path.exists("chroma_db"):
+        _chroma_unavailable = True
+        return None
+    try:
+        from langchain_openai import OpenAIEmbeddings
+        from langchain_chroma import Chroma
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        _vectorstore = Chroma(persist_directory="chroma_db", embedding_function=embeddings)
+        return _vectorstore
+    except Exception as e:
+        print(f"[RAG] ChromaDB unavailable: {e}")
+        _chroma_unavailable = True
+        return None
 
 
 def _search_with_relevance(question, subject, top_k):
     if not subject:
         return []
 
+    vs = _get_vectorstore()
+    if vs is None:
+        return []
+
     try:
-        results = vectorstore.similarity_search_with_score(
+        results = vs.similarity_search_with_score(
             question, k=top_k, filter={"subject": subject}
         )
         relevant = [(doc, score) for doc, score in results if score <= RELEVANCE_THRESHOLD]

@@ -9,7 +9,6 @@ gunicorn
 supabase
 resend
 chromadb
-sentence-transformers
 langchain-chroma
 flask-limiter
 Pillow
