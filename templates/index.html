@@ -374,12 +374,14 @@
     #file-input{display:none;}
     #chat-spacer{display:none;}
     #chat-box:has(#welcome-screen) > #chat-spacer{display:block;flex:1;min-height:0;}
-    /* ── Unified input card — single row ── */
-    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:999px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;display:flex;align-items:flex-end;padding:5px 6px 5px 10px;gap:2px;}
+    /* ── Claude-style input card ── */
+    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:14px 14px 10px;}
     #input-card:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(13,228,160,.07);}
-    #user-input{flex:1;background:transparent;border:none;outline:none;padding:4px 6px;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;height:28px;max-height:120px;line-height:1.5;font-size:15px;display:block;box-sizing:border-box;overflow-y:hidden;align-self:center;}
+    #user-input{width:100%;background:transparent;border:none;outline:none;padding:0;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;min-height:52px;max-height:200px;line-height:1.65;font-size:15px;display:block;box-sizing:border-box;overflow-y:hidden;}
     #user-input::placeholder{color:var(--text3);}
-    .tool-btn{width:28px;height:28px;background:transparent;border:none;border-radius:50%;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
+    .input-toolbar{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+    .toolbar-right{display:flex;align-items:center;gap:4px;}
+    .tool-btn{width:30px;height:30px;background:transparent;border:none;border-radius:50%;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
     .tool-btn:hover{background:var(--bg3);color:var(--text2);}
     #attach-btn.has-image{color:var(--green);}
     #attach-btn.has-image:hover{background:var(--green-bg);color:var(--green);}
@@ -388,7 +390,7 @@
     #send-btn:disabled{background:var(--bg4);cursor:not-allowed;transform:none;color:var(--text3);}
     #stop-btn{width:32px;height:32px;flex-shrink:0;background:var(--bg4);border:1.5px solid var(--border3);border-radius:50%;color:var(--text2);cursor:pointer;transition:all .15s;display:none;align-items:center;justify-content:center;}
     #stop-btn:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
-    #mic-btn{width:28px;height:28px;flex-shrink:0;background:transparent;border:none;border-radius:50%;color:var(--text3);cursor:pointer;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
+    #mic-btn{width:30px;height:30px;flex-shrink:0;background:transparent;border:none;border-radius:50%;color:var(--text3);cursor:pointer;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
     #mic-btn:hover{background:var(--bg3);color:var(--text2);}
     #model-picker-btn{background:transparent;border:none;border-radius:8px;padding:4px 8px;font-size:11px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px;font-family:'Sora',sans-serif;transition:background .15s,color .15s;white-space:nowrap;}
     #model-picker-btn:hover{background:var(--bg3);color:var(--text2);}
@@ -558,7 +560,7 @@
       .chat-topic-bar{display:none;}
       #chat-box{padding:12px 12px 8px;gap:12px;}
       #input-area{padding:8px 10px calc(8px + var(--safe-bottom));}
-      #input-card{border-radius:14px;}
+      #input-card{border-radius:16px;padding:12px 12px 8px;}
       .user .bubble{max-width:85%;}
       .bot .bubble{font-size:13px;padding:10px 13px;}
       .message-actions{opacity:1;}
@@ -897,36 +899,40 @@
       </div>
 
       <div id="input-card">
-        <button class="tool-btn" id="attach-btn" title="ছবি যোগ করো" onclick="handleAttachClick()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-        </button>
         <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this);stopMicOnType()"></textarea>
-        <div style="position:relative;">
-          <button id="model-picker-btn" onclick="toggleModelPicker()" title="Model বেছে নাও">
-            <span id="model-icon">⚡</span>
-            <span id="model-label">Standard</span>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <div class="input-toolbar">
+          <button class="tool-btn" id="attach-btn" title="ছবি যোগ করো" onclick="handleAttachClick()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
-          <div id="model-dropdown" style="display:none;position:absolute;bottom:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:6px;min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:200;">
-            <div class="model-opt" data-model="gemini" onclick="selectModel('gemini')">
-              <span class="model-opt-icon">⚡</span>
-              <div><div class="model-opt-name">Standard</div><div class="model-opt-desc">পড়া বোঝাতে খুব ভালো, তবে কঠিন অঙ্কে ভুল করে ফেলতে পারে</div></div>
+          <div class="toolbar-right">
+            <div style="position:relative;">
+              <button id="model-picker-btn" onclick="toggleModelPicker()" title="Model বেছে নাও">
+                <span id="model-icon">⚡</span>
+                <span id="model-label">Standard</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div id="model-dropdown" style="display:none;position:absolute;bottom:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:6px;min-width:220px;box-shadow:0 12px 40px rgba(0,0,0,.55);z-index:200;">
+                <div class="model-opt" data-model="gemini" onclick="selectModel('gemini')">
+                  <span class="model-opt-icon">⚡</span>
+                  <div><div class="model-opt-name">Standard</div><div class="model-opt-desc">পড়া বোঝাতে খুব ভালো, তবে কঠিন অঙ্কে ভুল করে ফেলতে পারে</div></div>
+                </div>
+                <div class="model-opt" data-model="deepseek" onclick="selectModel('deepseek')">
+                  <span class="model-opt-icon">🧮</span>
+                  <div><div class="model-opt-name">Math+</div><div class="model-opt-desc">অঙ্কের জন্য ভালো, কিন্তু বাংলায় দুর্বল। উত্তরটা একটু মিলিয়ে নেওয়া ভালো</div></div>
+                </div>
+              </div>
             </div>
-            <div class="model-opt" data-model="deepseek" onclick="selectModel('deepseek')">
-              <span class="model-opt-icon">🧮</span>
-              <div><div class="model-opt-name">Math+</div><div class="model-opt-desc">অঙ্কের জন্য ভালো, কিন্তু বাংলায় দুর্বল। উত্তরটা একটু মিলিয়ে নেওয়া ভালো</div></div>
-            </div>
+            <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </button>
+            <button id="stop-btn" onclick="stopStream()" title="থামাও">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+            </button>
+            <button id="send-btn" onclick="sendMessage()" title="পাঠাও">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+            </button>
           </div>
         </div>
-        <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-        </button>
-        <button id="stop-btn" onclick="stopStream()" title="থামাও">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
-        </button>
-        <button id="send-btn" onclick="sendMessage()" title="পাঠাও">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-        </button>
       </div>
 
       <p class="disclaimer-bar">দীপ্তি ভুল করতে পারে — বই দেখে মিলিয়ে নিও</p>
@@ -1634,7 +1640,7 @@ function toggleTheme(){
   if(mb)mb.textContent=icon;
   if(db)db.textContent=icon;
 }
-function autoResize(el){el.style.height='28px';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,200)+'px';}
 function updateCharCount(el){const n=el.value.length;document.getElementById('char-count').textContent=n>30?n+' chars':'';}
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function filterChats(q){q=q.toLowerCase();document.querySelectorAll('.chat-item').forEach(el=>{const title=el.querySelector('.chat-item-title')?.textContent.toLowerCase()||'';el.style.display=title.includes(q)?'':'none';});}
