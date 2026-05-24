@@ -90,11 +90,11 @@ gpt54_mini_chain = gpt54_mini_llm | parser
 deepseek_chain = deepseek_llm | parser
 deepseek_pro_chain = deepseek_pro_llm | parser
 
-# Student-selectable models
+# Student-selectable models (deepseek-pro retired — redirects to deepseek)
 _STUDENT_CHAINS = {
     "gemini": flash_chain,
     "deepseek": deepseek_chain,
-    "deepseek-pro": deepseek_pro_chain,
+    "deepseek-pro": deepseek_chain,
 }
 
 
@@ -1164,6 +1164,9 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
     Streaming version of run_llm.
     For DeepSeek models with mixed questions, streams Gemini (theory) then DeepSeek (math).
     """
+    # Redirect retired model to its replacement
+    if preferred_model == "deepseek-pro":
+        preferred_model = "deepseek"
     base_system = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
 
     _latex_core = (

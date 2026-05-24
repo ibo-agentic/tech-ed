@@ -988,10 +988,6 @@
                   <span class="model-opt-icon">🔢</span>
                   <div><div class="model-opt-name">Math+</div><div class="model-opt-desc">অঙ্কের জন্য ভালো, কিন্তু বাংলায় দুর্বল। উত্তরটা একটু মিলিয়ে নেওয়া ভালো</div></div>
                 </div>
-                <div class="model-opt" data-model="deepseek-pro" onclick="selectModel('deepseek-pro')">
-                  <span class="model-opt-icon">📐</span>
-                  <div><div class="model-opt-name">Math Pro</div><div class="model-opt-desc">জটিল অঙ্ক আর প্রমাণের জন্য সবচেয়ে ভালো, তবে উত্তর দিতে একটু সময় নেয়।</div></div>
-                </div>
               </div>
             </div>
             <button id="mic-btn" onclick="openVoiceModal()" title="ভয়েস মোড" style="display:none;">
@@ -3443,9 +3439,8 @@ async function sendMessage(){
 
 // ── MODEL PICKER ──
 const _MODELS = {
-  gemini:        {icon:'⚡', label:'Standard'},
-  deepseek:      {icon:'🔢', label:'Math+'},
-  'deepseek-pro':{icon:'📐', label:'Math Pro'},
+  gemini:   {icon:'⚡', label:'Standard'},
+  deepseek: {icon:'🔢', label:'Math+'},
 };
 let selectedModel = 'gemini'; // always default to Standard on load
 
