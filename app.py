@@ -1,6 +1,7 @@
 import sys
 import io
 import os
+import re
 
 # Force UTF-8 for all console output on Windows (prevents charmap errors from emoji/Bengali)
 os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
@@ -590,7 +591,8 @@ def ask_stream():
     subject = data.get("subject", "biology")
     stream = data.get("stream", "")
     socratic = bool(data.get("socratic", False))
-    preferred_model = data.get("model", "") if data.get("model") in ("gemini", "deepseek") else ""
+    preferred_model = data.get("model", "") if data.get("model") in ("gemini", "deepseek", "deepseek-pro") else ""
+    print(f"[Request] model_sent={data.get('model')!r} → preferred_model={preferred_model!r}", flush=True)
 
     if not user_message:
         return jsonify({"error": "No message"}), 400
@@ -600,7 +602,9 @@ def ask_stream():
     user_id = session.get('user_id')
     plan = session.get('plan', 'free')
     guest_count = session.get('guest_messages', 0)
-    history_session = session.get('history', [])
+    # For guests: frontend sends back recent messages since session can't persist in SSE
+    guest_history_payload = data.get('guest_history', [])
+    history_session = session.get('history') or guest_history_payload
     # preferred_name in session wins over login-time name (persists name corrections)
     student_name = session.get('preferred_name') or session.get('name', '')
     _preferred_model = preferred_model  # capture for generator closure
@@ -957,9 +961,13 @@ def ask_stream():
             _t_llm_end = _time.time()
             print(f"LLM: {_t_llm_end - _t_llm_start:.2f}s | first token: {(_first_token_time - _t_llm_start):.2f}s | chars: {len(reply)} (~{len(reply)//4} tokens)")
 
+            # Strip [S]/[C] subject markers (and any leaked reasoning about them) from stored reply
+            reply_clean = re.sub(r'^[^\n]*\[S\][^\n]*\n?', '', reply, flags=re.MULTILINE)
+            reply_clean = re.sub(r'^[^\n]*\[C\][^\n]*\n?', '', reply_clean, flags=re.MULTILINE)
+
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
-                messages_list.append({"role": "assistant", "content": reply})
+                messages_list.append({"role": "assistant", "content": reply_clean})
                 threading.Thread(
                     target=background_save,
                     args=(current_chat_id, messages_list, user_message, user_id),
@@ -1029,6 +1037,9 @@ def ask_image():
     subject = request.form.get("subject", "biology")
     stream  = request.form.get("stream", "")
     socratic_img = bool(request.form.get("socratic", ""))
+    _img_preferred_model = request.form.get("model", "")
+    if _img_preferred_model not in ("gemini", "deepseek", "deepseek-pro"):
+        _img_preferred_model = ""
 
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
@@ -1099,6 +1110,7 @@ def ask_image():
             stream=stream,
             student_name=_img_student_name,
             student_profile=student_profile,
+            preferred_model=_img_preferred_model,
         )
     except Exception as e:
         import traceback; traceback.print_exc()

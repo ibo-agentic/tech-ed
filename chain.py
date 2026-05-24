@@ -45,7 +45,7 @@ haiku_llm = ChatOpenAI(
     temperature=0.5,  # Lower for math precision
 )
 
-# Claude Sonnet 4.5 — strongest tier, used for image-based math problems
+# Claude Sonnet 4.5 — vision tier, used for image-based math problems
 # where vision + Bangla numeral OCR + arithmetic all need to work together
 sonnet_llm = ChatOpenAI(
     model="anthropic/claude-sonnet-4-5",
@@ -71,6 +71,12 @@ deepseek_llm = ChatOpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.6,
 )
+deepseek_pro_llm = ChatOpenAI(
+    model="deepseek/deepseek-v4-pro",
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    temperature=0.5,
+)
 
 parser = StrOutputParser()
 _img_extract_cache: dict[str, str] = {}  # url → extracted text, avoids re-running Gemini on same image
@@ -82,11 +88,13 @@ sonnet_chain = sonnet_llm | parser
 gemini_pro_chain = gemini_pro_llm | parser
 gpt54_mini_chain = gpt54_mini_llm | parser
 deepseek_chain = deepseek_llm | parser
+deepseek_pro_chain = deepseek_pro_llm | parser
 
 # Student-selectable models
 _STUDENT_CHAINS = {
     "gemini": flash_chain,
     "deepseek": deepseek_chain,
+    "deepseek-pro": deepseek_pro_chain,
 }
 
 
@@ -240,15 +248,61 @@ def is_complex_math(user_input: str) -> bool:
     return False
 
 
+def classify_question(user_input: str) -> str:
+    """
+    Returns 'math', 'theory', or 'mixed'.
+    'mixed' = has both a conceptual/explanation component AND an explicit calculation.
+    Used for hybrid routing: Gemini handles theory, DeepSeek handles math.
+    """
+    text = user_input.lower()
+
+    theory_signals = [
+        "কী ", "কী?", "কাকে বলে", "কেন ", "কেন?", "ব্যাখ্যা", "সংজ্ঞা",
+        "বর্ণনা", "পার্থক্য", "বৈশিষ্ট্য", "সুবিধা", "অসুবিধা", "প্রকারভেদ",
+        "কীভাবে কাজ", "কীভাবে হয়",
+        "what is", "why ", "explain", "definition", "describe", "difference",
+    ]
+    calc_signals = [
+        "নির্ণয় কর", "সমাধান কর", "হিসাব কর", "বের কর", "প্রমাণ কর",
+        "রূপান্তর কর", "সরল কর", "গণনা কর", "প্রয়োগ কর",
+        "calculate", "solve", "find the", "prove", "simplify", "convert",
+        "ভগ্নাংশে", "দশমিকে", "ল.সা.গু", "গ.সা.গু",
+    ]
+
+    has_theory = any(s in text for s in theory_signals)
+    has_calc = any(s in text for s in calc_signals)
+
+    if has_theory and has_calc:
+        return "mixed"
+    if has_calc or is_math_question(user_input):
+        return "math"
+    return "theory"
+
+
+def route_model(user_input: str, preferred_model: str) -> str:
+    """
+    Smart routing: DeepSeek models (Flash + Pro) are only used for math questions.
+    Theory questions route to Gemini 2.5 Flash for better Bengali prose quality.
+    Returns the effective model name to use downstream.
+    """
+    if preferred_model in ("deepseek", "deepseek-pro"):
+        if is_math_question(user_input):
+            print(f"[Smart Route] Math detected → keeping {preferred_model}", flush=True)
+            return preferred_model
+        print(f"[Smart Route] Theory detected → Gemini 2.5 Flash (was {preferred_model})", flush=True)
+        return "gemini"
+    return preferred_model or "gemini"
+
+
 def pick_chain(_user_input: str, subject: str = "", preferred_model: str = ""):
+    """Selects the chain for the given effective model (post-routing)."""
+    if preferred_model == "deepseek-pro":
+        print(f"[Model] DeepSeek V4 Pro (Math Pro)", flush=True)
+        return deepseek_pro_chain
     if preferred_model == "deepseek":
-        if is_math_question(_user_input):
-            print(f"[Model] Math detected → DeepSeek V4 Flash", flush=True)
-            return deepseek_chain
-        else:
-            print(f"[Model] Theory detected → Gemini 2.5 Flash (DeepSeek mode)", flush=True)
-            return flash_chain
-    print(f"[Routing] {subject or 'general'} -> Gemini 2.5 Flash", flush=True)
+        print(f"[Model] DeepSeek V4 Flash (Math+)", flush=True)
+        return deepseek_chain
+    print(f"[Routing] {subject or 'general'} → Gemini 2.5 Flash", flush=True)
     return flash_chain
 
 
@@ -1003,7 +1057,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         "cache_control": {"type": "ephemeral"},
     }])]
     has_image = False
-    vision_supported = preferred_model not in ("deepseek",)
+    vision_supported = preferred_model not in ("deepseek", "deepseek-pro")
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
@@ -1062,27 +1116,18 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         print(f"[Image Pipeline] Step 2: Gemini Flash solves -> {label}")
         return selected.invoke(text_messages)
 
-    selected_chain = pick_chain(user_input, subject=subject, preferred_model=preferred_model)
+    effective_model = route_model(user_input, preferred_model)
+    selected_chain = pick_chain(user_input, subject=subject, preferred_model=effective_model)
     return selected_chain.invoke(messages)
 
 
-def stream_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile=None, preferred_model: str = ""):
-    """
-    Streaming version of run_llm — yields string chunks as the LLM generates them.
-    Image URLs in history are stripped — the bot's previous response already contains
-    the extracted content, so re-running OCR extraction is unnecessary.
-    """
-    system_with_context = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
-    if preferred_model == "deepseek":
-        system_with_context = "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese characters. Never use any script other than Bengali and English.\n\n" + system_with_context
+def _build_chat_messages(system_text: str, history: list, user_input: str, vision_supported: bool) -> list:
+    """Build a full LangChain messages list from history, handling image extraction for DeepSeek."""
     messages = [SystemMessage(content=[{
         "type": "text",
-        "text": system_with_context,
+        "text": system_text,
         "cache_control": {"type": "ephemeral"},
     }])]
-
-    vision_supported = preferred_model not in ("deepseek",)
-
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
@@ -1093,11 +1138,10 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
                 ]))
             elif img_url and not vision_supported:
                 if img_url in _img_extract_cache:
-                    print("[Hybrid] Cache hit — skipping re-extraction", flush=True)
                     extracted = _img_extract_cache[img_url]
                 else:
-                    print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
                     try:
+                        print("[Hybrid] Gemini extracting image for DeepSeek…", flush=True)
                         extracted = vision_chain.invoke([HumanMessage(content=[
                             {"type": "image_url", "image_url": {"url": img_url}},
                             {"type": "text", "text": "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন, তথ্য, সংখ্যা, diagram description।"},
@@ -1112,11 +1156,158 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
         elif msg["role"] == "assistant":
             messages.append(AIMessage(content=msg["content"]))
     messages.append(HumanMessage(content=user_input))
+    return messages
 
-    selected_chain = pick_chain(user_input, subject=subject, preferred_model=preferred_model)
-    for chunk in selected_chain.stream(messages):
-        if chunk:
-            yield chunk
+
+def stream_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile=None, preferred_model: str = ""):
+    """
+    Streaming version of run_llm.
+    For DeepSeek models with mixed questions, streams Gemini (theory) then DeepSeek (math).
+    """
+    base_system = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
+
+    _latex_core = (
+        "CRITICAL LaTeX RULES — violating these breaks rendering:\n"
+        "1. NEVER nest $...$ inside $$...$$. Write LaTeX directly inside display blocks — no inner $ signs.\n"
+        "   ✗ WRONG: $$x = $0.\\overline{3}$ = 0.333...$\n"
+        "   ✓ CORRECT: $$x = 0.\\overline{3} = 0.333...$$\n"
+        "2. NEVER put $ signs inside {} argument braces.\n"
+        "   ✗ WRONG: \\frac{$0.\\overline{78}$}{100}   ✓ CORRECT: \\frac{0.\\overline{78}}{100}\n"
+        "3. Each step equation = ONE $$...$$ block on its own line. Never split across multiple $$ blocks.\n"
+        "   ✗ WRONG: $$x$$ $$=$$ $$\\frac{1}{3}$$   ✓ CORRECT: $$x = \\frac{1}{3}$$\n"
+        "4. NEVER put $ inside {} braces: ✗ \\boxed{$x$}  ✓ \\boxed{x}\n\n"
+    )
+    _gemini_rules = (
+        "CRITICAL LaTeX RULES for recurring decimals and display math:\n"
+        "1. Use ONLY \\overline{} for recurring decimals — NEVER \\dot{} and NEVER Unicode ˙ character.\n"
+        "   ✗ WRONG: $0.\\dot{3}$  or  0.3˙\n"
+        "   ✓ CORRECT: $0.\\overline{3}$\n"
+        "2. Use ONE \\overline{} for the ENTIRE recurring block — NEVER separate \\overline{} per digit.\n"
+        "   ✗ WRONG: $0.\\overline{2}\\overline{4}$  or  $42.34\\overline{7}\\overline{8}$\n"
+        "   ✓ CORRECT: $0.\\overline{24}$  and  $42.34\\overline{78}$\n"
+        "3. Write each number/equation EXACTLY ONCE — in LaTeX only. Never write the same value twice.\n"
+        "4. NEVER nest $...$ inside $$...$$. No inner $ signs inside display blocks.\n"
+        "5. Each step equation = ONE $$...$$ block on its own line.\n"
+        "6. ALWAYS use Arabic/English numerals (0-9) in chemical equations — NEVER Bengali digits (০-৯).\n"
+        "   ✗ WRONG: ৬CO₂ + ৬H₂O → গ্লুকোজ + ৬O₂\n"
+        "   ✓ CORRECT: 6CO₂ + 6H₂O → গ্লুকোজ + 6O₂\n"
+        "7. 'ধরি' STEP — ONE $...$ inline block. The variable name appears ONCE. Never split:\n"
+        "   ✗ WRONG: ধরি, $x$ = x=0.\\overline{3}   ← $x$ alone, then x= repeated in text!\n"
+        "   ✗ WRONG: ধরি, $$x$$ = $$x=0.\\overline{3}$$  ← split into multiple display blocks!\n"
+        "   ✗ WRONG: ধরি, x = $0.\\overline{3}$   ← x= in plain text before the $ block\n"
+        "   ✓ CORRECT: ধরি, $x = 0.\\overline{3}$  ← full equation in ONE inline $...$ block\n"
+        "8. Equation labels (1),(2) go INSIDE $$...$$ — NEVER as separate trailing text:\n"
+        "   ✗ WRONG: $$x = 0.333...$$ (1)   ← label outside block causes render split\n"
+        "   ✓ CORRECT: $$x = 0.333...$$ then just reference 'উপরের সমীকরণ' in Bengali\n"
+        "   Simplest: drop the (1)/(2) labels entirely — use step names like 'এখন (2) থেকে (1) বিয়োগ করি:'\n"
+        "9. PROOF steps — intermediate result in text is FORBIDDEN:\n"
+        "   ✗ WRONG: এখানে a=\\sqrt{1+x}+\\sqrt{1-x}, c=p এবং d=1।\n"
+        "   ✓ CORRECT: এখানে $a = \\sqrt{1+x}+\\sqrt{1-x}$, $c = p$, $d = 1$।\n\n"
+    )
+    _deepseek_rules = (
+        "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese characters. NEVER use Cyrillic/Russian script (а б в г etc.) — not even one letter. Use Bengali for all words including math steps like 'সরলীকরণ করো' (simplify), 'লঘিষ্ঠ আকারে' (reduce).\n\n"
+        "CRITICAL LaTeX RULES:\n"
+        "1. NEVER use \\begin{aligned}...\\end{aligned}. Write each equation step as its own $$...$$ line.\n"
+        "2. NEVER nest $...$ inside $$...$$. No inner $ signs inside display blocks.\n"
+        "3. Each step = ONE $$...$$ block on its own line. No split equations.\n"
+        "4. NEVER put $ inside {} braces.\n"
+        "5. Use \\overline{} for recurring decimals: $0.\\overline{3}$, $42.34\\overline{78}$\n"
+        "6. ALWAYS use Arabic/English numerals (0-9) in chemical equations — NEVER Bengali digits.\n"
+        "7. NEVER echo an equation in plain text after writing it in $$...$$. Write each equation EXACTLY ONCE — only inside $$...$$.\n"
+        "   ✗ WRONG: $$10x = 3.3333...$$ then next line: 10x=3.3333...\n"
+        "   ✓ CORRECT: $$10x = 3.3333...$$ then next line: Bengali explanation only\n"
+        "8. 'ধরি' step — ONE $...$ inline block, variable name written ONCE:\n"
+        "   ✗ WRONG: ধরি, $$x$$ = $$x=0.\\overline{3}$$ = $$0.3333...$$\n"
+        "   ✗ WRONG: ধরি, x = $0.\\overline{3}$\n"
+        "   ✓ CORRECT: ধরি, $x = 0.\\overline{3}$\n"
+        "9. NEVER end ANY line with a lone trailing $. This applies to ALL line types:\n"
+        "   ✗ WRONG: সহজ কথায়: $0.\\overline{3} = \\frac{1}{3}$ $\n"
+        "   ✗ WRONG: 1. $0.\\overline{3} = \\frac{1}{3}$ $\n"
+        "   ✓ CORRECT: 1. $0.\\overline{3} = \\frac{1}{3}$\n\n"
+    )
+
+    # Build per-model system strings
+    gemini_sys    = _gemini_rules + base_system
+    deepseek_sys  = _deepseek_rules + base_system
+    deepseek_pro_sys = (
+        "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese or Cyrillic characters.\n\n"
+        + _latex_core + base_system
+    )
+
+    # Classify question for hybrid routing
+    if preferred_model in ("deepseek", "deepseek-pro"):
+        q_type = classify_question(user_input)
+    else:
+        q_type = "theory"
+
+    print(f"[Router] preferred={preferred_model or 'gemini'}, q_type={q_type}", flush=True)
+
+    if preferred_model in ("deepseek", "deepseek-pro") and q_type == "mixed":
+        # ── HYBRID MODE ──
+        # Phase 1: Gemini explains the theory component
+        # Phase 2: DeepSeek solves the math component
+        theory_note = (
+            "\n\nIMPORTANT: এই প্রশ্নে theory এবং math দুটো অংশ আছে। "
+            "শুধু conceptual/theory অংশটুকু explain করো — কোনো equation solve বা "
+            "step-by-step গাণিতিক calculation করো না।"
+        )
+        math_note = (
+            "\n\nIMPORTANT: এই প্রশ্নের theory/explanation অংশ ইতিমধ্যে দেওয়া হয়েছে। "
+            "শুধু গাণিতিক calculation/equation step-by-step solve করো — "
+            "theory বা সংজ্ঞা repeat করো না।"
+        )
+
+        gemini_msgs = _build_chat_messages(gemini_sys + theory_note, history, user_input, vision_supported=True)
+
+        if preferred_model == "deepseek-pro":
+            ds_sys   = deepseek_pro_sys + math_note
+            ds_chain = deepseek_pro_chain
+            print("[Router] Hybrid: Gemini (theory) + DeepSeek V4 Pro (math)", flush=True)
+        else:
+            ds_sys   = deepseek_sys + math_note
+            ds_chain = deepseek_chain
+            print("[Router] Hybrid: Gemini (theory) + DeepSeek V4 Flash (math)", flush=True)
+
+        ds_msgs = _build_chat_messages(ds_sys, history, user_input, vision_supported=False)
+
+        # Stream theory phase
+        for chunk in flash_chain.stream(gemini_msgs):
+            if chunk:
+                yield chunk
+
+        # Separator before math section
+        yield "\n\n**গাণিতিক সমাধান:**\n\n"
+
+        # Stream math phase
+        for chunk in ds_chain.stream(ds_msgs):
+            if chunk:
+                yield chunk
+
+    elif preferred_model in ("deepseek", "deepseek-pro") and q_type == "math":
+        # ── PURE MATH → DeepSeek only ──
+        if preferred_model == "deepseek-pro":
+            sys_text = deepseek_pro_sys
+            ds_chain = deepseek_pro_chain
+            print("[Router] Pure math → DeepSeek V4 Pro", flush=True)
+        else:
+            sys_text = deepseek_sys
+            ds_chain = deepseek_chain
+            print("[Router] Pure math → DeepSeek V4 Flash", flush=True)
+        msgs = _build_chat_messages(sys_text, history, user_input, vision_supported=False)
+        for chunk in ds_chain.stream(msgs):
+            if chunk:
+                yield chunk
+
+    else:
+        # ── THEORY ONLY or Gemini selected → Gemini ──
+        if preferred_model in ("deepseek", "deepseek-pro"):
+            print("[Router] Theory detected → Gemini 2.5 Flash (overrides DeepSeek)", flush=True)
+        else:
+            print(f"[Router] Gemini 2.5 Flash (subject={subject or 'general'})", flush=True)
+        msgs = _build_chat_messages(gemini_sys, history, user_input, vision_supported=True)
+        for chunk in flash_chain.stream(msgs):
+            if chunk:
+                yield chunk
 
 
 def get_answer(user_input, history, project_instructions: str = "", subject: str = "biology"):

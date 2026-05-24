@@ -81,9 +81,13 @@
     .sb-section-add{width:20px;height:20px;background:transparent;border:none;color:var(--text3);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s;border-radius:4px;}
     .sb-section-add:hover{color:var(--green);background:var(--bg3);}
     .sb-projects-list{padding:0 8px 4px;display:flex;flex-direction:column;gap:2px;max-height:200px;overflow-y:auto;}
-    .sb-progress-section{border-top:1px solid var(--border);margin-top:2px;}
-    .sb-progress-header{padding:8px 14px 6px;}
-    .sb-progress-body{padding:2px 12px 8px;display:flex;flex-direction:column;gap:6px;}
+    .sb-progress-section{border-top:1px solid var(--border);margin-top:2px;flex-shrink:0;}
+    .sb-progress-header{padding:8px 14px 6px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+    .sb-progress-header:hover .sb-progress-toggle{color:var(--text2);}
+    .sb-progress-toggle{font-size:10px;color:var(--text3);transition:transform .2s;}
+    .sb-progress-section.collapsed .sb-progress-toggle{transform:rotate(-90deg);}
+    .sb-progress-body{padding:2px 12px 8px;display:flex;flex-direction:column;gap:6px;max-height:180px;overflow-y:auto;}
+    .sb-progress-section.collapsed .sb-progress-body{display:none;}
     .sb-progress-stat{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2);}
     .sb-progress-stat span{color:var(--text3);}
     .sb-topic-list{display:flex;flex-direction:column;gap:3px;margin-top:2px;}
@@ -419,6 +423,37 @@
     #vp-hint{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;}
     #vp-send-now{display:none;width:100%;margin-top:8px;background:var(--green);border:none;border-radius:10px;color:#0d1117;font-size:13px;padding:8px;cursor:pointer;font-weight:600;}
 
+    /* ── Camera Modal ── */
+    .camera-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);align-items:center;justify-content:center;}
+    .camera-overlay.active{display:flex;animation:fadeOverlay .18s ease both;}
+    .camera-card{background:#0d1117;border:1px solid var(--border2);border-radius:18px;overflow:hidden;width:min(480px,95vw);display:flex;flex-direction:column;}
+    .camera-top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+    .camera-top-bar span{font-size:13px;font-weight:600;color:var(--text);}
+    .camera-top-bar button{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text2);width:26px;height:26px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+    #camera-video{width:100%;aspect-ratio:4/3;object-fit:cover;background:#000;display:block;}
+    .camera-bottom-bar{padding:16px;display:flex;align-items:center;justify-content:center;gap:16px;background:#0d1117;}
+    #cam-capture-btn{background:var(--green);color:#0d1117;border:none;border-radius:50%;width:62px;height:62px;font-size:22px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 0 0 4px rgba(13,228,160,.2);}
+    #cam-capture-btn:hover{transform:scale(1.08);box-shadow:0 0 0 6px rgba(13,228,160,.3);}
+    #cam-switch-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:50%;width:40px;height:40px;color:var(--text2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+    #cam-switch-btn:hover{border-color:var(--blue);color:var(--blue);}
+    /* ── Crop Modal ── */
+    .crop-overlay{display:none;position:fixed;inset:0;z-index:1001;background:rgba(0,0,0,.97);flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+    .crop-overlay.active{display:flex;animation:fadeOverlay .18s ease both;}
+    .crop-header-text{text-align:center;margin-bottom:12px;}
+    .crop-header-text strong{font-size:14px;color:var(--green);display:block;margin-bottom:3px;}
+    .crop-header-text span{font-size:11px;color:var(--text3);}
+    .crop-canvas-wrap{position:relative;cursor:crosshair;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1px var(--border2);}
+    #crop-canvas{display:block;max-width:calc(100vw - 32px);max-height:62vh;}
+    .crop-btn-row{display:flex;gap:10px;margin-top:14px;}
+    .crop-confirm-btn{background:var(--green);color:#0d1117;border:none;border-radius:22px;padding:10px 28px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;}
+    .crop-confirm-btn:hover{background:var(--green2);}
+    .crop-retake-btn{background:transparent;border:1px solid var(--border2);border-radius:22px;padding:10px 18px;font-size:12px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif;}
+    .crop-retake-btn:hover{border-color:var(--text2);color:var(--text);}
+    /* attach options popover */
+    .attach-opts{display:none;position:absolute;bottom:calc(100% + 8px);left:0;background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:5px;min-width:160px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:50;}
+    .attach-opts.open{display:block;}
+    .attach-opt-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;background:transparent;border:none;border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer;font-family:'Sora',sans-serif;transition:background .13s;}
+    .attach-opt-btn:hover{background:var(--bg3);color:var(--text);}
     .hint-bar{display:flex;align-items:center;justify-content:space-between;margin-top:5px;}
     .hint{font-size:9.5px;color:var(--text3);}
     .char-count{font-size:9.5px;color:var(--text3);}
@@ -609,6 +644,26 @@
     .stream-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;border:1px solid rgba(13,228,160,.25);background:var(--green-bg);color:var(--green);cursor:pointer;transition:all .13s;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .stream-badge:hover{border-color:var(--green);}
     #streak-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(240,160,48,.1);border:1px solid rgba(240,160,48,.25);color:var(--amber);}
+    /* Step Solver */
+    .step-solver{display:flex;flex-direction:column;gap:12px;width:100%;}
+    .step-problem-card{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;}
+    .step-problem-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--text2);margin-bottom:6px;font-family:'Sora',sans-serif;}
+    .step-problem-text{font-size:14px;font-weight:600;color:var(--text);line-height:1.9;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .step-problem-text p{margin:0;}
+    .step-cards{display:flex;flex-direction:column;gap:10px;}
+    .step-card{display:flex;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+    .step-card.hidden{display:none;}
+    .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--green);color:#111;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;margin-top:2px;}
+    .step-content{flex:1;min-width:0;}
+    .step-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;font-family:'Sora',sans-serif;}
+    .step-body{font-size:13.5px;color:var(--text);line-height:2.1;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .step-body p{margin-bottom:8px;}.step-body p:last-child{margin-bottom:0;}
+    .step-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+    .step-nav-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:20px;padding:6px 16px;font-size:12.5px;cursor:pointer;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:all .15s;white-space:nowrap;}
+    .step-nav-btn:hover{border-color:var(--green);color:var(--green);background:rgba(13,228,160,.07);}
+    .step-nav-btn.primary{border-color:var(--green);color:var(--green);}
+    .step-nav-btn:disabled{opacity:.45;cursor:default;}
+    .step-nav-btn:disabled:hover{border-color:var(--border2);color:var(--text2);background:transparent;}
   </style>
 </head>
 <body>
@@ -739,8 +794,9 @@
     </div>
 
     <div class="sb-progress-section" id="sb-progress-section" style="display:none;">
-      <div class="sb-progress-header">
+      <div class="sb-progress-header" onclick="toggleProgressSection()">
         <span class="sb-section-label">📊 PROGRESS</span>
+        <span class="sb-progress-toggle">▼</span>
       </div>
       <div class="sb-progress-body" id="sb-progress-body">
         <div class="sb-progress-stat"><span>📚</span><span id="prog-topics">0</span> topic পড়েছি</div>
@@ -901,9 +957,21 @@
       <div id="input-card">
         <textarea id="user-input" placeholder="বাংলা বা English এ লিখুন..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this);updateCharCount(this);stopMicOnType()"></textarea>
         <div class="input-toolbar">
-          <button class="tool-btn" id="attach-btn" title="ছবি যোগ করো" onclick="handleAttachClick()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
+          <div style="position:relative;">
+            <button class="tool-btn" id="attach-btn" title="ছবি যোগ করো" onclick="toggleAttachOpts(event)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div class="attach-opts" id="attach-opts">
+              <button class="attach-opt-btn" onclick="handleFileUploadClick()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                ফাইল আপলোড
+              </button>
+              <button class="attach-opt-btn" onclick="openCameraModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                ক্যামেরা
+              </button>
+            </div>
+          </div>
           <div class="toolbar-right">
             <div style="position:relative;">
               <button id="model-picker-btn" onclick="toggleModelPicker()" title="Model বেছে নাও">
@@ -917,8 +985,12 @@
                   <div><div class="model-opt-name">Standard</div><div class="model-opt-desc">পড়া বোঝাতে খুব ভালো, তবে কঠিন অঙ্কে ভুল করে ফেলতে পারে</div></div>
                 </div>
                 <div class="model-opt" data-model="deepseek" onclick="selectModel('deepseek')">
-                  <span class="model-opt-icon">🧮</span>
+                  <span class="model-opt-icon">🔢</span>
                   <div><div class="model-opt-name">Math+</div><div class="model-opt-desc">অঙ্কের জন্য ভালো, কিন্তু বাংলায় দুর্বল। উত্তরটা একটু মিলিয়ে নেওয়া ভালো</div></div>
+                </div>
+                <div class="model-opt" data-model="deepseek-pro" onclick="selectModel('deepseek-pro')">
+                  <span class="model-opt-icon">📐</span>
+                  <div><div class="model-opt-name">Math Pro</div><div class="model-opt-desc">জটিল অঙ্ক আর প্রমাণের জন্য সবচেয়ে ভালো, তবে উত্তর দিতে একটু সময় নেয়।</div></div>
                 </div>
               </div>
             </div>
@@ -940,6 +1012,39 @@
 
   </div>
 
+</div>
+
+<!-- Camera Modal -->
+<div class="camera-overlay" id="camera-overlay">
+  <div class="camera-card">
+    <div class="camera-top-bar">
+      <span>📷 ক্যামেরা</span>
+      <button onclick="closeCamera()" title="বন্ধ করো">✕</button>
+    </div>
+    <video id="camera-video" autoplay playsinline muted></video>
+    <div class="camera-bottom-bar">
+      <button id="cam-switch-btn" onclick="switchCamera()" title="ক্যামেরা বদলাও">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      </button>
+      <button id="cam-capture-btn" onclick="capturePhoto()">📸</button>
+      <div style="width:40px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="crop-overlay" id="crop-overlay">
+  <div class="crop-header-text">
+    <strong>ছবি crop করো</strong>
+    <span>বক্স টেনে প্রশ্নের অংশটুকু বেছে নাও</span>
+  </div>
+  <div class="crop-canvas-wrap" id="crop-canvas-wrap">
+    <canvas id="crop-canvas"></canvas>
+  </div>
+  <div class="crop-btn-row">
+    <button class="crop-confirm-btn" onclick="confirmCrop()">✓ এটাই পাঠাও</button>
+    <button class="crop-retake-btn" onclick="retakePhoto()">↩ আবার তোলো</button>
+  </div>
 </div>
 
 <!-- Voice Panel -->
@@ -1219,6 +1324,7 @@ function getBDTGreeting(){
 }
 
 let selectedFile=null,isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,loggedInUser=null;
+let _guestHistory=[];
 let projects=[],currentProjectId=null,allChatsList=[],editingProjectId=null;
 const PROJECT_ICONS=['📁','📚','🔬','⚗️','🗣️','🧮','💡','📝','🎯','💪','🌍','🎨','🧠','🔥'];
 
@@ -1269,7 +1375,9 @@ async function loadProjects(){
 
 async function loadProgress(){
   if(!loggedInUser){document.getElementById('sb-progress-section').style.display='none';return;}
-  document.getElementById('sb-progress-section').style.display='';
+  const _ps=document.getElementById('sb-progress-section');
+  _ps.style.display='';
+  _ps.classList.add('collapsed');
   try{
     const r=await fetch('/student-progress');
     if(!r.ok)return;
@@ -1578,7 +1686,7 @@ document.addEventListener('input',e=>{
 });
 
 function newChat(){
-  currentChatId=null;chatBox.innerHTML='';
+  currentChatId=null;chatBox.innerHTML='';_guestHistory=[];
   // Skip stream picker if we're inside a project that already has a stream assigned
   const currentProject=currentProjectId?projects.find(x=>x.id===currentProjectId):null;
   if(currentProject&&currentProject.stream){_doNewChat();return;}
@@ -1729,20 +1837,222 @@ function createBotWrapper(html){
   return div;
 }
 
-function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}],throwOnError:false});}catch(e){}}
+
+function convertLatexEq(eq){
+  eq=eq.replace(/\\begin\{[^}]+\}([\s\S]*?)\\end\{[^}]+\}/g,'$1');
+  eq=eq.replace(/\\\\/g,' ').replace(/&/g,'');
+  for(let i=0;i<3;i++) eq=eq.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>`(${n})/(${d})`);
+  eq=eq.replace(/\\binom\{([^}]+)\}\{([^}]+)\}/g,(_,n,k)=>`C(${n},${k})`);
+  eq=eq.replace(/\\overline\{([^}]+)\}/g,(_,s)=>s.split('').map(c=>c+'̅').join(''));
+  eq=eq.replace(/\\sqrt\[3\]\{([^}]+)\}/g,'∛($1)');
+  eq=eq.replace(/\\sqrt\[4\]\{([^}]+)\}/g,'∜($1)');
+  eq=eq.replace(/\\sqrt\{([^}]+)\}/g,'√($1)');
+  eq=eq.replace(/\\sqrt(?!\{)/g,'√');
+  eq=eq.replace(/\\(?:boxed|text|mathbf|mathrm|mathit|mathsf|hat|tilde|vec|bar|widehat|widetilde|underbrace|overbrace)\{([^}]+)\}/g,'$1');
+  const S={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','n':'ⁿ'};
+  eq=eq.replace(/\^\{([^}]+)\}/g,(_,e)=>e.split('').map(c=>S[c]||c).join(''));
+  eq=eq.replace(/\^(\d)/g,(_,d)=>S[d]||d);
+  const B={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+  eq=eq.replace(/_\{([^}]+)\}/g,(_,s)=>s.split('').map(c=>B[c]||c).join(''));
+  eq=eq.replace(/_(\d)/g,(_,d)=>B[d]||d);
+  eq=eq.replace(/\\cdots|\\ldots|\\dots/g,'...');
+  eq=eq.replace(/\\cdot\b/g,'·');
+  eq=eq.replace(/\\times\b/g,'×').replace(/\\div\b/g,'÷');
+  eq=eq.replace(/\\pm\b/g,'±').replace(/\\mp\b/g,'∓');
+  eq=eq.replace(/\\approx\b/g,'≈');
+  eq=eq.replace(/\\neq\b|\\ne\b/g,'≠');
+  eq=eq.replace(/\\leq\b/g,'≤').replace(/\\le\b/g,'≤');
+  eq=eq.replace(/\\geq\b/g,'≥').replace(/\\ge\b/g,'≥');
+  eq=eq.replace(/\\ll\b/g,'≪').replace(/\\gg\b/g,'≫');
+  eq=eq.replace(/\\infty\b/g,'∞');
+  eq=eq.replace(/\\therefore\b/g,'∴').replace(/\\because\b/g,'∵');
+  eq=eq.replace(/\\Rightarrow\b/g,'⇒').replace(/\\Leftarrow\b/g,'⇐').replace(/\\Leftrightarrow\b/g,'⇔');
+  eq=eq.replace(/\\rightarrow\b/g,'→').replace(/\\to\b/g,'→');
+  eq=eq.replace(/\\leftarrow\b/g,'←').replace(/\\gets\b/g,'←');
+  eq=eq.replace(/\\in\b/g,'∈').replace(/\\notin\b/g,'∉');
+  eq=eq.replace(/\\subset\b/g,'⊂').replace(/\\subseteq\b/g,'⊆');
+  eq=eq.replace(/\\supset\b/g,'⊃').replace(/\\supseteq\b/g,'⊇');
+  eq=eq.replace(/\\cup\b/g,'∪').replace(/\\cap\b/g,'∩');
+  eq=eq.replace(/\\sum\b/g,'∑').replace(/\\prod\b/g,'∏').replace(/\\int\b/g,'∫');
+  eq=eq.replace(/\\partial\b/g,'∂').replace(/\\nabla\b/g,'∇');
+  eq=eq.replace(/\\forall\b/g,'∀').replace(/\\exists\b/g,'∃');
+  eq=eq.replace(/\\emptyset\b|\\varnothing\b/g,'∅');
+  eq=eq.replace(/\\(sin|cos|tan|cot|sec|csc|sinh|cosh|tanh|log|ln|exp|lim|max|min|gcd|lcm|det|deg)\b/g,'$1');
+  const G={alpha:'α',beta:'β',gamma:'γ',Gamma:'Γ',delta:'δ',Delta:'Δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',Theta:'Θ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',Xi:'Ξ',pi:'π',Pi:'Π',rho:'ρ',sigma:'σ',Sigma:'Σ',tau:'τ',upsilon:'υ',phi:'φ',varphi:'φ',Phi:'Φ',chi:'χ',psi:'ψ',Psi:'Ψ',omega:'ω',Omega:'Ω'};
+  eq=eq.replace(/\\([a-zA-Z]+)/g,(_,cmd)=>G[cmd]!==undefined?G[cmd]:'');
+  eq=eq.replace(/\s+/g,' ');
+  eq=eq.replace(/\{([^{}]*)\}/g,'$1');
+  eq=eq.replace(/[{}]/g,'');
+  return eq.trim();
+}
+
+function latexToPlainText(text){
+  text=text.replace(/\$\$([^$]+)\$\$/g,(_,eq)=>`\n${convertLatexEq(eq)}\n`);
+  text=text.replace(/\\\[([^\]]*)\\\]/g,(_,eq)=>`\n${convertLatexEq(eq)}\n`);
+  text=text.replace(/\$([^$\n]+)\$/g,(_,eq)=>convertLatexEq(eq));
+  text=text.replace(/\\\(([^)]*)\\\)/g,(_,eq)=>convertLatexEq(eq));
+  // Bare LaTeX outside delimiters (V4 sometimes skips the $ wrappers)
+  text=text.replace(/\\overline\{([^}]+)\}/g,(_,s)=>s.split('').map(c=>c+'̅').join(''));
+  for(let i=0;i<2;i++) text=text.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>`(${n})/(${d})`);
+  text=text.replace(/\\times\b/g,'×').replace(/\\div\b/g,'÷').replace(/\\cdot\b/g,'·');
+  return text;
+}
 
 function preprocessMath(text){
-  // Fix model writing ∠ngle / △riangle instead of \angle / \triangle
-  text = text.replace(/∠ngle/g, '∠');
-  text = text.replace(/△riangle/g, '△');
-  // Auto-wrap bare angle equality chains: ∠ABC = ∠DEF [= ∠GHI ...] not already in $
-  text = text.replace(/(?<!\$)(∠[A-Z]{2,3}(?:\s*=\s*∠[A-Z]{2,3})+)/g,(m)=>`$${m}$`);
-  // Also wrap single ∠ABC references not already in math
-  text = text.replace(/(?<!\$|\w)(∠[A-Z]{2,3})(?!\$)/g,(m)=>`$${m}$`);
-  // Inline fractions are unreadably small — auto-upgrade $...\frac...$ → $$...$$
-  text = text.replace(/(?<!\$)\$([^$\n]*\\frac[^$\n]*)\$(?!\$)/g,(_,eq)=>`$$${eq}$$`);
-  // Any line that is ONLY $...$ → upgrade to display $$...$$
-  return text.replace(/^[ \t]*\$([^$\n]+)\$[ \t]*$/gm,(m,eq)=>`$$${eq}$$`);
+  const isGemini = selectedModel === 'gemini';
+
+  // SHARED: strip markers, Cyrillic, normalise Bengali digits
+  text = text.replace(/^[^\n]*\[S\][^\n]*\n?/gm, '');
+  text = text.replace(/^[^\n]*\[C\][^\n]*\n?/gm, '');
+  text = text.replace(/[Ѐ-ӿ]+/g, '');
+  const bn2ar = s => s.replace(/[০-৯]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x09E6 + 0x30));
+  text = text.replace(/([০-৯]+)([A-Za-z])/g, (_, n, l) => bn2ar(n) + l);
+  text = text.replace(/([A-Za-z])([০-৯]+)/g, (_, l, n) => l + bn2ar(n));
+
+  // SHARED: normalise \[...\] and \(...\) delimiters
+  text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `\n$$${eq.trim()}$$\n`);
+  text = text.replace(/\\\(([\s\S]*?)\\\)/g, (_, eq) => `$${eq.trim()}$`);
+
+  // V4 SPECIFIC: dharai plain-text lhs and split display blocks
+  if (!isGemini) {
+    // "x = $expr$"  ->  "$x = expr$"
+    text = text.replace(/\b([a-zA-Z])\s*=\s*(\$[^$\n]+\$)/g, (m, lhs, rhs) =>
+      `$${lhs} = ${rhs.slice(1,-1)}$`);
+    // "$$x$$ = $$x=expr$$"  ->  "$x = expr$"
+    text = text.replace(/\$\$([a-zA-Z]+)\$\$\s*=\s*\$\$\1\s*=\s*([^$\n]+?)\$\$/g,
+      (_, v, expr) => `$${v} = ${expr.trim()}$`);
+  }
+
+  // GEMINI SPECIFIC: dharai — only safe early fix (plain text echo, no LaTeX involved)
+  if (isGemini) {
+    // "$x$ = x=expr" (variable echoed in plain text)  ->  "$x = expr$"
+    text = text.replace(/\$\$?([a-zA-Z]+)\$\$?\s*=\s*\1=([^\n$]+)/g,
+      (_, v, expr) => `$${v} = ${expr.trim()}$`);
+  }
+  // NOTE: bare "x = 0.\overline{3}", "$x$ = bare_LaTeX", "$$x = $expr$" patterns are
+  // handled AFTER the decorator wrapper below — moving them here causes double-wrapping.
+
+  // SHARED: collapse trailing extra display block after dharai
+  text = text.replace(/(\$[a-zA-Z][^$\n]+\$)\s*=\s*\$\$[\d.]+\$\$/g, '$1');
+  // SHARED: strip equation number labels after $$...$$
+  text = text.replace(/(\$\$[^\n]+\$\$)\s*\(\d+\)/g, '$1');
+
+  // V4 SPECIFIC: Bengali inside $$ and orphaned display-close
+  if (!isGemini) {
+    text = text.replace(/^(?![\$ঀ-৿])([^\nঀ-৿]*\\[a-zA-Z][^\n]*?)\$\$\s*$/gm,
+      (_, inner) => `$$${inner.replace(/\$/g, '').trim()}$$`);
+    text = text.replace(/\$\$([^$\n]*?)\s*[\(（]?\s*[ঀ-৿][^\n$]*\$\$/g,
+      (_, before) => `$$${before.trimEnd()}$$`);
+  }
+
+  // SHARED: typo fix
+  text = text.replace(/\\overtime/g, '\\overline');
+  // SHARED: strip orphan $ before Bengali punctuation — only when space precedes it.
+  // "expr$ $।" → "expr$।"  (space + $ + ।  =  orphan)
+  // "$expr$।"  → unchanged  ($ immediately before ।  =  valid closing delimiter)
+  text = text.replace(/ \$([।॥])/g, '$1');
+
+  // GEMINI SPECIFIC: dot notation and unicode overline
+  if (isGemini) {
+    text = text.replace(/\\dot\{(\d+)\}/g, '\\overline{$1}');
+    text = text.replace(/(\d+)(‾)/g, '\\overline{$1}');
+    // Merge adjacent \overline{}\overline{} — run twice for triples
+    text = text.replace(/\\overline\{([^}]+)\}\$?\\overline\{([^}]+)\}/g, '\\overline{$1$2}');
+    text = text.replace(/\\overline\{([^}]+)\}\$?\\overline\{([^}]+)\}/g, '\\overline{$1$2}');
+  }
+
+  // SHARED: aligned env fix, unicode dot recurring
+  text = text.replace(/(\\begin\{aligned\}[\s\S]*?\\end\{aligned\})/g, (block) =>
+    block.replace(/\\[ \t]*\n/g, '\\\\\n'));
+  text = text.replace(/(\d)([˙̇])(\d)([˙̇])/g, '\\overline{$1$3}');
+  text = text.replace(/(\d)([˙̇])/g, '\\overline{$1}');
+
+  // SHARED: strip inner $ from $$ lines and single-$ lines
+  text = text.replace(/^\$\$([^\n]*)$/gm, (m, rest) =>
+    rest.includes('$') ? `$$${rest.replace(/\$/g, '')}$$` : m);
+  text = text.replace(/^\$(?!\$)([^\n]*)$/gm, (m, rest) =>
+    rest.includes('$') ? `$${rest.replace(/\$/g, '')}$` : m);
+
+  // SHARED: brace and delimiter cleanup
+  text = text.replace(/\{\$\$([^$\n]+)\$\$\}/g, '{$1}');
+  text = text.replace(/\{\$/g, '{').replace(/\$\}/g, '}');
+
+  // SHARED: orphan $ first pass
+  text = text.replace(/^([^\n]*)\$\s*$/gm, (m, before) => {
+    const count = (before.match(/\$/g) || []).length;
+    return count % 2 === 0 ? before.trimEnd() : m;
+  });
+
+  // SHARED: remove consecutive duplicate math
+  text = text.replace(/(\$[^$\n]+\$)\s*\1/g, '$1');
+  text = text.replace(/(\$\$[^\n$][^\n]*\$\$)\s*\1/g, '$1');
+
+  // GEMINI SPECIFIC: angle symbol fixes
+  if (isGemini) {
+    text = text.replace(/∠ngle/g, '∠');
+    text = text.replace(/△riangle/g, '△');
+    text = text.replace(/(?<!\$)(∠[A-Z]{2,3}(?:\s*=\s*∠[A-Z]{2,3})+)/g, m => `$${m}$`);
+    text = text.replace(/(?<!\$|\w)(∠[A-Z]{2,3})(?!\$)/g, m => `$${m}$`);
+  }
+
+  // SHARED: $X$$ fix, bare \frac/\boxed/decorator wraps (all protected against existing math), $$$ collapse
+  text = text.replace(/(?<!\$)\$([^$\n]+)\$\$(?!\$)/g, (_, eq) => `$${eq}$`);
+  text = text.replace(/\{\$/g, '{').replace(/\$\}/g, '}');
+  // Protect existing $...$ and $$...$$ blocks before any wrapping
+  const _mp = [];
+  text = text.replace(/\$\$[^\n]+?\$\$/g, m => { _mp.push(m); return `\x01${_mp.length-1}\x01`; });
+  text = text.replace(/\$[^$\n]+?\$/g,    m => { _mp.push(m); return `\x01${_mp.length-1}\x01`; });
+  // Now safely wrap bare \frac, \boxed, \sqrt, \overline etc.
+  text = text.replace(/(?<![0-9.$\\\x01])(\\frac\{(?:[^{}]|\{[^{}]*\})*\}\{(?:[^{}]|\{[^{}]*\})*\})/g, m => `$${m}$`);
+  text = text.replace(/(?<![0-9.$\\\x01])(\\boxed\{(?:[^{}]|\{[^{}]*\})*\})/g, m => `$${m}$`);
+  text = text.replace(/(?<![0-9.$\x01])([\d.]*\\(?:overline|underline|dot|hat|bar|vec|tilde|widehat|widetilde|sqrt)\{[^}\x01\n]+\}[\d.]*)/g, m => `$${m}$`);
+  // Restore protected blocks
+  text = text.replace(/\x01(\d+)\x01/g, (_, i) => _mp[+i]);
+  text = text.replace(/(?<!\$)\$([^$\n]+)\$\$(?!\$)/g, (_, eq) => `$${eq}$`);
+  text = text.replace(/\$\$\$/g, '$$');
+
+  // SHARED: upgrade inline frac/boxed to display, final $$ cleanup, single-line upgrade
+  text = text.replace(/(?<!\$)\$([^$\n]*\\(?:frac|boxed)[^$\n]*)\$(?!\$)/g, (_, eq) => `$$${eq}$$`);
+  text = text.replace(/^\$\$([^\n]*?)\$$/gm, (m, inner) => `$$${inner.replace(/\$/g, '')}$$`);
+  text = text.replace(/^[ \t]*\$([^$\n]+)\$[ \t]*$/gm, (m, eq) => `$$${eq}$$`);
+  // SHARED: strip $$...$$ blocks whose content is >30% Bengali — prose ended up in display math
+  text = text.replace(/\$\$([^$\n]+)\$\$/g, (m, content) => {
+    const bn = (content.match(/[ঀ-৿]/g) || []).length;
+    return bn > content.replace(/\s/g, '').length * 0.3 ? content.trim() : m;
+  });
+
+  // GEMINI SPECIFIC (late): after decorator has wrapped bare \overline{} etc. in $...$,
+  // merge "lhs = $expr$" patterns into proper "$lhs = expr$"
+  if (isGemini) {
+    // "$x = $expr$"  ->  "$x = expr$"  (outer $ already present, decorator added inner $)
+    text = text.replace(/(?<!\$)\$([a-zA-Z])\s*=\s*\$([^$\n]+)\$(?!\$)/g, (m, v, expr) =>
+      `$${v} = ${expr}$`);
+    // "$x$ = $expr$"  ->  "$x = expr$"
+    text = text.replace(/\$([a-zA-Z])\$\s*=\s*(\$[^$\n]+\$)/g, (m, v, rhs) =>
+      `$${v} = ${rhs.slice(1, -1)}$`);
+    // "x = $expr$"  ->  "$x = expr$"  (bare LHS, no outer $)
+    text = text.replace(/(?<!\$)\b([a-zA-Z])\s*=\s*(\$[^$\n]+\$)/g, (m, lhs, rhs) =>
+      `$${lhs} = ${rhs.slice(1, -1)}$`);
+    // "$$x = $expr$"  ->  "$$x = expr$$"  (display $ with inner $ value)
+    text = text.replace(/\$\$([a-zA-Z])\s*=\s*\$([^\n$]+)\$/g, (m, v, expr) =>
+      `$$${v} = ${expr.trim()}$$`);
+  }
+
+  // V4 SPECIFIC: display echo stripper (after all upgrades)
+  if (!isGemini) {
+    text = text.replace(/(\$\$[^\n]+\$\$)\n([=0-9A-Za-z\\][^$\nঀ-৿]{0,120})(?=\n|$)/gm, '$1');
+  }
+  // GEMINI SPECIFIC: inline echo stripper
+  if (isGemini) {
+    text = text.replace(/^(.*(?<!\$)\$[^\n$]+\$)\n([a-zA-Z][=][^$\nঀ-৿]{0,120})(?=\n|$)/gm, '$1');
+  }
+
+  // SHARED: final orphan $ pass
+  text = text.replace(/^([^\n]*)\s*\$\s*$/gm, (m, before) =>
+    (m.match(/\$/g) || []).length % 2 === 1 ? before.trimEnd() : m);
+
+  return text;
 }
 
 const RECT_SVG=`<svg viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;background:#161b22;border-radius:8px;"><rect x="30" y="30" width="260" height="120" fill="rgba(13,228,160,.08)" stroke="#0de4a0" stroke-width="2.5"/><text x="160" y="20" text-anchor="middle" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">দৈর্ঘ্য (l)</text><text x="160" y="170" text-anchor="middle" fill="#f0a030" font-size="13" font-family="Sora,sans-serif">দৈর্ঘ্য (l)</text><text x="12" y="95" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif" transform="rotate(-90,12,95)">প্রস্থ (w)</text><text x="310" y="95" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif" transform="rotate(90,310,95)">প্রস্থ (w)</text><text x="160" y="92" text-anchor="middle" fill="#e6edf3" font-size="15" font-family="Sora,sans-serif">আয়তক্ষেত্র</text><text x="160" y="114" text-anchor="middle" fill="#0de4a0" font-size="12" font-family="Sora,sans-serif">৪টি কোণ = ৯০° | বিপরীত বাহু সমান</text><text x="35" y="28" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="270" y="28" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="35" y="148" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text><text x="270" y="148" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">৯০°</text></svg>`;
@@ -1889,6 +2199,111 @@ function renderSVG(el){
   });
 }
 
+function parseStepSolution(text) {
+  // Match **ধাপ X:** (bold) OR ### ধাপ X: (heading) OR plain ধাপ X: — capture entire line
+  const stepRe = /(?:^|\n)[ \t]*(?:#{1,4}\s*|\*{0,2})ধাপ[ \t]*[০-৯\d]+[^\n]*/g;
+  const matches = [...text.matchAll(stepRe)];
+  if (matches.length < 2) return null;
+  const steps = [];
+  for (let i = 0; i < matches.length; i++) {
+    const matchEnd = matches[i].index + matches[i][0].length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const label = matches[i][0].trim()
+      .replace(/^#{1,4}\s*/, '').replace(/^\*\*|\*\*$/g, '').replace(/:+$/, '').trim();
+    const content = text.slice(matchEnd, contentEnd).trim();
+    steps.push({ label, content });
+  }
+  return { intro: text.slice(0, matches[0].index).trim(), steps };
+}
+
+function buildStepCard(problem, parsed) {
+  const wrap = document.createElement('div');
+  wrap.className = 'step-solver';
+
+  // Problem card — only show if we have text to display
+  if (problem && problem.trim()) {
+    const probCard = document.createElement('div');
+    probCard.className = 'step-problem-card';
+    const probLbl = document.createElement('div');
+    probLbl.className = 'step-problem-label';
+    probLbl.textContent = 'PROBLEM';
+    const probText = document.createElement('div');
+    probText.className = 'step-problem-text';
+    probText.innerHTML = marked.parse(problem, {breaks:true});
+    renderMath(probText);
+    probCard.appendChild(probLbl);
+    probCard.appendChild(probText);
+    wrap.appendChild(probCard);
+  }
+
+  // Intro prose (if any before first step)
+  if (parsed.intro) {
+    const introDiv = document.createElement('div');
+    introDiv.style.cssText = 'font-size:13.5px;color:var(--text);line-height:2.1;font-family:"Noto Sans Bengali","Sora",sans-serif;';
+    introDiv.innerHTML = marked.parse(parsed.intro, {breaks:true, gfm:true});
+    renderMath(introDiv);
+    wrap.appendChild(introDiv);
+  }
+
+  // Step cards
+  const stepsWrap = document.createElement('div');
+  stepsWrap.className = 'step-cards';
+  parsed.steps.forEach((step, i) => {
+    const card = document.createElement('div');
+    card.className = 'step-card' + (i > 0 ? ' hidden' : '');
+    const num = document.createElement('div');
+    num.className = 'step-num';
+    num.textContent = i + 1;
+    const cont = document.createElement('div');
+    cont.className = 'step-content';
+    const lbl = document.createElement('div');
+    lbl.className = 'step-label';
+    lbl.innerHTML = marked.parseInline(step.label);
+    renderMath(lbl);
+    const body = document.createElement('div');
+    body.className = 'step-body';
+    body.innerHTML = marked.parse(step.content, {breaks:true, gfm:true});
+    renderMath(body);
+    cont.appendChild(lbl);
+    cont.appendChild(body);
+    card.appendChild(num);
+    card.appendChild(cont);
+    stepsWrap.appendChild(card);
+  });
+  wrap.appendChild(stepsWrap);
+
+  // Nav buttons
+  const nav = document.createElement('div');
+  nav.className = 'step-nav';
+  let current = 0;
+  const total = parsed.steps.length;
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'step-nav-btn primary';
+  nextBtn.textContent = '→ পরবর্তী ধাপ';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'step-nav-btn';
+  allBtn.textContent = 'সব ধাপ দেখাও';
+  const finish = () => { nextBtn.disabled = true; nextBtn.textContent = '✓ সম্পন্ন'; allBtn.disabled = true; };
+  nextBtn.onclick = () => {
+    current++;
+    const cards = stepsWrap.querySelectorAll('.step-card');
+    if (current < total) {
+      cards[current].classList.remove('hidden');
+      cards[current].scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+    if (current >= total - 1) finish();
+  };
+  allBtn.onclick = () => {
+    stepsWrap.querySelectorAll('.step-card.hidden').forEach(c => c.classList.remove('hidden'));
+    finish();
+    current = total - 1;
+  };
+  nav.appendChild(nextBtn);
+  nav.appendChild(allBtn);
+  wrap.appendChild(nav);
+  return wrap;
+}
+
 function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
@@ -1905,6 +2320,23 @@ function addBotMessage(text, showChips=false){
   text=preprocessMath(text);
   text=fixGeometryMermaid(text);
   text=fixBareMermaid(text);
+
+  // Step solver: auto-detect numbered \u09A7\u09BE\u09AA steps for Gemini
+  if (selectedModel === 'gemini') {
+    const parsed = parseStepSolution(text);
+    if (parsed && parsed.steps.length >= 2) {
+      const div = createBotWrapper('');
+      const bub = div.querySelector('.bubble');
+      bub.style.lineHeight = '2.1';
+      bub.appendChild(buildStepCard(_lastSentText || '', parsed));
+      chatBox.appendChild(div);
+      mmRegister(div, 'bot');
+      chatBox.scrollTop = chatBox.scrollHeight;
+      setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; mmRedraw(); }, 150);
+      return;
+    }
+  }
+
   const html=marked.parse(text);
   const div=createBotWrapper(html);
   const bub=div.querySelector('.bubble');
@@ -2571,6 +3003,10 @@ function _rebuildNav(){
     list.appendChild(el);
   });
 }
+function toggleProgressSection(){
+  const sec=document.getElementById('sb-progress-section');
+  if(sec)sec.classList.toggle('collapsed');
+}
 function toggleNav(){
   const p=document.getElementById('nav-panel');
   p?.classList.toggle('open');
@@ -2784,6 +3220,7 @@ async function sendMessage(){
       fd.append('subject', activeSubject || 'biology');
       if(activeStream) fd.append('stream', activeStream);
       if(_socraticMode) fd.append('socratic', '1');
+      fd.append('model', selectedModel);
       const r=await fetch('/ask-image',{method:'POST',body:fd});
       stopImageStages();
       if(!r.ok){
@@ -2804,6 +3241,7 @@ async function sendMessage(){
       // ── TEXT PATH (streaming SSE via /ask-stream) ──
       const body={message:apiText, subject: activeSubject, stream: activeStream, model: selectedModel};
       if(currentChatId)body.chat_id=currentChatId;
+      if(!currentChatId && _guestHistory.length)body.guest_history=_guestHistory.slice(-10);
       if(currentProjectId)body.project_id=currentProjectId;
       if(_socraticMode)body.socratic=true;
 
@@ -2984,6 +3422,7 @@ async function sendMessage(){
         // Sync activeSubject to server's confirmed subject so follow-ups stay on-topic
         if(finalReply.subject){ activeSubject = finalReply.subject; localStorage.setItem('activeSubject', activeSubject); }
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
+        if(!currentChatId && replyText){_guestHistory.push({role:'user',content:_lastSentText||display});_guestHistory.push({role:'assistant',content:replyText});}
         if(currentChatId){
           const title=display.length>40?display.slice(0,40)+'…':display;
           document.getElementById('topic-bar-title').textContent=title;
@@ -3004,8 +3443,9 @@ async function sendMessage(){
 
 // ── MODEL PICKER ──
 const _MODELS = {
-  gemini:   {icon:'⚡', label:'Standard'},
-  deepseek: {icon:'🧮', label:'Math+'},
+  gemini:        {icon:'⚡', label:'Standard'},
+  deepseek:      {icon:'🔢', label:'Math+'},
+  'deepseek-pro':{icon:'📐', label:'Math Pro'},
 };
 let selectedModel = 'gemini'; // always default to Standard on load
 
@@ -3033,9 +3473,166 @@ document.addEventListener('click', e=>{
 });
 _applyModelUI();
 
-function handleAttachClick(){
-  if(!loggedInUser){showLoginPrompt(false);return;}
+/* ── Attach popover ── */
+function toggleAttachOpts(e){
+  e.stopPropagation();
+  const opts=document.getElementById('attach-opts');
+  opts.classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  const opts=document.getElementById('attach-opts');
+  if(opts&&!opts.contains(e.target)&&e.target.id!=='attach-btn')opts.classList.remove('open');
+});
+function handleFileUploadClick(){
+  document.getElementById('attach-opts').classList.remove('open');
   document.getElementById('file-input').click();
+}
+
+/* ── Camera + Crop ── */
+let _camStream=null,_camFacing='environment',_capturedDataUrl=null;
+let _cropImg=null,_cropSel={x:0,y:0,w:0,h:0},_cropDragging=false,_cropStart={x:0,y:0};
+
+function openCameraModal(){
+  document.getElementById('attach-opts').classList.remove('open');
+  document.getElementById('camera-overlay').classList.add('active');
+  _startCamera();
+}
+async function _startCamera(){
+  if(_camStream){_camStream.getTracks().forEach(t=>t.stop());_camStream=null;}
+  try{
+    _camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:_camFacing,width:{ideal:1280},height:{ideal:960}},audio:false});
+    document.getElementById('camera-video').srcObject=_camStream;
+  }catch(err){
+    alert('ক্যামেরা চালু করা গেল না: '+err.message);
+    closeCamera();
+  }
+}
+function switchCamera(){
+  _camFacing=_camFacing==='environment'?'user':'environment';
+  _startCamera();
+}
+function closeCamera(){
+  if(_camStream){_camStream.getTracks().forEach(t=>t.stop());_camStream=null;}
+  document.getElementById('camera-overlay').classList.remove('active');
+}
+function capturePhoto(){
+  const video=document.getElementById('camera-video');
+  const canvas=document.createElement('canvas');
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
+  canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
+  _capturedDataUrl=canvas.toDataURL('image/jpeg',0.92);
+  closeCamera();
+  _openCrop(_capturedDataUrl);
+}
+
+/* ── Crop ── */
+function _openCrop(dataUrl){
+  const overlay=document.getElementById('crop-overlay');
+  const cropCanvas=document.getElementById('crop-canvas');
+  overlay.classList.add('active');
+  _cropImg=new Image();
+  _cropImg.onload=function(){
+    const maxW=Math.min(window.innerWidth-32,640);
+    const scale=Math.min(maxW/_cropImg.width,window.innerHeight*0.62/_cropImg.height,1);
+    cropCanvas.width=Math.round(_cropImg.width*scale);
+    cropCanvas.height=Math.round(_cropImg.height*scale);
+    _cropSel={x:Math.round(cropCanvas.width*.1),y:Math.round(cropCanvas.height*.1),w:Math.round(cropCanvas.width*.8),h:Math.round(cropCanvas.height*.8)};
+    _redrawCrop();
+  };
+  _cropImg.src=dataUrl;
+}
+function _redrawCrop(){
+  const c=document.getElementById('crop-canvas');
+  const ctx=c.getContext('2d');
+  ctx.drawImage(_cropImg,0,0,c.width,c.height);
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(0,0,c.width,_cropSel.y);
+  ctx.fillRect(0,_cropSel.y,_cropSel.x,_cropSel.h);
+  ctx.fillRect(_cropSel.x+_cropSel.w,_cropSel.y,c.width-_cropSel.x-_cropSel.w,_cropSel.h);
+  ctx.fillRect(0,_cropSel.y+_cropSel.h,c.width,c.height-_cropSel.y-_cropSel.h);
+  ctx.strokeStyle='#0de4a0';
+  ctx.lineWidth=2;
+  ctx.strokeRect(_cropSel.x,_cropSel.y,_cropSel.w,_cropSel.h);
+  const hs=6;
+  ctx.fillStyle='#0de4a0';
+  [[_cropSel.x,_cropSel.y],[_cropSel.x+_cropSel.w,_cropSel.y],[_cropSel.x,_cropSel.y+_cropSel.h],[_cropSel.x+_cropSel.w,_cropSel.y+_cropSel.h]].forEach(([cx,cy])=>{
+    ctx.fillRect(cx-hs/2,cy-hs/2,hs,hs);
+  });
+}
+function _getEventCoords(e,canvas){
+  const r=canvas.getBoundingClientRect();
+  const src=e.touches?e.touches[0]:e;
+  return{x:src.clientX-r.left,y:src.clientY-r.top};
+}
+function _onCropStart(e){
+  e.preventDefault();
+  const c=document.getElementById('crop-canvas');
+  const {x,y}=_getEventCoords(e,c);
+  _cropDragging=true;
+  _cropStart={x,y};
+  _cropSel={x,y,w:0,h:0};
+}
+function _onCropMove(e){
+  if(!_cropDragging)return;
+  e.preventDefault();
+  const c=document.getElementById('crop-canvas');
+  const {x,y}=_getEventCoords(e,c);
+  _cropSel={
+    x:Math.max(0,Math.min(_cropStart.x,x)),
+    y:Math.max(0,Math.min(_cropStart.y,y)),
+    w:Math.abs(x-_cropStart.x),
+    h:Math.abs(y-_cropStart.y)
+  };
+  _cropSel.w=Math.min(_cropSel.w,c.width-_cropSel.x);
+  _cropSel.h=Math.min(_cropSel.h,c.height-_cropSel.y);
+  _redrawCrop();
+}
+function _onCropEnd(e){_cropDragging=false;}
+
+(function(){
+  const c=document.getElementById('crop-canvas');
+  if(!c)return;
+  c.addEventListener('mousedown',_onCropStart);
+  c.addEventListener('mousemove',_onCropMove);
+  c.addEventListener('mouseup',_onCropEnd);
+  c.addEventListener('touchstart',_onCropStart,{passive:false});
+  c.addEventListener('touchmove',_onCropMove,{passive:false});
+  c.addEventListener('touchend',_onCropEnd);
+})();
+
+function confirmCrop(){
+  const c=document.getElementById('crop-canvas');
+  const sel=_cropSel;
+  if(sel.w<10||sel.h<10){
+    _setCapturedFile(_capturedDataUrl,'camera_capture.jpg');
+    document.getElementById('crop-overlay').classList.remove('active');
+    return;
+  }
+  const scaleX=_cropImg.naturalWidth/c.width;
+  const scaleY=_cropImg.naturalHeight/c.height;
+  const out=document.createElement('canvas');
+  out.width=Math.round(sel.w*scaleX);
+  out.height=Math.round(sel.h*scaleY);
+  out.getContext('2d').drawImage(_cropImg,sel.x*scaleX,sel.y*scaleY,out.width,out.height,0,0,out.width,out.height);
+  const croppedUrl=out.toDataURL('image/jpeg',0.92);
+  _setCapturedFile(croppedUrl,'camera_crop.jpg');
+  document.getElementById('crop-overlay').classList.remove('active');
+}
+function retakePhoto(){
+  document.getElementById('crop-overlay').classList.remove('active');
+  openCameraModal();
+}
+function _setCapturedFile(dataUrl,filename){
+  fetch(dataUrl).then(r=>r.blob()).then(blob=>{
+    const file=new File([blob],filename,{type:'image/jpeg'});
+    selectedFile=file;
+    document.getElementById('preview-thumb').src=dataUrl;
+    document.getElementById('preview-name').textContent=filename;
+    strip.classList.add('visible');
+    attachBtn.classList.add('has-image');
+    input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';
+  });
 }
 function handleFileSelect(e){const f=e.target.files[0];if(!f)return;selectedFile=f;const r=new FileReader();r.onload=ev=>{document.getElementById('preview-thumb').src=ev.target.result;};r.readAsDataURL(f);document.getElementById('preview-name').textContent=f.name;strip.classList.add('visible');attachBtn.classList.add('has-image');input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';}
 function removeImage(){selectedFile=null;document.getElementById('file-input').value='';document.getElementById('preview-thumb').src='';document.getElementById('preview-name').textContent='';strip.classList.remove('visible');attachBtn.classList.remove('has-image');input.placeholder='বাংলা বা English এ লিখুন...';}
@@ -3231,7 +3828,28 @@ function resetCodeKey(e,el,prev,next){if(e.key==='Backspace'&&!el.value&&prev)do
 async function submitResetPassword(){if(resetSubmitting)return;const code=['r1','r2','r3','r4','r5','r6'].map(id=>document.getElementById(id)?.value||'').join('');const np=document.getElementById('new-password').value.trim();const cp=document.getElementById('confirm-password').value.trim();['reset-error','reset-success'].forEach(id=>{document.getElementById(id).style.display='none';});if(code.length<6){document.getElementById('reset-error').textContent='Please enter the full 6-digit code.';document.getElementById('reset-error').style.display='block';return;}if(!np||np.length<6){document.getElementById('reset-error').textContent='Password must be at least 6 characters.';document.getElementById('reset-error').style.display='block';return;}if(np!==cp){document.getElementById('reset-error').textContent='Passwords do not match.';document.getElementById('reset-error').style.display='block';return;}resetSubmitting=true;const btn=document.getElementById('reset-btn');btn.disabled=true;btn.textContent='Resetting...';try{const r=await fetch('/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:resetEmail,code,new_password:np})});const d=await r.json();if(d.success){document.getElementById('reset-success').textContent='✓ Reset! You can log in now.';document.getElementById('reset-success').style.display='block';setTimeout(()=>{document.getElementById('forgot-overlay').classList.remove('active');showLoginPrompt(false);},2000);}else{document.getElementById('reset-error').textContent=d.error||'Failed.';document.getElementById('reset-error').style.display='block';resetSubmitting=false;}}catch(e){document.getElementById('reset-error').textContent='Server error.';document.getElementById('reset-error').style.display='block';resetSubmitting=false;}finally{btn.disabled=false;btn.textContent='Reset Password';}}
 function checkPasswordStrength(p){const b=document.getElementById('strength-bar');if(!b)return;let s=0;if(p.length>=6)s++;if(p.length>=10)s++;if(/[A-Z]/.test(p))s++;if(/[0-9]/.test(p))s++;if(/[^A-Za-z0-9]/.test(p))s++;const c=['var(--danger)','#f0a030','#f0a030','var(--green)','var(--green)'];b.style.width=(s*20)+'%';b.style.background=c[s-1]||'var(--border2)';}
 
-input.addEventListener('focus',function(){setTimeout(()=>{this.scrollIntoView({behavior:'smooth',block:'nearest'});},100);});
+// ── Mobile keyboard: use visualViewport so the layout correctly shrinks ──
+(function(){
+  const mobileNav = document.querySelector('.mobile-bottom-nav');
+  let _lastVVH = 0;
+  function applyVV(){
+    const vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    if(vvh === _lastVVH) return;
+    _lastVVH = vvh;
+    document.body.style.height = vvh + 'px';
+    // Hide bottom nav when keyboard is open (vvh << screen height)
+    const screenH = window.screen.height;
+    const kbOpen = vvh < screenH * 0.75;
+    if(mobileNav) mobileNav.style.display = kbOpen ? 'none' : '';
+    if(!kbOpen) setTimeout(()=>{ chatBox.scrollTop = chatBox.scrollHeight; }, 80);
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', applyVV);
+    window.visualViewport.addEventListener('scroll', applyVV);
+  }
+  window.addEventListener('resize', applyVV);
+  applyVV();
+})();
 
 // Paste image from clipboard (Ctrl+V) — like ChatGPT/Claude
 document.addEventListener('paste', (e) => {

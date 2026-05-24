@@ -113,6 +113,7 @@ def get_answer_with_image(
     stream: str = "",
     student_name: str = "",
     student_profile: dict = None,
+    preferred_model: str = "",
 ):
     """
     Get AI answer for an image query.
@@ -122,6 +123,66 @@ def get_answer_with_image(
     If still wrong, returns honest "couldn't verify" message.
     """
     from chain import check_stream_mismatch
+
+    # ── HYBRID PATH: DeepSeek models → Gemini extracts image text, DeepSeek solves ──
+    # deepseek-pro (Math Pro) → DeepSeek V4 Pro (strongest, always)
+    # deepseek    (Math+)     → DeepSeek V4 Flash (faster, for math images)
+    # gemini / "" (Standard)  → full Gemini vision pipeline below
+    if preferred_model in ("deepseek-pro", "deepseek"):
+        from chain import deepseek_pro_chain, deepseek_chain, detect_subject_from_question, build_system_prompt
+
+        if preferred_model == "deepseek-pro":
+            solve_chain = deepseek_pro_chain
+            print("[Image Routing] Math Pro → Gemini extract → DeepSeek V4 Pro solve", flush=True)
+        else:
+            solve_chain = deepseek_chain
+            print("[Image Routing] Math+ → Gemini extract → DeepSeek V4 Flash solve", flush=True)
+
+        # Step 1: Gemini Flash reads the image and extracts all problem text
+        extracted = extract_problem_from_image(image_base64, image_type, user_caption=user_input)
+        print(f"[Image Hybrid] extracted {len(extracted)} chars from image", flush=True)
+
+        # Step 2: detect subject from extracted text
+        detected_subj = detect_subject_from_question(extracted, fallback=subject)
+
+        # Step 3: RAG lookup with extracted text
+        nctb_context = get_relevant_chunks(extracted, subject=detected_subj)
+
+        # Step 4: Build system prompt
+        system_prompt = build_system_prompt(
+            nctb_context, project_instructions,
+            student_name=student_name, student_profile=student_profile
+        )
+
+        msgs = [SystemMessage(content=system_prompt)]
+        for msg in history:
+            if msg["role"] == "user":
+                msgs.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] == "assistant":
+                msgs.append(AIMessage(content=msg["content"]))
+
+        _overline_rule = (
+            "\n\n⚠️ LaTeX RULES (violating these breaks rendering):\n"
+            "1. আবৃত্ত দশমিক সবসময় \\overline{} দিয়ে লিখবে: $0.\\overline{3}$, $42.34\\overline{78}$\n"
+            "2. NEVER nest $...$ inside $$...$$. Inside $$...$$ write LaTeX directly — no inner $ signs.\n"
+            "   ✗ WRONG: $$x = $0.\\overline{3}$ = 0.333...$\n"
+            "   ✓ CORRECT: $$x = 0.\\overline{3} = 0.333...$$\n"
+            "3. NEVER put $ inside {} braces: ✗ \\frac{$x$}{y}  ✓ \\frac{x}{y}\n"
+            "4. Each step = ONE $$...$$ on its own line. ✗ $$x$$ $$=$$ $$y$$  ✓ $$x = y$$\n"
+            "5. SVG <text> element-এ কখনো LaTeX লিখবে না — Unicode symbol ব্যবহার করো।"
+        )
+        if user_input and user_input != _DEFAULT_CAPTION:
+            solve_text = f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}{_overline_rule}"
+        else:
+            solve_text = (
+                f"[ছবির সমস্যা:]\n{extracted}\n\n"
+                "এটা NCTB format-এ সম্পূর্ণ সমাধান করো। "
+                f"ধাপে ধাপে বাংলায় explain করো।{_overline_rule}"
+            )
+        msgs.append(HumanMessage(content=solve_text))
+
+        answer = solve_chain.invoke(msgs)
+        return answer, True, detected_subj
 
     # Auto-detect subject from image — overrides whatever the frontend sent
     selected_chain, subject = pick_vision_chain(image_base64, image_type)

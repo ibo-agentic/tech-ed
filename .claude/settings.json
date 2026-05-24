@@ -18,7 +18,9 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(python -c \"import subprocess; r = subprocess.run\\(['git', 'ls-files', 'chroma_db'], capture_output=True, text=True\\); print\\('chroma_db in git:', bool\\(r.stdout.strip\\(\\)\\)\\)\")",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(python fix_preprocess.py)",
+      "Bash(del \"c:\\\\Bangla\\\\bangla-edtech\\\\fix_preprocess.py\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\Ibo\\.claude\\projects\\c--Bangla-bangla-edtech\\memory"
