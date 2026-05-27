@@ -312,11 +312,21 @@ TOC_KEYWORDS = [
 ]
 
 SUBJECT_ALIASES = {
-    "biology":    ["biology", "bio", "জীববিজ্ঞান", "জীব বিজ্ঞান", "জিববিজ্ঞান"],
-    "geography":  ["geography", "geo", "bugol", "bhugol", "ভূগোল", "ভুগোল", "bugol o poribesh"],
-    "accounting": ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
-    "physics":    ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
-    "math":       ["math", "mathematics", "গণিত", "gonit", "algebra", "geometry", "বীজগণিত", "জ্যামিতি", "পরিমিতি", "পরিসংখ্যান", "ত্রিকোণমিতি"],
+    "biology":     ["biology", "bio", "জীববিজ্ঞান", "জীব বিজ্ঞান", "জিববিজ্ঞান"],
+    "geography":   ["geography", "geo", "bugol", "bhugol", "ভূগোল", "ভুগোল", "bugol o poribesh"],
+    "accounting":  ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
+    "physics":     ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
+    "math":        ["math", "mathematics", "গণিত", "gonit", "algebra", "geometry", "বীজগণিত", "জ্যামিতি", "পরিমিতি", "পরিসংখ্যান", "ত্রিকোণমিতি"],
+    "higher_math": ["higher math", "higher_math", "উচ্চতর গণিত", "উচ্চ গণিত", "uchcho gonit", "higher gonit", "h math", "hm"],
+    "bangla":      [
+        "bangla", "bangla sahitto", "বাংলা", "বাংলা সাহিত্য", "sahitto", "সাহিত্য", "bangla sahitya",
+        # romanised piece titles — catches "bosek ke likesen", "ranar ki", etc.
+        "bosek", "boshek", "ranar", "michil", "mochil", "subha", "momtadi",
+        "nimgach", "abhagir", "chunia", "ekushey", "ekattorer", "bongobani",
+        "kapotakkho", "juta abishkar", "jibonsongit", "manush muhammad",
+        "tomake pawar", "shamsur", "sukanta", "al mahmud", "nazrul kobita",
+        "bangla kobita", "kobita", "godyo", "goddo", "prose", "poem bangla",
+    ],
 }
 
 
@@ -397,6 +407,53 @@ _SUBJECT_CONTENT_KEYWORDS = {
         "বর্গমূল", "sqrt", "উৎপাদক", "factor", "সম্ভাবনা", "probability",
         "গড়", "মধ্যক", "প্রচুরক", "mean", "median", "mode", "অজিভ",
     ],
+    "higher_math": [
+        "উচ্চতর গণিত", "higher math", "সেট", "set", "ফাংশন", "function",
+        "বীজগাণিতিক রাশি", "বহুপদী", "polynomial", "ভাগশেষ উপপাদ্য", "উৎপাদক উপপাদ্য",
+        "আংশিক ভগ্নাংশ", "partial fraction", "দ্বিঘাত সমীকরণ", "quadratic",
+        "অসমতা", "inequality", "অসীম ধারা", "infinite series", "অভিসারী",
+        "sin", "cos", "tan", "ত্রিকোণমিতিক সনাক্ত", "trigonometric identity",
+        "সূচকীয়", "exponential", "লগারিদমীয়", "logarithmic",
+        "দ্বিপদী বিস্তৃতি", "binomial", "স্থানাঙ্ক জ্যামিতি", "coordinate geometry",
+        "ভেক্টর", "vector", "ঘন জ্যামিতি", "solid geometry", "গোলক", "sphere",
+        "সম্ভাবনা", "probability", "স্বাধীন ঘটনা", "শর্তাধীন সম্ভাবনা",
+        "যোগিক ফাংশন", "বিপরীত ফাংশন", "ভেনচিত্র", "venn",
+    ],
+    "bangla": [
+        "বাংলা সাহিত্য", "গদ্য", "কবিতা", "ছোটগল্প", "প্রবন্ধ",
+        "রবীন্দ্রনাথ", "tagore", "নজরুল", "nazrul", "জসীমউদদীন",
+        "বিদ্যাসাগর", "vidyasagar", "বঙ্কিম", "শরৎচন্দ্র",
+        "সুভা", "অভাগীর", "মমতাদি", "একাত্তর", "একুশের",
+        "কবি", "poet", "লেখক", "writer", "উপন্যাস", "novel",
+        "ছন্দ", "rhythm", "অলংকার", "metaphor", "উপমা", "simile",
+        "প্রতুপকার", "নিমগাছ", "রানার", "সাম্যবাদী",
+        "মুক্তিযুদ্ধ সাহিত্য", "bangla literature", "sahitto",
+        # গদ্য titles
+        "ফুলের বিবাহ", "লাইব্রেরি", "বই পড়া", "নিরীহ বাঙালি",
+        "পল্লীসাহিত্য", "উদ্যম ও পরিশ্রম", "জীবনে শিল্পের",
+        "আম-আঁটির", "মানুষ মুহম্মদ", "উপেক্ষিত শক্তির",
+        "শিক্ষা ও মনুষ্যত্ব", "প্রবাস বন্ধু", "বনমানুষ",
+        "স্বাধীনতা আমার স্বাধীনতা", "আমাদের সংস্কৃতি",
+        "সাহিত্যের রূপ", "বাংলা শব্দ", "নতুন গৌরবগাথা",
+        # কবিতা titles
+        "বন্দনা", "হামদ", "বঙ্গবাণী", "কপোতাক্ষ", "জীবন-সঙ্গীত",
+        "জুতা-আবিষ্কার", "ঝরনার গান", "ছায়াবাজি", "জীবন বিনিময়",
+        "উমর ফারুক", "সেইদিন এই মাঠ", "যাব আমি তোমার দেশে",
+        "একটি কবিতা", "আমার দেশ", "আমি কোনো আগন্তুক",
+        "মে-দিনের", "পোস্টার", "তোমাকে পাওয়ার জন্যে",
+        "অবাক সূর্যোদয়", "বোশেখ", "চুনিয়া", "মিছিল",
+        # author names
+        "প্রমথ চৌধুরী", "মোতাহের হোসেন", "সৈয়দ মুজতবা",
+        "মানিক বন্দ্যোপাধ্যায়", "জাহানারা ইমাম", "জহির রায়হান",
+        "আনিসুজ্জামান", "হুমায়ুন আজাদ", "আল মাহমুদ",
+        "শামসুর রাহমান", "সুকান্ত", "রুদ্র মুহম্মদ",
+        "রফিক আজাদ", "ফররুখ", "আহসান হাবীব", "সুফিয়া কামাল",
+        "জীবনানন্দ", "সত্যেন্দ্রনাথ", "সুকুমার রায়",
+        # romanised piece titles and author names
+        "bosek", "boshek", "ranar", "michil", "subha", "momtadi", "nimgach",
+        "abhagir", "chunia", "ekushey", "ekattorer", "al mahmud", "sukanta",
+        "nazrul", "tagore", "kobita", "godyo", "sahitto", "bangla lit",
+    ],
 }
 
 
@@ -424,6 +481,15 @@ CASUAL_PATTERNS = [
     "kon kon subject", "কোন কোন subject", "কোন subject", "কী subject",
     "ki subject", "which subject", "what subject", "কী পড়াও", "কী পড়ান",
     "kon subject poran", "apni ki poran", "tumi ki poran",
+    # Emotional / wellbeing — no study chips for these
+    "not feeling good", "not feeling well", "feeling bad", "feeling sick",
+    "feeling sad", "feel bad", "feel sick", "feel sad", "im sad", "i'm sad",
+    "i am sad", "not well", "don't want to study", "dont want to study",
+    "not in mood", "no mood", "tired of studying", "ভালো লাগছে না",
+    "মন খারাপ", "ভালো নেই", "শরীর ভালো না", "অসুস্থ", "ক্লান্ত",
+    "পড়তে ইচ্ছা করছে না", "পড়তে ইচ্ছে করছে না", "পড়তে মন চাইছে না",
+    "depressed", "anxious", "stressed", "stress", "tension",
+    "worried", "upset", "lonely", "alone",
 ]
 
 def is_casual_chat(user_input: str) -> bool:
@@ -548,6 +614,11 @@ def build_toc_response(subject: str) -> str:
         "biology": "জীববিজ্ঞান",
         "geography": "ভূগোল ও পরিবেশ",
         "accounting": "হিসাববিজ্ঞান",
+        "physics": "পদার্থবিজ্ঞান",
+        "chemistry": "রসায়ন",
+        "math": "গণিত",
+        "higher_math": "উচ্চতর গণিত",
+        "bangla": "বাংলা সাহিত্য",
     }.get(subject, subject.capitalize())
 
     intro = f"চলো, {subject_label} বইয়ের সব অধ্যায়ের নাম দেখে নিই 🌱\n\nএই বইয়ে মোট **{total}টি অধ্যায়** আছে:\n\n"
@@ -603,8 +674,12 @@ def is_despair(text: str) -> bool:
 _ROADMAP_SUBJECT_ALIASES = [
     (['physics', 'phys', 'পদার্থ', 'physic'], 'physics'),
     (['biology', 'bio', 'জীববিজ্ঞান', 'জীব বিজ্ঞান', 'biolog'], 'biology'),
+    (['chemistry', 'chem', 'রসায়ন', 'rasayan'], 'chemistry'),
     (['accounting', 'account', 'হিসাব', 'acounting', 'accounts'], 'accounting'),
     (['geography', 'geo', 'ভূগোল', 'geograph'], 'geography'),
+    (['higher math', 'higher_math', 'উচ্চতর গণিত', 'উচ্চ গণিত', 'uchcho gonit'], 'higher_math'),
+    (['bangla sahitto', 'bangla sahitya', 'বাংলা সাহিত্য', 'sahitto', 'bangla lit'], 'bangla'),
+    (['math', 'গণিত', 'gonit'], 'math'),
 ]
 
 
@@ -712,7 +787,7 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
         and not m.get('content', '').startswith('🎯 Quiz')
         and m.get('content', '').strip() not in ('Quiz করো 🎯', 'বুঝেছি', 'পরবর্তী প্রশ্ন')
     ]
-    has_study_session = len(study_messages) >= 4  # meaningful conversation
+    has_study_session = len(study_messages) >= 2  # one Q&A exchange is enough
 
     # Guard: if conversation is mostly meta (about Dipti herself / app / subjects list),
     # not about actual subject matter — refuse to generate quiz
@@ -724,7 +799,7 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
             if any(p.lower() in str(m.get('content', '')).lower() for p in _META)
         )
         if _meta_hits >= len(study_messages[-8:]) // 2:
-            return {"no_topic": True}
+            return {"no_topic": True, "reason": "meta"}
 
     convo = "\n".join(
         f"{'ছাত্র' if m['role']=='user' else 'দীপ্তি'}: {str(m.get('content',''))[:300]}"
@@ -742,16 +817,28 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
         content_block = f"ছাত্র এই session-এ যা পড়েছে:\n{convo}"
         source_rule = "শুধুমাত্র উপরের কথোপকথনে যা আলোচনা হয়েছে সেখান থেকে প্রশ্ন তৈরি করো — textbook থেকে নতুন কিছু আনবে না"
     else:
-        # Cold start: no real study session, use RAG from user's topic query
-        if not user_query.strip():
-            return {"no_topic": True}
+        # Cold start: no real study session, use RAG from user's topic query.
+        # If chip trigger (no explicit query), extract topic from whatever history exists
+        # so very fast chip clicks (before DB save) still produce a relevant quiz.
+        effective_query = user_query.strip()
+        if not effective_query:
+            for m in reversed(history):
+                content = str(m.get('content', '')).strip()
+                if (m.get('role') == 'user'
+                        and content
+                        and content not in ('Quiz করো 🎯', 'বুঝেছি', 'পরবর্তী প্রশ্ন')
+                        and not content.startswith('__')):
+                    effective_query = content[:200]
+                    break
+        if not effective_query:
+            return {"no_topic": True, "reason": "no_history"}
         try:
             from rag.query import get_relevant_chunks
-            book_context = get_relevant_chunks(user_query.strip(), subject=subject, top_k=5)
+            book_context = get_relevant_chunks(effective_query, subject=subject, top_k=5)
         except Exception as e:
             print(f"[quiz] RAG error: {e}")
         if not book_context:
-            return {"no_topic": True}
+            return {"no_topic": True, "reason": "no_study"}
         content_block = f"পাঠ্যপুস্তকের অংশ:\n{book_context}"
         source_rule = "উপরের পাঠ্যপুস্তকের অংশ থেকে একটি factual MCQ প্রশ্ন তৈরি করো"
 
@@ -761,7 +848,9 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
 
     _subject_bn = {
         'biology': 'জীববিজ্ঞান', 'physics': 'পদার্থবিজ্ঞান', 'chemistry': 'রসায়ন',
-        'math': 'গণিত', 'accounting': 'হিসাববিজ্ঞান', 'geography': 'ভূগোল',
+        'math': 'গণিত', 'higher_math': 'উচ্চতর গণিত',
+        'accounting': 'হিসাববিজ্ঞান', 'geography': 'ভূগোল',
+        'bangla': 'বাংলা সাহিত্য',
     }.get(subject, subject)
 
     prompt = f"""তুমি SSC পরীক্ষার প্রশ্ন তৈরি করছ।
@@ -811,18 +900,18 @@ def generate_quiz_mcq(history: list, subject: str = "biology", user_query: str =
 STREAM_INFO = {
     "science": {
         "name": "বিজ্ঞান বিভাগ",
-        "subjects": ["biology", "physics", "chemistry", "math"],
-        "label": "Biology, Physics, Chemistry, Math",
+        "subjects": ["biology", "physics", "chemistry", "math", "higher_math", "bangla"],
+        "label": "Biology, Physics, Chemistry, Math, Higher Math, Bangla Sahitto",
     },
     "commerce": {
         "name": "ব্যবসায় শিক্ষা বিভাগ",
-        "subjects": ["accounting", "economics"],
-        "label": "Accounting, Economics, Finance & Banking, Business Studies",
+        "subjects": ["accounting", "economics", "bangla"],
+        "label": "Accounting, Economics, Finance & Banking, Business Studies, Bangla Sahitto",
     },
     "arts": {
         "name": "মানবিক বিভাগ",
-        "subjects": ["geography", "history", "civics"],
-        "label": "Geography, History, Civics, Economics",
+        "subjects": ["geography", "history", "civics", "bangla"],
+        "label": "Geography, History, Civics, Economics, Bangla Sahitto",
     },
 }
 
@@ -852,6 +941,7 @@ def check_stream_mismatch(user_stream: str, question_subject: str) -> str | None
         "biology": "জীববিজ্ঞান", "physics": "পদার্থবিজ্ঞান",
         "chemistry": "রসায়ন", "accounting": "হিসাববিজ্ঞান",
         "geography": "ভূগোল", "economics": "অর্থনীতি",
+        "math": "গণিত", "higher_math": "উচ্চতর গণিত",
     }
     subj_label = subject_labels.get(question_subject, question_subject)
     return (
@@ -933,10 +1023,13 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "", strea
         bangla_name = _transliterate_name_to_bangla(first_name)
         prompt += f"""
 
-## ছাত্রের নাম
-ছাত্রের নাম: {bangla_name}
-মাঝে মাঝে (সব সময় না) নাম ধরে ডাকো — যখন স্বাভাবিক লাগে।
-⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে। কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
+## ছাত্রের নাম: {bangla_name}
+
+নাম ব্যবহারের নিয়ম:
+- প্রথম উত্তরে নাম দিয়ে শুরু করো: "শোনো {bangla_name}," বা "{bangla_name}, চল দেখি —"
+- এরপর প্রতি ৩-৪ বার্তায় একবার ব্যবহার করো — প্রশংসা করার সময়, নতুন topic শুরুতে, বা গুরুত্বপূর্ণ কিছু বলার আগে
+- উদাহরণ: "বাহ {bangla_name}!", "মনে রাখো {bangla_name},", "শোনো {bangla_name},"
+⚠️ HARD RULE: নাম লেখার সময় শুধু "{bangla_name}" লিখবে — কখনো "{first_name}" বা অন্য কোনো Latin/English script-এ লিখবে না।
 """
 
     if student_profile:
@@ -1033,13 +1126,161 @@ def build_system_prompt(nctb_context: str, project_instructions: str = "", strea
     return prompt
 
 
+# Romanised spellings → canonical Bengali piece title for bangla RAG fallback.
+# Covers common student transliterations. Keys are lowercase stripped.
+_BANGLA_ROMAN_TO_BN = {
+    # কবিতা
+    "bosek": "বোশেখ", "boshek": "বোশেখ", "boisakh": "বোশেখ", "boishakh": "বোশেখ",
+    "ranar": "রানার", "raanar": "রানার",
+    "michil": "মিছিল", "mochil": "মিছিল", "mishil": "মিছিল",
+    "chunia": "চুনিয়া", "chuniya": "চুনিয়া",
+    "manush": "মানুষ", "manus": "মানুষ",
+    "praan": "প্রাণ", "pran": "প্রাণ",
+    "bandana": "বন্দনা", "bondona": "বন্দনা",
+    "hamd": "হামদ্", "hamdh": "হামদ্",
+    "bongobani": "বঙ্গবাণী", "bangobani": "বঙ্গবাণী",
+    "kapotakkho": "কপোতাক্ষ", "kopotokkho": "কপোতাক্ষ",
+    "jiban songit": "জীবন-সঙ্গীত", "jibonsongit": "জীবন-সঙ্গীত",
+    "juta abishkar": "জুতা-আবিষ্কার", "juta aviskar": "জুতা-আবিষ্কার",
+    "jhorna": "ঝরনার গান", "jhornar gan": "ঝরনার গান",
+    "chhayabaji": "ছায়াবাজি", "chayabaji": "ছায়াবাজি",
+    "umar faruk": "উমর ফারুক", "omar faruk": "উমর ফারুক",
+    "shamsur": "তোমাকে পাওয়ার", "tomake pawar": "তোমাকে পাওয়ার",
+    "poster": "পোস্টার",
+    "asha": "আশা", "aasha": "আশা",
+    "bristi": "বৃষ্টি", "brishti": "বৃষ্টি",
+    "meyedin": "মে-দিনের", "me diner": "মে-দিনের",
+    "obak": "অবাক সূর্যোদয়", "abak": "অবাক সূর্যোদয়",
+    "seidin": "সেইদিন", "sheidin": "সেইদিন",
+    "sammobadi": "সাম্যবাদী", "samobadi": "সাম্যবাদী",
+    # গদ্য
+    "subha": "সুভা", "suva": "সুভা",
+    "abhagir": "অভাগীর স্বর্গ", "obhagir": "অভাগীর স্বর্গ",
+    "momtadi": "মমতাদি", "momtadee": "মমতাদি",
+    "nimgach": "নিমগাছ", "nimgaach": "নিমগাছ",
+    "am atir": "আম-আঁটির ভেঁপু", "amattir": "আম-আঁটির ভেঁপু",
+    "bonomanush": "বনমানুষ", "bono manush": "বনমানুষ",
+    "ekattorer": "একাত্তরের দিনগুলি", "71 er": "একাত্তরের দিনগুলি",
+    "ekushey": "একুশের গল্প", "ekusher": "একুশের গল্প",
+    "sikkha": "শিক্ষা ও মনুষ্যত্ব", "shikkha": "শিক্ষা ও মনুষ্যত্ব",
+    "boi pora": "বই পড়া", "boi para": "বই পড়া",
+    "library": "লাইব্রেরি", "laibrary": "লাইব্রেরি",
+}
+
+
+# Authoritative title → author mapping. Used to inject verified author info
+# BEFORE RAG chunks so MCQ wrong-answer options cannot override it.
+_BANGLA_AUTHORS = {
+    "প্রতুপকার": "ঈশ্বরচন্দ্র বিদ্যাসাগর", "ফুলের বিবাহ": "বঙ্কিমচন্দ্র চট্টোপাধ্যায়",
+    "সুভা": "রবীন্দ্রনাথ ঠাকুর", "লাইব্রেরি": "রবীন্দ্রনাথ ঠাকুর",
+    "বই পড়া": "প্রমথ চৌধুরী", "অভাগীর স্বর্গ": "শরৎচন্দ্র চট্টোপাধ্যায়",
+    "নিরীহ বাঙালি": "রোকেয়া সাখাওয়াত হোসেন", "পল্লীসাহিত্য": "মুহম্মদ শহীদুল্লাহ",
+    "উদ্যম ও পরিশ্রম": "মোহাম্মদ লুৎফর রহমান", "জীবনে শিল্পের স্থান": "এস. ওয়াজেদ আলি",
+    "আম-আঁটির ভেঁপু": "বিভূতিভূষণ বন্দ্যোপাধ্যায়", "মানুষ মুহম্মদ": "মোহাম্মদ ওয়াজেদ আলী",
+    "উপেক্ষিত শক্তির উদ্বোধন": "কাজী নজরুল ইসলাম", "নিমগাছ": "বনফুল (বলাইচাঁদ মুখোপাধ্যায়)",
+    "শিক্ষা ও মনুষ্যত্ব": "মোতাহের হোসেন চৌধুরী", "প্রবাস বন্ধু": "সৈয়দ মুজতবা আলী",
+    "মমতাদি": "মানিক বন্দ্যোপাধ্যায়", "বনমানুষ": "আবু ইসহাক",
+    "একাত্তরের দিনগুলি": "জাহানারা ইমাম", "স্বাধীনতা আমার স্বাধীনতা": "মমতাজউদদীন আহমদ",
+    "একুশের গল্প": "জহির রায়হান", "আমাদের সংস্কৃতি": "আনিসুজ্জামান",
+    "সাহিত্যের রূপ ও রীতি": "হায়াৎ মামুদ", "বাংলা শব্দ": "হুমায়ুন আজাদ",
+    "বন্দনা": "শাহ মুহম্মদ সগীর", "হামদ্": "আলাওল",
+    "বঙ্গবাণী": "আবদুল হাকিম", "কপোতাক্ষ নদ": "মাইকেল মধুসূদন দত্ত",
+    "জীবন-সঙ্গীত": "হেমচন্দ্র বন্দ্যোপাধ্যায়", "প্রাণ": "রবীন্দ্রনাথ ঠাকুর",
+    "জুতা-আবিষ্কার": "রবীন্দ্রনাথ ঠাকুর", "ঝরনার গান": "সত্যেন্দ্রনাথ দত্ত",
+    "ছায়াবাজি": "সুকুমার রায়", "জীবন বিনিময়": "গোলাম মোস্তফা",
+    "সাম্যবাদী": "কাজী নজরুল ইসলাম",
+    "মানুষ": "কাজী নজরুল ইসলাম", "উমর ফারুক": "কাজী নজরুল ইসলাম",
+    "সেইদিন এই মাঠ": "জীবনানন্দ দাশ", "যাব আমি তোমার দেশে": "জসীমউদ্দীন",
+    "একটি কবিতা": "বিষ্ণু দে", "আমার দেশ": "সুফিয়া কামাল",
+    "আমি কোনো আগন্তুক নই": "আহসান হাবীব", "বৃষ্টি": "ফররুখ আহমদ",
+    "মে-দিনের কবিতা": "সুভাষ মুখোপাধ্যায়", "আশা": "সিকান্দার আবু জাফর",
+    "পোস্টার": "আবুল হোসেন", "রানার": "সুকান্ত ভট্টাচার্য",
+    "তোমাকে পাওয়ার জন্যে, হে স্বাধীনতা": "শামসুর রাহমান",
+    "অবাক সূর্যোদয়": "হাসান হাফিজুর রহমান", "বোশেখ": "আল মাহমুদ",
+    "চুনিয়া আমার আর্কেডিয়া": "রফিক আজাদ", "মিছিল": "রুদ্র মুহম্মদ শহিদুল্লাহ",
+}
+
+
+def _bangla_roman_lookup(text: str) -> str:
+    """Return Bengali piece title if a known romanised name is found in text."""
+    t = text.lower().strip()
+    for roman, bn in _BANGLA_ROMAN_TO_BN.items():
+        if roman in t:
+            return bn
+    return ""
+
+
+def _bangla_author_hint(text: str) -> str:
+    """
+    If text mentions a known bangla piece title (Bengali or romanised),
+    return a pinned author fact string to prepend to RAG context.
+    """
+    t = text.lower().strip()
+
+    # Check Bengali titles first
+    for title, author in _BANGLA_AUTHORS.items():
+        if title in text:
+            return (
+                f"[✅ নিশ্চিত তথ্য — NCTB বাংলা সাহিত্য]\n"
+                f"'{title}' → NCTB পাঠ্যবইয়ের একটি রচনার শিরোনাম। লেখক/কবি: {author}\n"
+                f"(এই তথ্যটি সর্বোচ্চ অগ্রাধিকার — অন্য কোনো তথ্য থাকলেও এটাই সঠিক)"
+            )
+
+    # Then check romanised → Bengali title
+    roman_title = _bangla_roman_lookup(text)
+    if roman_title and roman_title in _BANGLA_AUTHORS:
+        author = _BANGLA_AUTHORS[roman_title]
+        # Find which romanised key triggered the match — used to bridge it for the LLM
+        matched_roman = next(
+            (r for r, bn in _BANGLA_ROMAN_TO_BN.items() if bn == roman_title and r in t),
+            ""
+        )
+        bridge = (
+            f"ছাত্র '{matched_roman}' বলতে NCTB পাঠ্যবইয়ের '{roman_title}' রচনা বোঝাচ্ছে।\n"
+            if matched_roman else ""
+        )
+        return (
+            f"[✅ নিশ্চিত তথ্য — NCTB বাংলা সাহিত্য]\n"
+            f"{bridge}"
+            f"'{roman_title}' রচনাটির লেখক/কবি: {author}\n"
+            f"(এই তথ্যটি সর্বোচ্চ অগ্রাধিকার — অন্য কোনো তথ্য থাকলেও এটাই সঠিক)"
+        )
+
+    return ""
+
+
 def do_rag_lookup(user_input: str, subject: str = "biology"):
     """
     Step 1: Run RAG retrieval ONLY. Returns (nctb_context, chapters_found).
     Separated so we can show progress to the user before the LLM call starts.
     """
-    nctb_context = get_relevant_chunks(user_input, subject=subject)
-    chapters_found = get_chapters_for_question(user_input, subject=subject)
+    # Mixed-script queries (Bangla + romanised Latin) produce poor embeddings.
+    # Use only the Bengali portion when it's long enough to be meaningful.
+    bn_only = " ".join(re.findall(r"[ঀ-৿]+", user_input))
+
+    # For bangla: if no Bengali text, try romanised piece title lookup → use the
+    # Bengali title as the RAG query so the embedding matches the stored chunks.
+    if subject == "bangla" and len(bn_only) < 3:
+        bn_title = _bangla_roman_lookup(user_input)
+        rag_query = bn_title if bn_title else user_input
+    else:
+        rag_query = bn_only if len(bn_only) >= 3 else user_input
+
+    nctb_context = get_relevant_chunks(rag_query, subject=subject)
+    chapters_found = get_chapters_for_question(rag_query, subject=subject)
+
+    # For bangla: prepend a pinned author fact so MCQ wrong options cannot override it
+    if subject == "bangla":
+        hint = _bangla_author_hint(user_input)
+        if hint:
+            nctb_context = hint + ("\n\n---\n\n" + nctb_context if nctb_context else "")
+            if not chapters_found:
+                # extract piece name from hint for chapter label
+                for title in _BANGLA_AUTHORS:
+                    if title in user_input or (rag_query and title in rag_query):
+                        chapters_found = [title]
+                        break
+
     return nctb_context, chapters_found
 
 
@@ -1205,7 +1446,10 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
         "   Simplest: drop the (1)/(2) labels entirely — use step names like 'এখন (2) থেকে (1) বিয়োগ করি:'\n"
         "9. PROOF steps — intermediate result in text is FORBIDDEN:\n"
         "   ✗ WRONG: এখানে a=\\sqrt{1+x}+\\sqrt{1-x}, c=p এবং d=1।\n"
-        "   ✓ CORRECT: এখানে $a = \\sqrt{1+x}+\\sqrt{1-x}$, $c = p$, $d = 1$।\n\n"
+        "   ✓ CORRECT: এখানে $a = \\sqrt{1+x}+\\sqrt{1-x}$, $c = p$, $d = 1$।\n"
+        "10. MANDATORY EXPLANATION RULE — Before EVERY $$...$$ equation block, write 1-2 Bengali sentences explaining WHAT you are doing and WHY. A student must understand each step without a teacher.\n"
+        "   ✗ WRONG: $$2(lb+bh+hl) = 262$$\n$$lb+bh+hl = 131$$\n"
+        "   ✓ CORRECT: প্রশ্নমতে, বাক্সের মোট পৃষ্ঠের ক্ষেত্রফল 262 বর্গ সে.মি.:\n$$2(lb+bh+hl) = 262$$\nএখন উভয় পক্ষকে 2 দিয়ে ভাগ করি:\n$$lb+bh+hl = 131$$\n\n"
     )
     _deepseek_rules = (
         "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese characters. NEVER use Cyrillic/Russian script (а б в г etc.) — not even one letter. Use Bengali for all words including math steps like 'সরলীকরণ করো' (simplify), 'লঘিষ্ঠ আকারে' (reduce).\n\n"

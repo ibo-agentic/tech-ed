@@ -422,7 +422,7 @@ def student_opening():
     """Return Dipti's personalised opening line, streak, weak topics, and spaced-review due list."""
     from memory import get_student_profile, get_dipti_opening, save_last_stream, get_or_init_streak, get_due_reviews
     user_id = session['user_id']
-    student_name = session.get('preferred_name') or session.get('name', '')
+    student_name = (session.get('preferred_name') or session.get('name') or '').strip()
     current_stream = request.args.get('stream', '')
     profile = get_student_profile(user_id)
     opening = get_dipti_opening(profile, student_name, current_stream=current_stream)
@@ -606,7 +606,7 @@ def ask_stream():
     guest_history_payload = data.get('guest_history', [])
     history_session = session.get('history') or guest_history_payload
     # preferred_name in session wins over login-time name (persists name corrections)
-    student_name = session.get('preferred_name') or session.get('name', '')
+    student_name = (session.get('preferred_name') or session.get('name') or '').strip()
     _preferred_model = preferred_model  # capture for generator closure
 
     # Detect name correction upfront from the message itself — update session immediately
@@ -670,9 +670,9 @@ def ask_stream():
             # 4. Stream-consistency guard: if subject wasn't confirmed by detection,
             #    ensure it belongs to the current stream (prevents stale cross-stream subjects).
             _STREAM_SUBJECTS = {
-                'science':  {'biology', 'physics', 'chemistry', 'math'},
-                'commerce': {'accounting', 'math'},
-                'arts':     {'geography', 'math'},
+                'science':  {'biology', 'physics', 'chemistry', 'math', 'bangla'},
+                'commerce': {'accounting', 'math', 'bangla'},
+                'arts':     {'geography', 'math', 'bangla'},
             }
             _STREAM_DEFAULTS = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
             if not subject_confirmed and stream and stream in _STREAM_SUBJECTS:
@@ -838,9 +838,13 @@ def ask_stream():
                     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                     current_chat_id = chat['id']
                     messages_list = chat.get('messages', [])
-                    history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-6:]]
+                    db_history = [{"role": m["role"], "content": m["content"]} for m in messages_list[-8:]]
+                    # If DB hasn't saved the latest Q&A yet (background thread race),
+                    # fall back to in-memory session history which is always current
+                    sess_history = [{k: m[k] for k in ("role", "content") if k in m} for m in history_session[-8:]]
+                    history = db_history if len(db_history) >= len(sess_history) else sess_history
                 else:
-                    history = history_session[-6:]
+                    history = history_session[-8:]
                 mcq = generate_quiz_mcq(history, subject=effective_subject, user_query=user_message if not _is_chip else '')
                 if not mcq:
                     yield sse({"type": "reply", "reply": "এই মুহূর্তে প্রশ্নটা রেডি করতে পারছি না রে। একটু পরে এসে আবার চেষ্টা করো তো! 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
@@ -849,7 +853,12 @@ def ask_stream():
                     yield sse({"type": "reply", "reply": "এই টপিকে, আপাতত আর নতুন প্রশ্ন নেই! 🎯 আরো বিষয় পড়লে আরো quiz দিতে পারবো। ঠিক আছে?", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                     return
                 if mcq.get("no_topic"):
-                    yield sse({"type": "reply", "reply": "কোন অধ্যায় বা বিষয় নিয়ে কুইজ দেব বলো? 🌱", "chat_id": current_chat_id, "chapters_found": [], "chips": False})
+                    _reason = mcq.get("reason", "")
+                    if _reason == "no_history":
+                        _no_topic_msg = "কোন অধ্যায় বা বিষয় নিয়ে কুইজ দেব বলো? 🌱"
+                    else:
+                        _no_topic_msg = "চলো আরও একটু পড়ে নিই, তারপর কুইজ দেব। 📖"
+                    yield sse({"type": "reply", "reply": _no_topic_msg, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
                     return
                 opts = mcq['options']
                 mcq_history_text = f"🎯 Quiz\n{mcq['question']}\nA) {opts['A']}\nB) {opts['B']}\nC) {opts['C']}\nD) {opts['D']}\n[সঠিক উত্তর: {mcq['correct']}]"
@@ -936,38 +945,75 @@ def ask_stream():
                 chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=effective_subject)
                 current_chat_id = chat['id']
                 messages_list = chat.get('messages', [])
-                # Narrow window when subject isn't keyword-confirmed to prevent topic bleed
-                recent_count = 4 if not subject_confirmed else 10
+                # Narrow window when subject isn't keyword-confirmed to prevent topic bleed.
+                # Bangla literature always uses a short window — author names in old
+                # wrong answers from a different subject (e.g. biology) poison the reply.
+                if effective_subject == "bangla":
+                    recent_count = 4
+                else:
+                    recent_count = 4 if not subject_confirmed else 10
                 recent = messages_list[-recent_count:] if len(messages_list) > recent_count else messages_list
                 history = [
                     {k: v for k, v in m.items() if k in ("role", "content", "image_url")}
                     for m in recent
                 ]
             else:
-                recent_count = 4 if not subject_confirmed else 10
+                if effective_subject == "bangla":
+                    recent_count = 4
+                else:
+                    recent_count = 4 if not subject_confirmed else 10
                 history = history_session[-recent_count:]
+
+            # When a specific bangla author/piece is pinned in context, the
+            # conversation history about OTHER pieces only confuses the model.
+            # Use zero history so the pinned fact is the only signal.
+            if effective_subject == "bangla" and nctb_context.startswith("[✅"):
+                history = []
 
             from chain import stream_llm
             import time as _time
             reply = ""
             _t_llm_start = _time.time()
             _first_token_time = None
-            for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model):
-                if chunk:
-                    if _first_token_time is None:
-                        _first_token_time = _time.time()
-                    reply += chunk
-                    yield sse({"type": "token", "text": chunk})
+            _llm_kwargs = dict(stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model)
+            _max_retries = 2
+            for _attempt in range(_max_retries):
+                try:
+                    for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), **_llm_kwargs):
+                        if chunk:
+                            if _first_token_time is None:
+                                _first_token_time = _time.time()
+                            reply += chunk
+                            yield sse({"type": "token", "text": chunk})
+                    break  # success
+                except Exception as _llm_err:
+                    _err_str = str(_llm_err)
+                    if _attempt < _max_retries - 1 and not reply:
+                        print(f"[LLM retry {_attempt+1}] {_err_str}", flush=True)
+                        _time.sleep(1.5)
+                        yield sse({"type": "stage", "text": "আবার চেষ্টা করছি..."})
+                    else:
+                        raise
             _t_llm_end = _time.time()
             print(f"LLM: {_t_llm_end - _t_llm_start:.2f}s | first token: {(_first_token_time - _t_llm_start):.2f}s | chars: {len(reply)} (~{len(reply)//4} tokens)")
 
-            # Strip [S]/[C] subject markers (and any leaked reasoning about them) from stored reply
+            # Strip system tags that must never appear in the visible reply
             reply_clean = re.sub(r'^[^\n]*\[S\][^\n]*\n?', '', reply, flags=re.MULTILINE)
             reply_clean = re.sub(r'^[^\n]*\[C\][^\n]*\n?', '', reply_clean, flags=re.MULTILINE)
+            # Strip pinned-fact header if LLM echoed it back
+            reply_clean = re.sub(r'\[✅[^\]]*\]\n?', '', reply_clean)
 
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
                 messages_list.append({"role": "assistant", "content": reply_clean})
+                # Update session history immediately so quiz chip works even before DB save completes
+                if "history" not in session:
+                    session["history"] = []
+                session["history"].append({"role": "user", "content": user_message})
+                session["history"].append({"role": "assistant", "content": reply_clean})
+                if len(session["history"]) > 20:
+                    session["history"] = session["history"][-20:]
+                session.modified = True
                 threading.Thread(
                     target=background_save,
                     args=(current_chat_id, messages_list, user_message, user_id),
@@ -975,6 +1021,8 @@ def ask_stream():
                 ).start()
 
             chips_value = "offer_roadmap" if is_despair(user_message) else True
+            _elapsed = round(_t_llm_end - _t_llm_start, 1)
+            _first_token = round((_first_token_time - _t_llm_start), 1) if _first_token_time else None
             yield sse({
                 "type": "reply",
                 "reply": reply,
@@ -982,6 +1030,8 @@ def ask_stream():
                 "chapters_found": chapters_found if is_biology else [],
                 "chips": chips_value,
                 "subject": effective_subject,
+                "elapsed_s": _elapsed,
+                "first_token_s": _first_token,
             })
 
             # ── SESSION WRAP-UP: trigger when student says goodbye after a real session ──
@@ -1088,7 +1138,7 @@ def ask_image():
 
     from memory import get_student_profile
     student_profile = get_student_profile(user_id)
-    _img_student_name = student_profile.get('preferred_name') or session.get('name', '') if student_profile else session.get('name', '')
+    _img_student_name = (student_profile.get('preferred_name') or student_profile.get('name') or session.get('name') or '' if student_profile else session.get('name') or '').strip()
 
     if socratic_img:
         _sb = (
@@ -1204,7 +1254,7 @@ def send_test_summary():
     """Send a test summary email to the logged-in user immediately."""
     user_id = session['user_id']
     email   = session.get('email', '')
-    name    = session.get('preferred_name') or session.get('name', '')
+    name    = (session.get('preferred_name') or session.get('name') or '').strip()
     if not email:
         return jsonify({'ok': False, 'error': 'No email in session'}), 400
     from memory import get_student_profile

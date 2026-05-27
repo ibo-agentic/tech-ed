@@ -39,20 +39,44 @@ def create_toc_chunk(subject):
     """Create a special meta-chunk listing all chapters for a subject."""
     if subject not in CHAPTERS:
         return None
-    
-    chapter_list = "\n".join([
-        f"অধ্যায় {num}: {title}"
-        for ordinal, (num, title) in CHAPTERS[subject].items()
-    ])
+
+    if subject == "bangla":
+        prose = [(num, title) for k, (num, title) in CHAPTERS[subject].items() if k.startswith("g")]
+        poetry = [(num, title) for k, (num, title) in CHAPTERS[subject].items() if k.startswith("k")]
+        chapter_list = "গদ্য:\n" + "\n".join(f"{num}. {title}" for num, title in prose)
+        chapter_list += "\n\nকবিতা:\n" + "\n".join(f"{num}. {title}" for num, title in poetry)
+    else:
+        chapter_list = "\n".join([
+            f"অধ্যায় {num}: {title}"
+            for ordinal, (num, title) in CHAPTERS[subject].items()
+        ])
     
     # Subject names in multiple forms so retrieval catches Banglish queries
     subject_names = {
-        "biology": "জীববিজ্ঞান biology bio",
-        "geography": "ভূগোল bhugol bugol geography ভূগোল ও পরিবেশ",
+        "biology":     "জীববিজ্ঞান biology bio",
+        "geography":   "ভূগোল bhugol bugol geography ভূগোল ও পরিবেশ",
+        "physics":     "পদার্থবিজ্ঞান physics পদার্থ",
+        "chemistry":   "রসায়ন chemistry",
+        "math":        "গণিত math mathematics gonit",
+        "higher_math": "উচ্চতর গণিত higher math higher_math uchcho gonit",
+        "accounting":  "হিসাববিজ্ঞান accounting account",
+        "bangla":      "বাংলা সাহিত্য bangla sahitto sahitya গদ্য কবিতা",
     }
     aliases = subject_names.get(subject, subject)
 
-    content = f"""SSC NCTB {aliases} বইয়ের অধ্যায় তালিকা।
+    if subject == "bangla":
+        prose_count = sum(1 for k in CHAPTERS[subject] if k.startswith("g"))
+        poetry_count = sum(1 for k in CHAPTERS[subject] if k.startswith("k"))
+        content = f"""SSC NCTB {aliases} বইয়ের রচনা তালিকা।
+Table of Contents — piece list — গদ্য ও কবিতার তালিকা — pieces of bangla sahitto.
+
+বইয়ে মোট {prose_count}টি গদ্য এবং {poetry_count}টি কবিতা আছে।
+
+{chapter_list}
+
+কয়টি গদ্য? কয়টি কবিতা? কোন কোন রচনা আছে? List ki ki? গদ্য কবিতার নাম বলো। কী কী পড়ানো হয়?"""
+    else:
+        content = f"""SSC NCTB {aliases} বইয়ের অধ্যায় তালিকা।
 Table of Contents — chapter list — chapter name — অধ্যায়ের নাম — chapter gula — chapters of {subject}.
 
 বইয়ে মোট {len(CHAPTERS[subject])}টি অধ্যায় আছে:

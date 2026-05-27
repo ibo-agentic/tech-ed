@@ -32,7 +32,7 @@ def _get_vectorstore():
         return None
 
 
-def _search_with_relevance(question, subject, top_k):
+def _search_with_relevance(question, subject, top_k, threshold=None):
     if not subject:
         return []
 
@@ -40,11 +40,16 @@ def _search_with_relevance(question, subject, top_k):
     if vs is None:
         return []
 
+    # Bangla literature chunks use a slightly relaxed threshold — the embedding
+    # distance is higher for short poem/prose titles vs long chunk documents.
+    if threshold is None:
+        threshold = 1.30 if subject == "bangla" else RELEVANCE_THRESHOLD
+
     try:
         results = vs.similarity_search_with_score(
             question, k=top_k, filter={"subject": subject}
         )
-        relevant = [(doc, score) for doc, score in results if score <= RELEVANCE_THRESHOLD]
+        relevant = [(doc, score) for doc, score in results if score <= threshold]
 
         all_scores = [round(s, 3) for _, s in results]
         kept_scores = [round(s, 3) for _, s in relevant]

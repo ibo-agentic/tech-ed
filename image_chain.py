@@ -44,6 +44,8 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
             "- physics: motion, force, electricity, optics, waves.\n"
             "- chemistry: atoms, molecules, reactions, periodic table.\n"
             "- geography: maps, climate, rivers, population, landforms.\n"
+            "- bangla: Bengali literature text, poem titles, story/essay titles, handwritten Bangla "
+            "literary question, কবিতা, গল্প, প্রবন্ধ, সাহিত্য, author names in Bengali.\n"
             "Reply with exactly one word."
         )},
     ])

@@ -328,6 +328,7 @@
     .action-btn{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-xs);padding:2px 8px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif;transition:all .13s;}
     .action-btn:hover{color:var(--green);border-color:var(--green);}
     .action-btn.ok{color:var(--green);border-color:var(--green);}
+
     mark{background:rgba(77,127,255,.1);color:var(--blue);border-radius:3px;padding:1px 5px;font-weight:600;}
     .katex-display{margin:.8em 0;text-align:center;overflow-x:auto;overflow-y:hidden;padding:.75em 1.2em;background:rgba(13,228,160,.04);border:1px solid rgba(13,228,160,.12);border-radius:8px;font-size:1.1em;scrollbar-width:none;}
     .katex-display::-webkit-scrollbar{display:none;}
@@ -372,8 +373,12 @@
     #input-area{background:var(--bg);padding:6px 10px 0px;padding-bottom:calc(0px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
     #image-preview-strip{display:none;max-width:760px;width:100%;margin:0 auto 6px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
     #image-preview-strip.visible{display:flex;}
-    #preview-thumb{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;}
-    #preview-name{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #preview-thumb{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;cursor:pointer;}
+    #preview-name{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+    #preview-thumb:hover,#preview-name:hover{opacity:.8;}
+    #img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
+    #img-lightbox.open{display:flex;}
+    #img-lightbox img{max-width:92vw;max-height:92vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
     #remove-image-btn{background:transparent;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:2px;border-radius:4px;flex-shrink:0;}
     #file-input{display:none;}
     #chat-spacer{display:none;}
@@ -906,11 +911,15 @@
             <div class="subj-card-title">Physics</div>
             <div class="subj-card-example">13 chapters · ready</div>
           </div>
-          <div class="subj-card disabled">
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="পরমাণুর গঠন কী?" data-subject="chemistry">
             <div class="subj-card-icon">⚗️</div>
             <div class="subj-card-title">Chemistry</div>
-            <div class="subj-card-example">Coming soon</div>
-            <span class="coming-soon-tag">Soon</span>
+            <div class="subj-card-example">12 chapters · ready</div>
+          </div>
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="সুভা গল্পের সারসংক্ষেপ দাও" data-subject="bangla">
+            <div class="subj-card-icon">📖</div>
+            <div class="subj-card-title">বাংলা সাহিত্য</div>
+            <div class="subj-card-example">25 গদ্য · 27 কবিতা · ready</div>
           </div>
           <div class="subj-card disabled">
             <div class="subj-card-icon">🔢</div>
@@ -949,9 +958,12 @@
     <div id="input-area">
       <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
       <div id="image-preview-strip">
-        <img id="preview-thumb" src="" alt="preview">
-        <span id="preview-name"></span>
+        <img id="preview-thumb" src="" alt="preview" onclick="openImgLightbox()">
+        <span id="preview-name" onclick="openImgLightbox()"></span>
         <button id="remove-image-btn" onclick="removeImage()">✕</button>
+      </div>
+      <div id="img-lightbox" onclick="this.classList.remove('open')">
+        <img id="img-lightbox-img" src="" alt="full preview">
       </div>
 
       <div id="input-card">
@@ -2013,9 +2025,11 @@ function preprocessMath(text){
   text = text.replace(/^\$\$([^\n]*?)\$$/gm, (m, inner) => `$$${inner.replace(/\$/g, '')}$$`);
   text = text.replace(/^[ \t]*\$([^$\n]+)\$[ \t]*$/gm, (m, eq) => `$$${eq}$$`);
   // SHARED: strip $$...$$ blocks whose content is >30% Bengali — prose ended up in display math
+  // Exclude \text{...} content from Bengali count so chemistry formulas with Bengali labels don't get stripped
   text = text.replace(/\$\$([^$\n]+)\$\$/g, (m, content) => {
-    const bn = (content.match(/[ঀ-৿]/g) || []).length;
-    return bn > content.replace(/\s/g, '').length * 0.3 ? content.trim() : m;
+    const forCheck = content.replace(/\\text\{[^}]*\}/g, 'X').replace(/\\mathrm\{[^}]*\}/g, 'X');
+    const bn = (forCheck.match(/[ঀ-৿]/g) || []).length;
+    return bn > forCheck.replace(/\s/g, '').length * 0.3 ? content.trim() : m;
   });
 
   // GEMINI SPECIFIC (late): after decorator has wrapped bare \overline{} etc. in $...$,
@@ -2303,7 +2317,7 @@ function buildStepCard(problem, parsed) {
 function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
-  if(showChips==='image_question') initTeachProgress(text);
+  if(showChips==='image_question'){ initTeachProgress(text); _imageProblemText = text; }
   // Convert Unicode bullet • to markdown list marker so marked.js creates proper <li>
   text = text.replace(/^([ \t]*)•[ \t]+/gm, '$1* ');
   // Collapse 4+-space-indented list markers — marked.js treats them as <pre><code>
@@ -2324,7 +2338,7 @@ function addBotMessage(text, showChips=false){
       const div = createBotWrapper('');
       const bub = div.querySelector('.bubble');
       bub.style.lineHeight = '2.1';
-      bub.appendChild(buildStepCard(_lastSentText || '', parsed));
+      bub.appendChild(buildStepCard(_stepCardProblem || _lastSentText || '', parsed));
       chatBox.appendChild(div);
       mmRegister(div, 'bot');
       chatBox.scrollTop = chatBox.scrollHeight;
@@ -2376,6 +2390,8 @@ function addBotMessage(text, showChips=false){
 
 let _chipSendOverride = null;
 let _imageFollowUp = false;
+let _imageProblemText = '';  // description shown when image was first analyzed
+let _stepCardProblem = '';   // what to display in PROBLEM card of step solver
 let _imageTeachMode = false;
 let _streamDiv = null, _streamBub = null, _streamText = '';
 let _streamPending = '', _streamRafId = null;
@@ -2706,6 +2722,7 @@ function resetTeachProgress(){
 function useChip(btn, action){
   btn.closest('.reply-chips').remove();
   if(action==='write'){
+    addBotMessage('\u09A0\u09BF\u0995 \u0986\u099B\u09C7! \u09A4\u09CB\u09AE\u09BE\u09B0 \u09AD\u09BE\u09B7\u09BE\u09AF\u09BC \u09AC\u09B2\u09CB \u2014 \u09A8\u09BF\u099C\u09C7 explain \u0995\u09B0\u09B2\u09C7 \u0985\u09A8\u09C7\u0995 \u09AD\u09BE\u09B2\u09CB \u09AE\u09A8\u09C7 \u09A5\u09BE\u0995\u09C7\u0964 \uD83D\uDE0A\u270F\uFE0F', false);
     input.value='\u0986\u09AE\u09BE\u09B0 \u09AE\u09A4\u09C7, ';
     input.focus();
     autoResize(input);
@@ -2718,13 +2735,14 @@ function useChip(btn, action){
     _chipSendOverride='__QUIZ__';
     sendMessage();
   }else if(action==='done'){
-    input.value='\u09AC\u09C1\u099D\u09C7\u099B\u09BF';
-    _chipSendOverride='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7 \u09AF\u09BE\u0993\u0964';
-    _imageFollowUp=true; _pendingTeachAdvance=true;
-    sendMessage();
+    addBotMessage('\u09AC\u09BE\u09B9! \uD83C\uDF89 \u09AD\u09BE\u09B2\u09CB \u0995\u09B0\u09C7\u099B \u2014 \u098F\u09AD\u09BE\u09AC\u09C7\u0987 \u098F\u0997\u09BF\u09AF\u09BC\u09C7 \u09AF\u09BE\u0993\u0964', false);
+    const _doneChips=document.createElement('div');_doneChips.className='reply-chips';
+    _doneChips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'quiz')">\u0986\u09B0\u09C7\u0995\u099F\u09BE Quiz \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'new_topic')">\u09A8\u09A4\u09C1\u09A8 \u09AC\u09BF\u09B7\u09AF\u09BC \u09AA\u09A1\u09BC\u09AC</button>`;
+    chatBox.appendChild(_doneChips);chatBox.scrollTop=chatBox.scrollHeight;
   }else if(action==='img_solve'){
     input.value='\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993';
     _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09B2\u09C7\u0996\u09CB \u2014 \u0995, \u0996, \u0997, \u0998 \u09B8\u09AC \u0985\u0982\u09B6 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7\u0964 \u09B6\u09C1\u09A7\u09C1\u09AE\u09BE\u09A4\u09CD\u09B0 \u099B\u09AC\u09BF\u09A4\u09C7 \u09AF\u09BE \u09A6\u09C7\u0996\u09BE \u0997\u09C7\u099B\u09C7 \u09B8\u09C7\u0987 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB solve \u0995\u09B0\u09CB \u2014 NCTB \u09AC\u0987 \u09AC\u09BE context \u09A5\u09C7\u0995\u09C7 \u0985\u09A4\u09BF\u09B0\u09BF\u0995\u09CD\u09A4 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7 \u09AF\u09CB\u0997 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u09AF\u09A6\u09BF \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u0995\u09CB\u09A8\u09CB \u09A4\u09A5\u09CD\u09AF \u099B\u09AC\u09BF\u09A4\u09C7 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A8\u09BE \u09B9\u09AF\u09BC, \u09AC\u09B2\u09CB \u201C\u099B\u09AC\u09BF\u09A4\u09C7 \u098F\u0987 \u0985\u0982\u09B6 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09AC\u09CB\u099D\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09A8\u09BE\u201D \u2014 \u0985\u09A8\u09C1\u09AE\u09BE\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u0995\u09CB\u09A8\u09CB follow-up \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
+    _stepCardProblem = _imageProblemText;
     _imageFollowUp=true; _imageTeachMode=false; resetTeachProgress();
     sendMessage();
   }else if(action==='img_teach'){
@@ -3171,11 +3189,12 @@ async function sendMessage(){
   stopMic();
   const text=input.value.trim();
   if(!text&&!selectedFile)return;
-  const apiText=_chipSendOverride||text; _chipSendOverride=null;
+  const apiText=_chipSendOverride||text; const _wasChip = !!_chipSendOverride; _chipSendOverride=null;
   const display=text||'(ছবি পাঠানো হয়েছে)';
   const imgSnap=selectedFile?URL.createObjectURL(selectedFile):null;
   const fileSnap=selectedFile;
   _lastSentText = text;
+  if(!_wasChip && text) _stepCardProblem = text;
   _lastSentFile = fileSnap || null;
   input.value='';input.style.height='auto';sendBtn.disabled=true;
   const _cc=document.getElementById('char-count');if(_cc)_cc.textContent='';
@@ -3268,6 +3287,13 @@ async function sendMessage(){
       let firstStageReplaced = false;
       let quizRendered = false;
       let streamError = false;
+      let _firstTokenReceived = false;
+      // Warn user if no token arrives within 20s — LLM API is slow
+      const _slowTimer = setTimeout(()=>{
+        if(!_firstTokenReceived){
+          pushThinkingStage('একটু সময় লাগছে... ⏳ (নিচের ■ বাটনে ক্লিক করে বন্ধ করতে পারো)');
+        }
+      }, 20000);
 
       try{
         while(true){
@@ -3314,6 +3340,7 @@ async function sendMessage(){
               if(evt.chat_id) currentChatId=evt.chat_id;
               quizRendered=true;
             }else if(evt.type==='token'){
+              if(!_firstTokenReceived){ _firstTokenReceived=true; clearTimeout(_slowTimer); }
               if(!_streamDiv){
                 sealThinking();
                 document.getElementById('welcome-screen')?.remove();
@@ -3331,6 +3358,7 @@ async function sendMessage(){
           }
         }
       }catch(e){
+        clearTimeout(_slowTimer);
         const aborted = e.name === 'AbortError';
         if(!aborted) console.error('[SSE stream error]', e);
         streamError = true;
@@ -3348,6 +3376,7 @@ async function sendMessage(){
         return;
       }
 
+      clearTimeout(_slowTimer);
       removeTyping();
       if(finalReply){
         _imageFollowUp = false;
@@ -3631,6 +3660,7 @@ function _setCapturedFile(dataUrl,filename){
 }
 function handleFileSelect(e){const f=e.target.files[0];if(!f)return;selectedFile=f;const r=new FileReader();r.onload=ev=>{document.getElementById('preview-thumb').src=ev.target.result;};r.readAsDataURL(f);document.getElementById('preview-name').textContent=f.name;strip.classList.add('visible');attachBtn.classList.add('has-image');input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';}
 function removeImage(){selectedFile=null;document.getElementById('file-input').value='';document.getElementById('preview-thumb').src='';document.getElementById('preview-name').textContent='';strip.classList.remove('visible');attachBtn.classList.remove('has-image');input.placeholder='বাংলা বা English এ লিখুন...';}
+function openImgLightbox(){const src=document.getElementById('preview-thumb').src;if(!src)return;document.getElementById('img-lightbox-img').src=src;document.getElementById('img-lightbox').classList.add('open');}
 
 function showAccountModal(){
   if(!loggedInUser){showLoginPrompt(false);return;}

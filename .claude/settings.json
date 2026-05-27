@@ -20,10 +20,38 @@
       "Bash(python -c \"import subprocess; r = subprocess.run\\(['git', 'ls-files', 'chroma_db'], capture_output=True, text=True\\); print\\('chroma_db in git:', bool\\(r.stdout.strip\\(\\)\\)\\)\")",
       "Bash(netstat -ano)",
       "Bash(python fix_preprocess.py)",
-      "Bash(del \"c:\\\\Bangla\\\\bangla-edtech\\\\fix_preprocess.py\")"
+      "Bash(del \"c:\\\\Bangla\\\\bangla-edtech\\\\fix_preprocess.py\")",
+      "Bash(dir \"c:\\\\Bangla\\\\bangla-edtech\\\\\")",
+      "Bash(dir \"c:\\\\Bangla\\\\bangla-edtech\\\\*.pdf\" /b)",
+      "PowerShell(Get-Process -Name python -ErrorAction SilentlyContinue | Select-Object Id, CPU, @{N='CMD';E={$_.MainModule.FileName}})",
+      "Bash(python app.py > /tmp/app_output.log 2>&1 &)",
+      "Bash(python -)",
+      "Bash(pkill -f \"python app.py\")",
+      "Bash(python app.py)",
+      "Bash(python rag/embed.py --subjects chemistry)",
+      "Bash(python \"c:/Bangla/bangla-edtech/app.py\")",
+      "Bash(grep -n \"boxed\\\\|\\\\\\\\\\\\\\\\boxed\" \"c:/Bangla/bangla-edtech/prompt.py\")",
+      "Bash(python rag/extract_bangla.py)",
+      "Bash(echo \"Started extraction. PID: $!\")",
+      "Bash(mkdir -p \"c:\\\\Bangla\\\\bangla-edtech\\\\logs\")",
+      "Bash(echo \"PID: $!\")",
+      "PowerShell(Start-Sleep -Seconds 5; Get-Content \"c:\\\\Bangla\\\\bangla-edtech\\\\logs\\\\bangla_extract.log\" -Tail 10 -ErrorAction SilentlyContinue; if \\(-not \\(Test-Path \"c:\\\\Bangla\\\\bangla-edtech\\\\logs\\\\bangla_extract.log\"\\)\\) { \"Log file not created yet\" })",
+      "Bash(curl -s http://127.0.0.1:5000/)",
+      "Bash(pkill -f \"flask\")",
+      "Bash(python app.py &>/tmp/app_out.log & *)",
+      "Bash(python /c/Bangla/bangla-edtech/app.py)",
+      "Bash(cd /d \"c:\\\\Bangla\\\\bangla-edtech\")",
+      "Bash(python -c \"from chain import detect_subject_in_question; print\\(detect_subject_in_question\\('bosek ke likesen', fallback=None\\)\\)\")",
+      "Bash(python -c \"from chain import detect_subject_in_question, _bangla_author_hint; print\\('subject:', detect_subject_in_question\\('bosek ke likesen', fallback=None\\)\\); print\\('hint:', repr\\(_bangla_author_hint\\('bosek ke likesen'\\)[:80]\\)\\)\")",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique; if \\($procs\\) { foreach \\($p in $procs\\) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }; Write-Host \"Killed PID\\(s\\): $procs\" } else { Write-Host \"No process found on port 5000\" })",
+      "Bash(curl -s http://127.0.0.1:5000/ -o /dev/null -w \"%{http_code}\")",
+      "PowerShell($procs = Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique; foreach \\($p in $procs\\) { $proc = Get-Process -Id $p -ErrorAction SilentlyContinue; Write-Host \"PID: $p | Name: $\\($proc.Name\\) | Path: $\\($proc.Path\\)\" })",
+      "PowerShell(foreach \\($p in @\\(22892, 61476\\)\\) { $proc = Get-WmiObject Win32_Process -Filter \"ProcessId=$p\" -ErrorAction SilentlyContinue; Write-Host \"PID $p | CmdLine: $\\($proc.CommandLine\\)\" })"
     ],
     "additionalDirectories": [
-      "c:\\Users\\Ibo\\.claude\\projects\\c--Bangla-bangla-edtech\\memory"
+      "c:\\Users\\Ibo\\.claude\\projects\\c--Bangla-bangla-edtech\\memory",
+      "c:\\Bangla\\bangla-edtech",
+      "\\tmp"
     ]
   }
 }
