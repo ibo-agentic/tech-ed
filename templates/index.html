@@ -185,7 +185,7 @@
     .main-search-inner input::placeholder{color:var(--text3);}
 
     #chat-area-wrap{position:relative;flex:1;min-height:0;display:flex;overflow:hidden;}
-    #chat-box{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px 28px 12px 16px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
+    #chat-box{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:18px max(1.25rem,calc((100% - 48rem)/2)) 12px max(1.25rem,calc((100% - 48rem)/2));display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
     #chat-minimap{position:absolute;right:0;top:0;bottom:0;width:12px;z-index:12;pointer-events:none;opacity:0;transition:opacity .25s;}
     #chat-minimap.visible{opacity:1;pointer-events:auto;}
     #chat-minimap::before{content:'';position:absolute;inset:0;background:var(--bg3);border-left:1px solid var(--border);}
@@ -196,7 +196,7 @@
     #chat-minimap:hover .mm-item.bot{opacity:.7;}
     .mm-item:hover{width:10px;right:1px;}
     #mm-thumb{position:absolute;right:0;width:12px;background:rgba(58,109,232,.18);border-left:2px solid var(--blue);border-radius:1px;pointer-events:none;transition:top .06s,height .06s;z-index:1;}
-    @media(max-width:700px){
+    @media(max-width:768px){
       #chat-minimap{display:none;}
       #chat-box{padding-right:16px;}
     }
@@ -288,17 +288,18 @@
     .guest-limit-bubble .gl-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;}
     .guest-limit-bubble .gl-btn{background:linear-gradient(135deg,#e8643c,#f0a35e);color:#fff;border:none;border-radius:22px;padding:10px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;width:100%;transition:opacity .15s;}
     .guest-limit-bubble .gl-btn:hover{opacity:.88;}
-    .roadmap-card{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:16px;max-width:420px;}
-    .roadmap-header{font-size:13px;font-weight:700;color:var(--green);margin-bottom:14px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .roadmap-bubble{width:100%!important;padding:4px 0!important;background:transparent!important;border:none!important;display:flex;justify-content:center;}
+    .roadmap-card{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:14px 16px;max-width:280px;}
+    .roadmap-header{font-size:12.5px;font-weight:700;color:var(--green);margin-bottom:10px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .roadmap-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
     .roadmap-step{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .roadmap-dot{font-size:14px;width:18px;flex-shrink:0;color:var(--green);}
     .roadmap-label{line-height:1.5;}
     .roadmap-start-btn{width:100%;background:transparent;border:1px solid var(--green);border-radius:8px;color:var(--green);padding:8px 14px;font-size:12px;font-family:'Noto Sans Bengali','Sora',sans-serif;cursor:pointer;transition:background .15s;}
     .roadmap-start-btn:hover{background:var(--green-bg);}
-    .roadmap-chapter-list{display:flex;flex-direction:column;gap:6px;}
-    .roadmap-chapter-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;text-align:left;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:border-color .15s,color .15s;display:flex;align-items:center;gap:8px;}
-    .roadmap-chapter-btn:hover{border-color:var(--green);color:var(--text);}
+    .roadmap-chapter-list{display:flex;flex-direction:column;gap:5px;}
+    .roadmap-chapter-btn{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text2);cursor:pointer;text-align:left;font-family:'Noto Sans Bengali','Sora',sans-serif;transition:background .15s,border-color .15s,color .15s;display:flex;align-items:center;gap:8px;width:100%;}
+    .roadmap-chapter-btn:hover{border-color:var(--green);color:var(--text);background:rgba(13,228,160,.06);}
     .roadmap-ch-num{color:var(--green);font-weight:700;min-width:20px;}
     .mcq-label{font-size:10px;font-weight:700;color:var(--green);letter-spacing:.8px;margin-bottom:8px;}
     .mcq-question{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:12px;line-height:1.85;font-family:'Noto Sans Bengali','Sora',sans-serif;}
@@ -370,21 +371,28 @@
     .nav-text{font-size:12px;color:var(--text2);line-height:1.45;word-break:break-word;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     @media(max-width:480px){ #nav-panel{width:calc(100vw - 28px);right:14px;top:54px;}}
 
-    #input-area{background:var(--bg);padding:6px 10px 0px;padding-bottom:calc(0px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
-    #image-preview-strip{display:none;max-width:760px;width:100%;margin:0 auto 6px;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 9px;}
-    #image-preview-strip.visible{display:flex;}
-    #preview-thumb{width:34px;height:34px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);flex-shrink:0;cursor:pointer;}
-    #preview-name{flex:1;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
-    #preview-thumb:hover,#preview-name:hover{opacity:.8;}
+    #input-area{background:var(--bg);padding:6px max(1.25rem,calc((100% - 48rem)/2)) 0px;padding-bottom:calc(0px + var(--safe-bottom));flex-shrink:0;position:relative;z-index:10;}
+    #image-preview-strip{display:none;width:100%;margin-bottom:6px;align-items:center;gap:0;padding:0;}
+    #image-preview-strip.visible{display:flex;flex-direction:column;gap:6px;}
+    #preview-items{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;width:100%;}
+    .preview-item{position:relative;display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:7px 36px 7px 7px;min-width:0;max-width:220px;flex-shrink:0;transition:border-color .15s,box-shadow .15s;}
+    .preview-item:hover{border-color:var(--green);box-shadow:0 0 0 1px rgba(13,228,160,.15);}
+    .preview-item-thumb{width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;cursor:pointer;display:block;}
+    .preview-pdf-icon{width:40px;height:40px;border-radius:6px;background:rgba(77,127,255,.12);border:1px solid rgba(77,127,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;cursor:pointer;}
+    .preview-item-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+    .preview-item-name{font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;line-height:1.3;}
+    .preview-item-size{font-size:10px;color:var(--text3);line-height:1;}
+    .preview-item-remove{position:absolute;top:50%;right:7px;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:var(--bg4);border:1.5px solid var(--border2);color:var(--text3);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;transition:background .15s,border-color .15s,color .15s;}
+    .preview-item-remove:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
+    #preview-count{font-size:10.5px;color:var(--text3);white-space:nowrap;align-self:flex-end;padding-right:2px;}
     #img-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
     #img-lightbox.open{display:flex;}
     #img-lightbox img{max-width:92vw;max-height:92vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
-    #remove-image-btn{background:transparent;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:2px;border-radius:4px;flex-shrink:0;}
     #file-input{display:none;}
     #chat-spacer{display:none;}
     #chat-box:has(#welcome-screen) > #chat-spacer{display:block;flex:1;min-height:0;}
     /* ── Claude-style input card ── */
-    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;max-width:760px;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;padding:10px 14px 8px;}
+    #input-card{background:var(--bg2);border:1.5px solid var(--border2);border-radius:18px;transition:border-color .2s,box-shadow .2s;width:100%;box-sizing:border-box;display:flex;flex-direction:column;padding:10px 14px 8px;}
     #input-card:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(13,228,160,.07);}
     #user-input{width:100%;background:transparent;border:none;outline:none;padding:2px 0 0;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;resize:none;height:22px;min-height:22px;max-height:200px;line-height:1.45;font-size:15px;display:block;box-sizing:border-box;overflow-y:hidden;}
     #user-input::placeholder{color:var(--text3);}
@@ -588,7 +596,8 @@
 
     @media(max-width:1100px){:root{--right-w:220px;}}
     @media(max-width:900px){.right-sidebar{display:none;}}
-    @media(max-width:700px){
+    @media(min-width:769px) and (max-width:1024px){:root{--left-w:200px;}}
+    @media(max-width:768px){
       .left-sidebar{position:fixed;top:0;left:0;bottom:0;z-index:40;transform:translateX(-100%);width:var(--left-w)!important;}
       .left-sidebar.open{transform:translateX(0);}
       .left-sidebar.collapsed{width:var(--left-w)!important;transform:translateX(-100%);}
@@ -598,9 +607,10 @@
       .mobile-bottom-nav{display:flex;}
       .main-search-bar{display:flex;}
       .chat-topic-bar{display:none;}
-      #chat-box{padding:12px 12px 8px;gap:12px;}
-      #input-area{padding:8px 10px calc(8px + var(--safe-bottom));}
+      #chat-box{padding:12px 1.25rem 8px;gap:12px;}
+      #input-area{padding:8px 1.25rem calc(8px + var(--safe-bottom));}
       #input-card{border-radius:16px;padding:10px 12px 8px;}
+      #send-btn,#stop-btn{width:44px;height:44px;}
       .user .bubble{max-width:85%;}
       .bot .bubble{font-size:13px;padding:10px 13px;}
       .message-actions{opacity:1;}
@@ -850,7 +860,7 @@
 
     <div class="main-search-bar" id="main-search-bar">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;">
-        <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;padding:2px;" onclick="toggleSidebar()">☰</button>
+        <button style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;" onclick="toggleSidebar()">☰</button>
         <span style="font-size:16px;font-weight:800;color:var(--text);cursor:pointer;" onclick="location.reload()">Dipti AI</span>
         <div style="display:flex;align-items:center;gap:8px;">
           <button id="socratic-btn-mobile" onclick="toggleSocratic()" title="সক্রেটিক মোড" style="background:none;border:1px solid var(--border2);border-radius:12px;color:var(--text2);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'Sora',sans-serif;white-space:nowrap;">🧠 <span id="socratic-label-mobile">Off</span></button>
@@ -921,21 +931,19 @@
             <div class="subj-card-title">বাংলা সাহিত্য</div>
             <div class="subj-card-example">25 গদ্য · 27 কবিতা · ready</div>
           </div>
-          <div class="subj-card disabled">
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="দ্বিঘাত সমীকরণ কী?" data-subject="math">
             <div class="subj-card-icon">🔢</div>
-            <div class="subj-card-title">Math</div>
-            <div class="subj-card-example">Coming soon</div>
-            <span class="coming-soon-tag">Soon</span>
+            <div class="subj-card-title">General Math</div>
+            <div class="subj-card-example">ready</div>
+          </div>
+          <div class="subj-card" onclick="sendSuggestionWithSubject(this)" data-q="সেট ও ফাংশন কী?" data-subject="higher_math">
+            <div class="subj-card-icon">📐</div>
+            <div class="subj-card-title">Higher Math</div>
+            <div class="subj-card-example">ready</div>
           </div>
           <div class="subj-card disabled">
             <div class="subj-card-icon">🗣️</div>
             <div class="subj-card-title">English</div>
-            <div class="subj-card-example">Coming soon</div>
-            <span class="coming-soon-tag">Soon</span>
-          </div>
-          <div class="subj-card disabled">
-            <div class="subj-card-icon">🇧🇩</div>
-            <div class="subj-card-title">Bangla</div>
             <div class="subj-card-example">Coming soon</div>
             <span class="coming-soon-tag">Soon</span>
           </div>
@@ -956,11 +964,10 @@
     </div>
 
     <div id="input-area">
-      <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+      <input type="file" id="file-input" accept="image/*,.pdf" multiple onchange="handleFileSelect(event)">
       <div id="image-preview-strip">
-        <img id="preview-thumb" src="" alt="preview" onclick="openImgLightbox()">
-        <span id="preview-name" onclick="openImgLightbox()"></span>
-        <button id="remove-image-btn" onclick="removeImage()">✕</button>
+        <div id="preview-items"></div>
+        <span id="preview-count"></span>
       </div>
       <div id="img-lightbox" onclick="this.classList.remove('open')">
         <img id="img-lightbox-img" src="" alt="full preview">
@@ -1331,8 +1338,13 @@ function getBDTGreeting(){
   return{text:'Good night, '+firstName,emoji:'🌙'};
 }
 
-let selectedFile=null,isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,loggedInUser=null;
+let selectedFiles=[],isDark=true,cardTab='login',verifyEmail='',resetEmail='',currentChatId=null,sidebarOpen=false,verifySubmitting=false,resetSubmitting=false,loggedInUser=null;
+const MAX_FILES=4;
 let _guestHistory=[];
+function _getGuestCount(){return parseInt(localStorage.getItem('_gc')||'0',10);}
+function _incGuestCount(){localStorage.setItem('_gc',_getGuestCount()+1);}
+function _resetGuestCount(){localStorage.removeItem('_gc');}
+
 let projects=[],currentProjectId=null,allChatsList=[],editingProjectId=null;
 const PROJECT_ICONS=['📁','📚','🔬','⚗️','🗣️','🧮','💡','📝','🎯','💪','🌍','🎨','🧠','🔥'];
 
@@ -1770,28 +1782,45 @@ function makeDiptiSVG(size=38){
   return `<svg width="${size}" height="${size}" style="display:block;border-radius:50%;"><use href="#disha-girl"/></svg>`;
 }
 
-function addUserBubble(text, imgUrl=null){
+function addUserBubble(text, fileInfos=[]){
+  // normalise: accept old string URL or array of strings for backwards compat
+  if(typeof fileInfos === 'string') fileInfos = fileInfos ? [{url:fileInfos,type:'image/jpeg',name:''}] : [];
+  if(fileInfos.length && typeof fileInfos[0] === 'string') fileInfos = fileInfos.filter(Boolean).map(u=>({url:u,type:'image/jpeg',name:''}));
+
   document.getElementById('welcome-screen')?.remove();
   const div = document.createElement('div'); div.className = 'message user';
   const bubble = document.createElement('div'); bubble.className = 'bubble';
 
-  // If only an image (no caption or trivial caption), make bubble transparent
-  const trivialCaptions = ['(ছবি পাঠানো হয়েছে)', 'এই ছবিটি দেখে বুঝিয়ে দাও।', ''];
-  const isImageOnly = !!imgUrl && trivialCaptions.includes((text || '').trim());
+  const trivialCaptions = ['(ছবি পাঠানো হয়েছে)', '(PDF পাঠানো হয়েছে)', 'এই ছবিটি দেখে বুঝিয়ে দাও।', ''];
+  const hasFiles = fileInfos.length > 0;
+  const isFileOnly = hasFiles && trivialCaptions.includes((text || '').trim());
+  if(isFileOnly) bubble.classList.add('image-only');
 
-  if(isImageOnly){
-    bubble.classList.add('image-only');
+  if(hasFiles){
+    const grid = document.createElement('div');
+    const imgCount = fileInfos.filter(f=>f.type.startsWith('image/')).length;
+    grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:'+(isFileOnly?'0':'6px')+';';
+    fileInfos.forEach(fi=>{
+      if(fi.type==='application/pdf'){
+        const card = document.createElement('div');
+        card.style.cssText = 'display:flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:8px 12px;cursor:pointer;max-width:220px;';
+        card.title = 'PDF খুলুন';
+        card.onclick = () => window.open(fi.url, '_blank');
+        card.innerHTML = '<span style="font-size:22px;flex-shrink:0;">📄</span><span style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">'+(fi.name||'document.pdf')+'</span>';
+        grid.appendChild(card);
+      } else {
+        const img = document.createElement('img');
+        img.src = fi.url;
+        img.className = 'sent-image';
+        if(imgCount > 1) img.style.cssText = 'width:calc(50% - 3px);max-width:160px;';
+        img.onclick = () => openLightbox(fi.url);
+        grid.appendChild(img);
+      }
+    });
+    bubble.appendChild(grid);
   }
 
-  if(imgUrl){
-    const img = document.createElement('img');
-    img.src = imgUrl;
-    img.className = 'sent-image';
-    img.onclick = () => openLightbox(imgUrl);
-    bubble.appendChild(img);
-  }
-
-  if(!isImageOnly){
+  if(!isFileOnly){
     const span = document.createElement('span');
     span.textContent = text;
     bubble.appendChild(span);
@@ -1800,7 +1829,7 @@ function addUserBubble(text, imgUrl=null){
   div.innerHTML = `<div class="avatar">${getUserAvatar()}</div>`;
   div.appendChild(bubble);
   chatBox.appendChild(div);
-  if(!isImageOnly) navPush(text, div);
+  if(!isFileOnly) navPush(text, div);
   mmRegister(div, 'user');
   chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -2445,13 +2474,13 @@ function renderRoadmapCard(data){
   const nr = document.createElement('div'); nr.className = 'disha-name-row';
   nr.innerHTML = `<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;
   col.appendChild(nr);
-  const bub = document.createElement('div'); bub.className = 'bubble';
+  const bub = document.createElement('div'); bub.className = 'bubble roadmap-bubble';
 
   if(data.level === 'book'){
     // Store chapters globally so onclick can reference by index (avoids quote-escaping issues)
     window._roadmapChapters = data.chapters;
     window._roadmapSubject = data.subject;
-    const subjectLabel = {'biology':'জীববিজ্ঞান','physics':'পদার্থবিজ্ঞান','accounting':'হিসাববিজ্ঞান','geography':'ভূগোল'}[data.subject] || data.subject;
+    const subjectLabel = {'biology':'জীববিজ্ঞান','physics':'পদার্থবিজ্ঞান','accounting':'হিসাববিজ্ঞান','geography':'ভূগোল','chemistry':'রসায়ন','math':'General Math','higher_math':'Higher Math','bangla':'বাংলা সাহিত্য'}[data.subject] || data.subject;
     const items = data.chapters.map((ch, i) =>
       `<button class="roadmap-chapter-btn" onclick="guidePickChapter(${i})">
         <span class="roadmap-ch-num">${ch.num}.</span> ${escapeHtml(ch.title)}
@@ -3174,7 +3203,7 @@ function showRetryError(msg){
   retryBtn.style.cssText = 'margin-top:10px;background:transparent;border:1px solid var(--danger);color:var(--danger);border-radius:8px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:inherit;display:block;';
   retryBtn.onclick = () => {
     div.remove();
-    if(_lastSentFile){ selectedFile = _lastSentFile; showImagePreview(_lastSentFile); }
+    if(_lastSentFile){ selectedFiles = [_lastSentFile]; _renderPreviewStrip(); }
     input.value = _lastSentText;
     sendMessage();
   };
@@ -3188,20 +3217,23 @@ function showRetryError(msg){
 async function sendMessage(){
   stopMic();
   const text=input.value.trim();
-  if(!text&&!selectedFile)return;
+  if(!text&&!selectedFiles.length)return;
+  if(!loggedInUser && _getGuestCount()>=7){showLoginPrompt(true);return;}
   const apiText=_chipSendOverride||text; const _wasChip = !!_chipSendOverride; _chipSendOverride=null;
-  const display=text||'(ছবি পাঠানো হয়েছে)';
-  const imgSnap=selectedFile?URL.createObjectURL(selectedFile):null;
-  const fileSnap=selectedFile;
+  const hasPdfFile=selectedFiles.some(f=>f.type==='application/pdf');
+  const display=text||(hasPdfFile?'(PDF পাঠানো হয়েছে)':'(ছবি পাঠানো হয়েছে)');
+  const filesSnap=[...selectedFiles];
+  const fileInfos=filesSnap.map(f=>({url:URL.createObjectURL(f),type:f.type,name:f.name}));
   _lastSentText = text;
   if(!_wasChip && text) _stepCardProblem = text;
-  _lastSentFile = fileSnap || null;
+  _lastSentFile = filesSnap[0] || null;
   input.value='';input.style.height='auto';sendBtn.disabled=true;
   const _cc=document.getElementById('char-count');if(_cc)_cc.textContent='';
   document.querySelectorAll('.reply-chips').forEach(c=>c.remove());
-  addUserBubble(display,imgSnap);showTyping();
+  if(!loggedInUser) _incGuestCount();
+  addUserBubble(display,fileInfos);showTyping();
 
-  if(fileSnap) removeImage();
+  if(filesSnap.length) removeImage();
 
   // Stage timer for image uploads — pushes progress messages since /ask-image doesn't stream
   let imgStageTimer = null;
@@ -3224,11 +3256,11 @@ async function sendMessage(){
   }
 
   try{
-    if(fileSnap){
+    if(filesSnap.length){
       // ── IMAGE PATH (/ask-image, non-streaming — show timed stage hints) ──
       startImageStages();
       const fd=new FormData();
-      fd.append('image',fileSnap);
+      filesSnap.forEach(f=>fd.append('images',f));
       fd.append('message',apiText||'এই ছবিটি দেখে বুঝিয়ে দাও।');
       if(currentChatId)fd.append('chat_id',currentChatId);
       if(currentProjectId)fd.append('project_id',currentProjectId);
@@ -3650,17 +3682,81 @@ function retakePhoto(){
 function _setCapturedFile(dataUrl,filename){
   fetch(dataUrl).then(r=>r.blob()).then(blob=>{
     const file=new File([blob],filename,{type:'image/jpeg'});
-    selectedFile=file;
-    document.getElementById('preview-thumb').src=dataUrl;
-    document.getElementById('preview-name').textContent=filename;
-    strip.classList.add('visible');
-    attachBtn.classList.add('has-image');
-    input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';
+    if(selectedFiles.length>=MAX_FILES){_showFileToast('সর্বোচ্চ '+MAX_FILES+'টি ছবি দেওয়া যাবে');return;}
+    selectedFiles.push(file);
+    _renderPreviewStrip();
   });
 }
-function handleFileSelect(e){const f=e.target.files[0];if(!f)return;selectedFile=f;const r=new FileReader();r.onload=ev=>{document.getElementById('preview-thumb').src=ev.target.result;};r.readAsDataURL(f);document.getElementById('preview-name').textContent=f.name;strip.classList.add('visible');attachBtn.classList.add('has-image');input.placeholder='এই ছবি সম্পর্কে প্রশ্ন লেখো...';}
-function removeImage(){selectedFile=null;document.getElementById('file-input').value='';document.getElementById('preview-thumb').src='';document.getElementById('preview-name').textContent='';strip.classList.remove('visible');attachBtn.classList.remove('has-image');input.placeholder='বাংলা বা English এ লিখুন...';}
-function openImgLightbox(){const src=document.getElementById('preview-thumb').src;if(!src)return;document.getElementById('img-lightbox-img').src=src;document.getElementById('img-lightbox').classList.add('open');}
+function _showFileToast(msg){
+  let t=document.getElementById('file-toast');
+  if(!t){t=document.createElement('div');t.id='file-toast';t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--danger);color:#fff;font-size:12px;padding:7px 16px;border-radius:20px;z-index:9999;font-family:Sora,sans-serif;pointer-events:none;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._timer);t._timer=setTimeout(()=>{t.style.opacity='0';},2500);
+}
+function _fmtSize(bytes){
+  if(bytes<1024)return bytes+'B';
+  if(bytes<1048576)return (bytes/1024).toFixed(0)+' KB';
+  return (bytes/1048576).toFixed(1)+' MB';
+}
+function _renderPreviewStrip(){
+  const items=document.getElementById('preview-items');
+  const count=document.getElementById('preview-count');
+  if(!items)return;
+  items.innerHTML='';
+  if(selectedFiles.length===0){strip.classList.remove('visible');attachBtn.classList.remove('has-image');input.placeholder='বাংলা বা English এ লিখুন...';if(count)count.textContent='';return;}
+  strip.classList.add('visible');attachBtn.classList.add('has-image');
+  const hasPdf=selectedFiles.some(f=>f.type==='application/pdf');
+  input.placeholder=hasPdf?'এই PDF সম্পর্কে প্রশ্ন লেখো...':'এই ছবি সম্পর্কে প্রশ্ন লেখো...';
+  selectedFiles.forEach((f,i)=>{
+    const wrap=document.createElement('div');wrap.className='preview-item';
+    const isPdf=f.type==='application/pdf';
+    if(isPdf){
+      wrap.style.cursor='pointer';
+      wrap.title='PDF খুলুন: '+f.name;
+      wrap.onclick=()=>window.open(URL.createObjectURL(f),'_blank');
+    }
+    // Left: thumbnail or icon
+    if(isPdf){
+      const icon=document.createElement('div');icon.className='preview-pdf-icon';icon.textContent='📄';
+      wrap.appendChild(icon);
+    }else{
+      const img=document.createElement('img');img.className='preview-item-thumb';img.title=f.name;img.style.cursor='pointer';
+      img.onclick=()=>{document.getElementById('img-lightbox-img').src=img.src;document.getElementById('img-lightbox').classList.add('open');};
+      const r=new FileReader();r.onload=ev=>img.src=ev.target.result;r.readAsDataURL(f);
+      wrap.appendChild(img);
+    }
+    // Middle: name + size
+    const info=document.createElement('div');info.className='preview-item-info';
+    const name=document.createElement('div');name.className='preview-item-name';
+    name.textContent=f.name.length>22?f.name.slice(0,20)+'…':f.name;
+    name.title=f.name;
+    const size=document.createElement('div');size.className='preview-item-size';size.textContent=_fmtSize(f.size);
+    info.appendChild(name);info.appendChild(size);
+    wrap.appendChild(info);
+    // Right: × button
+    const rm=document.createElement('button');rm.className='preview-item-remove';rm.innerHTML='✕';rm.title='সরাও';
+    rm.onclick=(e)=>{e.stopPropagation();selectedFiles.splice(i,1);document.getElementById('file-input').value='';_renderPreviewStrip();};
+    wrap.appendChild(rm);
+    items.appendChild(wrap);
+  });
+  if(count) count.textContent=selectedFiles.length+' of '+MAX_FILES+' files';
+}
+function handleFileSelect(e){
+  const incoming=Array.from(e.target.files||[]);
+  document.getElementById('file-input').value='';
+  if(!incoming.length)return;
+  const hasPdf=incoming.some(f=>f.type==='application/pdf');
+  const existingPdf=selectedFiles.some(f=>f.type==='application/pdf');
+  if(hasPdf&&selectedFiles.length>0){_showFileToast('PDF একা আপলোড করতে হবে — আগের ফাইল সরিয়ে নাও');return;}
+  if(existingPdf&&incoming.length>0){_showFileToast('PDF-এর সাথে অন্য ফাইল দেওয়া যাবে না');return;}
+  if(hasPdf&&incoming.length>1){_showFileToast('একসাথে একটিই PDF দেওয়া যাবে');return;}
+  const newFiles=incoming.filter(f=>f.type.startsWith('image/')||f.type==='application/pdf');
+  const combined=[...selectedFiles,...newFiles];
+  if(combined.length>MAX_FILES){_showFileToast('সর্বোচ্চ '+MAX_FILES+'টি ছবি দেওয়া যাবে');selectedFiles=combined.slice(0,MAX_FILES);}
+  else{selectedFiles=combined;}
+  _renderPreviewStrip();
+}
+function removeImage(){selectedFiles=[];document.getElementById('file-input').value='';_renderPreviewStrip();}
+function openImgLightbox(){}
 
 function showAccountModal(){
   if(!loggedInUser){showLoginPrompt(false);return;}
@@ -3717,6 +3813,7 @@ async function confirmLogout(){
 
 function updateUserUI(userData){
   loggedInUser=userData;
+  if(userData) _resetGuestCount();
   const btn=document.getElementById('account-btn');
   if(btn&&userData){
     btn.textContent=getInitials(userData.name||userData.email||'U');
@@ -3777,7 +3874,7 @@ async function checkLoginState(){
 }
 
 function showGuestLimitCard(){
-  if(document.getElementById('guest-limit-card')) return; // already shown
+  if(document.getElementById('guest-limit-card')){showLoginPrompt(true);return;}
   const msgs=document.getElementById('messages');
   if(!msgs) return;
   const wrap=document.createElement('div');
@@ -3887,20 +3984,12 @@ document.addEventListener('paste', (e) => {
       if(!file) continue;
       e.preventDefault();
 
-      // Reuse existing file-select pipeline
-      selectedFile = file;
-      const r = new FileReader();
-      r.onload = ev => { document.getElementById('preview-thumb').src = ev.target.result; };
-      r.readAsDataURL(file);
-
-      // Pasted images don't have real names, so generate one
-      const ext = (file.type.split('/')[1] || 'png').toLowerCase();
-      const fakeName = `pasted-${Date.now()}.${ext}`;
-      document.getElementById('preview-name').textContent = fakeName;
-
-      strip.classList.add('visible');
-      attachBtn.classList.add('has-image');
-      input.placeholder = 'এই ছবি সম্পর্কে প্রশ্ন লেখো...';
+      if(selectedFiles.length<MAX_FILES){
+        const ext=(file.type.split('/')[1]||'png').toLowerCase();
+        const named=new File([file],`pasted-${Date.now()}.${ext}`,{type:file.type});
+        selectedFiles.push(named);
+        _renderPreviewStrip();
+      }else{_showFileToast('সর্বোচ্চ '+MAX_FILES+'টি ছবি দেওয়া যাবে');}
       input.focus();
       break; // handle one image per paste
     }

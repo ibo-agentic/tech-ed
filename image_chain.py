@@ -59,9 +59,15 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
     return result
 
 
-def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
-    """Detect subject from image and return (chain, detected_subject)."""
-    subject = detect_subject_from_image(image_base64, image_type)
+def _img_parts(images: list) -> list:
+    """Convert list of (base64, mime) tuples to LangChain image_url content parts."""
+    return [{"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}} for b64, mime in images]
+
+
+def pick_vision_chain(images: list) -> tuple:
+    """Detect subject from first image and return (chain, detected_subject)."""
+    first_b64, first_mime = images[0]
+    subject = detect_subject_from_image(first_b64, first_mime)
     if subject == "accounting_hard":
         print(f"[Image Routing] complex accounting -> Gemini 2.5 Pro")
         return pro_vision_chain, "accounting"
@@ -69,8 +75,8 @@ def pick_vision_chain(image_base64: str, image_type: str) -> tuple:
     return flash_vision_chain, subject
 
 
-def extract_problem_from_image(image_base64: str, image_type: str, user_caption: str = "") -> str:
-    """Step 1: Gemini reads the image and returns a full text extraction of the problem."""
+def extract_problem_from_image(images: list, user_caption: str = "") -> str:
+    """Step 1: Gemini reads all images and returns a full text extraction of the problem."""
     prompt = (
         "ছবিতে যা আছে সম্পূর্ণ text-এ লেখো — সব প্রশ্ন (ক/খ/গ/ঘ সহ), "
         "সব দেওয়া তথ্য, সংখ্যা, diagram description। "
@@ -78,10 +84,8 @@ def extract_problem_from_image(image_base64: str, image_type: str, user_caption:
     )
     if user_caption:
         prompt += f"\n\nছাত্রের নির্দেশ: {user_caption}"
-    msg = HumanMessage(content=[
-        {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
-        {"type": "text", "text": prompt},
-    ])
+    content = _img_parts(images) + [{"type": "text", "text": prompt}]
+    msg = HumanMessage(content=content)
     return flash_vision_chain.invoke([msg]).strip()
 
 
@@ -108,8 +112,7 @@ NCTB-তে না থাকলে নিজের জ্ঞান থেকে 
 def get_answer_with_image(
     user_input,
     history,
-    image_base64,
-    image_type="image/jpeg",
+    images: list,  # list of (base64_str, mime_type) tuples, max 4
     project_instructions: str = "",
     subject: str = "biology",
     stream: str = "",
@@ -140,8 +143,8 @@ def get_answer_with_image(
             solve_chain = deepseek_chain
             print("[Image Routing] Math+ → Gemini extract → DeepSeek V4 Flash solve", flush=True)
 
-        # Step 1: Gemini Flash reads the image and extracts all problem text
-        extracted = extract_problem_from_image(image_base64, image_type, user_caption=user_input)
+        # Step 1: Gemini Flash reads all images and extracts all problem text
+        extracted = extract_problem_from_image(images, user_caption=user_input)
         print(f"[Image Hybrid] extracted {len(extracted)} chars from image", flush=True)
 
         # Step 2: detect subject from extracted text
@@ -186,8 +189,8 @@ def get_answer_with_image(
         answer = solve_chain.invoke(msgs)
         return answer, True, detected_subj
 
-    # Auto-detect subject from image — overrides whatever the frontend sent
-    selected_chain, subject = pick_vision_chain(image_base64, image_type)
+    # Auto-detect subject from first image — overrides whatever the frontend sent
+    selected_chain, subject = pick_vision_chain(images)
 
     # Stream mismatch check — return redirect before hitting the LLM
     mismatch = check_stream_mismatch(stream, subject)
@@ -219,32 +222,21 @@ def get_answer_with_image(
     # Non-accounting + user has a real question → solve directly with vision
     if subject != "accounting" and user_input and user_input != _DEFAULT_CAPTION:
         print("[Image Pipeline] Direct vision solve")
-        messages.append(HumanMessage(content=[
-            {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
-            {"type": "text", "text": user_input},
-        ]))
+        messages.append(HumanMessage(content=_img_parts(images) + [{"type": "text", "text": user_input}]))
         answer = selected_chain.invoke(messages)
         # If model still refuses due to image quality, force a solve retry
         _blur_signals = ["ঝাপসা", "অস্পষ্ট", "পড়তে পারছি না", "blurry", "unclear", "can't read"]
         if any(s in answer for s in _blur_signals):
             print("[Image Pipeline] Blur response detected — forcing solve retry")
-            retry_msgs = messages[:-1] + [HumanMessage(content=[
-                {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
-                {"type": "text", "text": (
-                    f"{user_input}\n\n"
-                    "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই সম্পূর্ণ সমাধান দাও। "
-                    "ছবির quality নিয়ে কিছু বলবে না — সরাসরি solve করো।"
-                )},
-            ])]
+            retry_msgs = messages[:-1] + [HumanMessage(content=_img_parts(images) + [{"type": "text", "text": (
+                f"{user_input}\n\n"
+                "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই সম্পূর্ণ সমাধান দাও। "
+                "ছবির quality নিয়ে কিছু বলবে না — সরাসরি solve করো।"
+            )}])]
             answer = selected_chain.invoke(retry_msgs)
         return answer, True, subject
 
-    content = [
-        {
-            "type": "image_url",
-            "image_url": {"url": f"data:{image_type};base64,{image_base64}"},
-        }
-    ]
+    content = _img_parts(images)
 
     if user_input and user_input != _DEFAULT_CAPTION:
         content.append({"type": "text", "text": user_input})
@@ -284,13 +276,10 @@ def get_answer_with_image(
         _blur_signals = ["ঝাপসা", "অস্পষ্ট", "পড়তে পারছি না", "blurry", "unclear", "can't read"]
         if any(s in answer for s in _blur_signals):
             print("[Image Pipeline] Blur response on default path — forcing solve retry")
-            retry_content = [
-                {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
-                {"type": "text", "text": (
-                    "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই পড়ো ও সমাধান দাও। "
-                    "ছবির quality নিয়ে কিছু বলবে না — সরাসরি কাজ করো।"
-                )},
-            ]
+            retry_content = _img_parts(images) + [{"type": "text", "text": (
+                "ছবি যতটুকু দেখা যাচ্ছে সেটা দিয়েই এখনই পড়ো ও সমাধান দাও। "
+                "ছবির quality নিয়ে কিছু বলবে না — সরাসরি কাজ করো।"
+            )}]
             answer = selected_chain.invoke(messages[:-1] + [HumanMessage(content=retry_content)])
         chips = "image_question" if (not user_input or user_input == _DEFAULT_CAPTION) else True
         return answer, chips, subject

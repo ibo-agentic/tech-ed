@@ -25,6 +25,7 @@ flash_llm = ChatOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.7,
+    model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}},
 )
 vision_llm = flash_llm  # same model — supports vision natively
 
@@ -317,7 +318,7 @@ SUBJECT_ALIASES = {
     "accounting":  ["accounting", "হিসাববিজ্ঞান", "হিসাব", "hisoab", "account"],
     "physics":     ["physics", "পদার্থবিজ্ঞান", "পদার্থ", "পদার্থ বিজ্ঞান", "podartho", "podarthobiggyan"],
     "math":        ["math", "mathematics", "গণিত", "gonit", "algebra", "geometry", "বীজগণিত", "জ্যামিতি", "পরিমিতি", "পরিসংখ্যান", "ত্রিকোণমিতি"],
-    "higher_math": ["higher math", "higher_math", "উচ্চতর গণিত", "উচ্চ গণিত", "uchcho gonit", "higher gonit", "h math", "hm"],
+    "higher_math": ["highermath", "hmath", "higher math", "higher_math", "উচ্চতর গণিত", "উচ্চ গণিত", "uchcho gonit", "higher gonit", "h math", "hm"],
     "bangla":      [
         "bangla", "bangla sahitto", "বাংলা", "বাংলা সাহিত্য", "sahitto", "সাহিত্য", "bangla sahitya",
         # romanised piece titles — catches "bosek ke likesen", "ranar ki", etc.
@@ -475,6 +476,7 @@ CASUAL_PATTERNS = [
     "হ্যালো", "হ্যালো!", "hello", "hi ", "hi!", "হাই", "আসসালামু",
     "সালাম", "কেমন আছ", "কেমন আছো", "কেমন আছেন", "ভালো আছ",
     "ভালো আছো", "কী খবর", "ki khobor", "what's up", "whats up",
+    "how are you", "how r you", "how are u", "hows you", "how do you do",
     "ধন্যবাদ", "thanks", "thank you", "শুক্রিয়া",
     "আবার আসব", "bye", "বিদায়", "ok", "okay", "ঠিক আছে",
     "বুঝলাম", "বুঝেছি", "got it",
@@ -495,7 +497,7 @@ CASUAL_PATTERNS = [
 def is_casual_chat(user_input: str) -> bool:
     """Returns True for greetings/thanks/casual — skip RAG and stage indicators."""
     text = user_input.strip().lower()
-    if len(text) <= 10:
+    if len(text) <= 15:
         return True
     return any(p in text for p in CASUAL_PATTERNS)
 
@@ -677,7 +679,7 @@ _ROADMAP_SUBJECT_ALIASES = [
     (['chemistry', 'chem', 'রসায়ন', 'rasayan'], 'chemistry'),
     (['accounting', 'account', 'হিসাব', 'acounting', 'accounts'], 'accounting'),
     (['geography', 'geo', 'ভূগোল', 'geograph'], 'geography'),
-    (['higher math', 'higher_math', 'উচ্চতর গণিত', 'উচ্চ গণিত', 'uchcho gonit'], 'higher_math'),
+    (['highermath', 'higher math', 'higher_math', 'উচ্চতর গণিত', 'উচ্চ গণিত', 'uchcho gonit', 'h math', 'hmath'], 'higher_math'),
     (['bangla sahitto', 'bangla sahitya', 'বাংলা সাহিত্য', 'sahitto', 'bangla lit'], 'bangla'),
     (['math', 'গণিত', 'gonit'], 'math'),
 ]

@@ -3,8 +3,9 @@ import io
 import os
 import re
 
-# Force UTF-8 for all console output on Windows (prevents charmap errors from emoji/Bengali)
+# Force UTF-8 + unbuffered output on Windows
 os.environ.setdefault('PYTHONIOENCODING', 'utf-8')
+os.environ.setdefault('PYTHONUNBUFFERED', '1')
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
@@ -30,8 +31,26 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET", "bangla-edtech_2026")
 
+import time as _req_time
+import logging
+from flask import g as _g
+logging.getLogger('werkzeug').setLevel(logging.WARNING)  # suppress duplicate werkzeug lines
+
+@app.before_request
+def _before():
+    _g._t0 = _req_time.time()
+
+@app.after_request
+def _log_request(response):
+    elapsed = round(_req_time.time() - _g._t0, 2) if hasattr(_g, '_t0') else 0
+    skip = request.path in ('/sw.js', '/manifest.json', '/static/icon.svg')
+    if not skip:
+        print(f"[{_req_time.strftime('%H:%M:%S')}] {request.method} {request.path} {response.status_code} ({elapsed}s)", flush=True)
+    return response
+
+_IS_DEV = os.getenv("FLASK_ENV") != "production"
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=not _IS_DEV,  # False on localhost (HTTP), True on production (HTTPS)
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
     PERMANENT_SESSION_LIFETIME=timedelta(days=7)
@@ -1070,13 +1089,20 @@ def ask_image():
     print("[ask-image] request received", flush=True)
     from storage import upload_image
 
-    image_file = request.files.get("image")
+    # Accept both old single-file ("image") and new multi-file ("images") field names
+    print(f"[ask-image] files keys: {list(request.files.keys())}", flush=True)
+    print(f"[ask-image] form keys: {list(request.form.keys())}", flush=True)
+    raw_files = request.files.getlist("images") or ([request.files.get("image")] if request.files.get("image") else [])
     user_message = request.form.get("message", "")
     chat_id = request.form.get("chat_id")
     project_id = request.form.get("project_id")
 
-    if not image_file:
+    if not raw_files:
+        print(f"[ask-image] raw_files empty — files={dict(request.files)}", flush=True)
         return jsonify({"error": "No image"}), 400
+
+    # Cap at 4 files
+    raw_files = raw_files[:4]
 
     user_id = session['user_id']
 
@@ -1093,45 +1119,50 @@ def ask_image():
 
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
     current_chat_id = chat['id']
-    subject = chat.get('subject') or subject  # stored chat subject is authoritative
+    subject = chat.get('subject') or subject
     messages = chat.get('messages', [])
 
-    image_bytes = image_file.read()
-    image_type = image_file.content_type or "image/jpeg"
+    from PIL import Image, ImageOps, ImageEnhance, ImageStat
+    import io as _io
 
-    # Fix EXIF rotation, resize, and enhance if dark
-    try:
-        from PIL import Image, ImageOps, ImageEnhance, ImageStat
-        import io as _io
-        pil_img = ImageOps.exif_transpose(Image.open(_io.BytesIO(image_bytes)))
-        # RGBA/P mode can't be saved as JPEG — convert to RGB
-        if pil_img.mode not in ("RGB", "L"):
-            pil_img = pil_img.convert("RGB")
-        # Resize large images — phone photos can be 8MB+, this caps memory usage
-        MAX_SIDE = 1280
-        if max(pil_img.size) > MAX_SIDE:
-            pil_img.thumbnail((MAX_SIDE, MAX_SIDE), Image.LANCZOS)
-            print(f"[image-preprocess] resized to {pil_img.size}", flush=True)
-        # Measure brightness — only boost dark/low-contrast exam photos, skip clear screenshots
-        mean_brightness = ImageStat.Stat(pil_img.convert("L")).mean[0]
-        if mean_brightness < 160:
-            pil_img = ImageEnhance.Contrast(pil_img).enhance(1.3)
-            pil_img = ImageEnhance.Sharpness(pil_img).enhance(1.5)
-            print(f"[image-preprocess] dark image (brightness={mean_brightness:.0f}) — enhanced", flush=True)
-        else:
-            print(f"[image-preprocess] clear image (brightness={mean_brightness:.0f}) — no enhancement", flush=True)
-        buf = _io.BytesIO()
-        pil_img.save(buf, format="JPEG", quality=85)
-        image_bytes = buf.getvalue()
-        image_type = "image/jpeg"
-        print(f"[image-preprocess] final size: {len(image_bytes)//1024}KB", flush=True)
-    except Exception as e:
-        print(f"[image-preprocess] warning: {e}", flush=True)  # keep original bytes on failure
+    def _preprocess_image_file(img_f):
+        raw = img_f.read()
+        mime = img_f.content_type or "image/jpeg"
+        if "pdf" in mime:
+            return raw, "application/pdf"
+        try:
+            pil_img = ImageOps.exif_transpose(Image.open(_io.BytesIO(raw)))
+            if pil_img.mode not in ("RGB", "L"):
+                pil_img = pil_img.convert("RGB")
+            MAX_SIDE = 1280
+            if max(pil_img.size) > MAX_SIDE:
+                pil_img.thumbnail((MAX_SIDE, MAX_SIDE), Image.LANCZOS)
+                print(f"[image-preprocess] resized to {pil_img.size}", flush=True)
+            mean_brightness = ImageStat.Stat(pil_img.convert("L")).mean[0]
+            if mean_brightness < 160:
+                pil_img = ImageEnhance.Contrast(pil_img).enhance(1.3)
+                pil_img = ImageEnhance.Sharpness(pil_img).enhance(1.5)
+                print(f"[image-preprocess] dark ({mean_brightness:.0f}) -- enhanced", flush=True)
+            buf = _io.BytesIO()
+            pil_img.save(buf, format="JPEG", quality=85)
+            processed = buf.getvalue()
+            print(f"[image-preprocess] {len(processed)//1024}KB", flush=True)
+            return processed, "image/jpeg"
+        except Exception as e:
+            print(f"[image-preprocess] warning: {e}", flush=True)
+            return raw, mime
 
-    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+    all_images = []
+    image_url = None
 
-    # Upload to Supabase Storage so we can show it on chat reload
-    image_url = upload_image(image_bytes, image_type, user_id)
+    for img_f in raw_files:
+        processed_bytes, processed_mime = _preprocess_image_file(img_f)
+        b64 = base64.b64encode(processed_bytes).decode("utf-8")
+        all_images.append((b64, processed_mime))
+        if image_url is None and "pdf" not in processed_mime:
+            image_url = upload_image(processed_bytes, processed_mime, user_id)
+
+    print(f"[ask-image] {len(all_images)} file(s) ready", flush=True)
 
     recent = messages[-10:] if len(messages) > 10 else messages
     history = [{"role": m["role"], "content": m["content"]} for m in recent]
@@ -1142,7 +1173,7 @@ def ask_image():
 
     if socratic_img:
         _sb = (
-            "## 🧠 সক্রেটিক মোড সক্রিয় (সব নিয়মের উপরে)\n"
+            "## \U0001F9E0 সক্রেটিক মোড সক্রিয় (সব নিয়মের উপরে)\n"
             "সরাসরি উত্তর দেওয়া নিষিদ্ধ। সবসময়:\n"
             "→ প্রথমে জিজ্ঞেস করো: \"তুমি কী মনে করো? একটু বলো।\"\n"
             "→ ছাত্র চেষ্টা করলে: hint দাও, পুরো উত্তর নয়\n"
@@ -1154,7 +1185,7 @@ def ask_image():
 
     try:
         answer, show_chips, detected_subject = get_answer_with_image(
-            user_message, history, image_base64, image_type,
+            user_message, history, all_images,
             project_instructions=project_instructions,
             subject=subject,
             stream=stream,
@@ -1174,7 +1205,6 @@ def ask_image():
         print(f"[ask-image] classified error: {type(e).__name__}: {e}")
         return jsonify({"error": msg}), 500
 
-    # Persist message WITH image URL — this is the fix for "image disappears on reload"
     user_msg = {
         "role": "user",
         "content": user_message or "এই ছবিটি দেখে বুঝিয়ে দাও।",
