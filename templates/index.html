@@ -42,12 +42,12 @@
       --safe-top:env(safe-area-inset-top,0px);
     }
     [data-theme="light"] {
-      --bg:#eef1f6; --bg2:#f4f6f9; --bg3:#e8ecf4; --bg4:#dde2ee; --bg5:#d2d9ea;
-      --input-bg:#f8f9fc; --border:#e1e5eb; --border2:#cdd3e4; --border3:#bbc3d8;
-      --text:#141720; --text2:#5a6480; --text3:#9099b4;
+      --bg:#f0ece6; --bg2:#f7f4f0; --bg3:#e8e3db; --bg4:#ddd8cf; --bg5:#d3cdc4;
+      --input-bg:#faf7f3; --border:#ddd8cf; --border2:#c8c3ba; --border3:#b5b0a6;
+      --text:#1a1714; --text2:#5c5650; --text3:#9c968e;
       --green:#0ac48a; --green2:#059669;
-      --green-glow:rgba(10,196,138,.12); --green-bg:rgba(10,196,138,.08);
-      --amber:#c07825; --amber-bg:rgba(192,120,37,.08);
+      --green-glow:rgba(10,196,138,.12); --green-bg:rgba(10,196,138,.09);
+      --amber:#b87020; --amber-bg:rgba(184,112,32,.08);
       --blue:#3a6de8; --blue-bg:rgba(58,109,232,.08);
       --purple:#7a55b8; --accent:#4a5aee; --user-bubble:#0ac48a; --danger:#c0394a;
     }
@@ -203,12 +203,14 @@
     #chat-box::-webkit-scrollbar{width:0;background:transparent;}
     #chat-box::-webkit-scrollbar-thumb{background:transparent;}
 
-    .welcome{text-align:center;margin:0 auto;padding:28px 20px 16px;animation:fadeUp .5s ease both;display:flex;flex-direction:column;align-items:center;max-width:580px;width:100%;}
+    .welcome{text-align:center;margin:auto;padding:20px 20px 16px;animation:fadeUp .5s ease both;display:flex;flex-direction:column;align-items:center;max-width:560px;width:100%;}
     .welcome h2{font-size:20px;font-weight:700;margin-bottom:7px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
     .welcome .welcome-sub{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.9;font-family:'Noto Sans Bengali','Sora',sans-serif;}
-    .welcome .welcome-img-note{font-size:11px;color:var(--green);margin-bottom:22px;}
+    .welcome .welcome-img-note{font-size:11px;color:var(--green);margin-bottom:18px;}
+    #chat-box:has(#welcome-screen){justify-content:center;}
+    #chat-box:has(#welcome-screen) > #chat-spacer{display:none!important;}
 
-    .subject-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:520px;width:100%;margin-bottom:16px;}
+    .subject-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:460px;width:100%;margin-bottom:16px;}
     .subj-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:12px 10px;cursor:pointer;transition:all .18s;text-align:left;}
     .subj-card:hover{border-color:var(--blue);background:var(--blue-bg);transform:translateY(-2px);}
     .subj-card.disabled{opacity:.45;cursor:not-allowed;pointer-events:none;}
@@ -549,6 +551,20 @@
     .card-footer{font-size:10.5px;color:var(--text3);margin-top:10px;}
     .card-footer span{color:var(--green);}
 
+    /* ── Blob mascot trio ── */
+    .bl-trio{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;height:86px;}
+    .bl-wrap{position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
+    .bl-bub{position:absolute;top:-30px;left:50%;transform:translateX(-50%) translateY(5px);background:#fff;color:#222;font-size:12px;font-weight:700;font-family:'Noto Sans Bengali','Sora',sans-serif;padding:3px 10px;border-radius:11px;white-space:nowrap;opacity:0;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:opacity .25s,transform .25s;}
+    .bl-bub.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .bl-bub::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#fff;border-bottom:none;}
+    .bl-svg{overflow:visible;transform-origin:50% 100%;}
+    @keyframes blWave{0%,100%{transform:rotate(0)translateY(0)}25%{transform:rotate(-14deg)translateY(-7px)}75%{transform:rotate(10deg)translateY(-3px)}}
+    @keyframes blHop{0%,100%{transform:translateY(0)scaleX(1)scaleY(1)}35%{transform:translateY(-17px)scaleX(.9)scaleY(1.08)}65%{transform:translateY(-4px)scaleX(1.04)scaleY(.96)}82%{transform:translateY(-1px)}}
+    @keyframes blShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+    .bl-wave .bl-svg{animation:blWave .55s ease-in-out}
+    .bl-hop  .bl-svg{animation:blHop  .48s cubic-bezier(.34,1.56,.64,1)}
+    .bl-shake .bl-svg{animation:blShake .46s ease}
+
     .logout-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:28px 28px 22px;max-width:320px;width:calc(100% - 32px);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:popCard .3s cubic-bezier(.34,1.56,.64,1) both;position:relative;}
     .logout-avatar{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;margin:0 auto 14px;}
     .logout-name{font-size:17px;font-weight:700;color:var(--text);margin-bottom:4px;}
@@ -614,7 +630,7 @@
       .user .bubble{max-width:85%;}
       .bot .bubble{font-size:13px;padding:10px 13px;}
       .message-actions{opacity:1;}
-      .subject-grid{grid-template-columns:repeat(2,1fr);}
+      .subject-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
       .project-banner{padding:6px 12px;}
       .project-banner-name{font-size:13px;}
       .project-banner-instructions{display:none;}
@@ -1201,6 +1217,86 @@
   <div id="login-backdrop" style="position:absolute;inset:0;" onclick="tryDismissLogin()"></div>
   <div class="login-card" id="login-card">
     <button class="card-close-btn" onclick="hideLoginPrompt()">✕</button>
+
+    <!-- Blob mascot trio: yellow arch (L) · orange dome (C, shortest) · purple capsule (R) -->
+    <div id="bl" class="bl-trio">
+
+      <!-- LEFT: yellow arch -->
+      <div class="bl-wrap" id="bl-y-wrap">
+        <div class="bl-bub" id="bl-y-bub"></div>
+        <svg id="bl-y-svg" class="bl-svg" viewBox="0 0 60 80" width="54" height="76" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8,80 C8,80 7,28 30,9 C53,28 52,80 52,80 Z" fill="#fbbf24"/>
+          <g id="bl-y-face">
+            <ellipse cx="17" cy="51" rx="5" ry="3" fill="rgba(251,113,133,.42)"/>
+            <ellipse cx="43" cy="51" rx="5" ry="3" fill="rgba(251,113,133,.42)"/>
+            <circle cx="22" cy="40" r="6.5" fill="white"/>
+            <circle cx="38" cy="40" r="6.5" fill="white"/>
+            <circle id="bl-y-lp" cx="22" cy="37" r="3.5" fill="#1a1a2e"/>
+            <circle id="bl-y-rp" cx="38" cy="37" r="3.5" fill="#1a1a2e"/>
+            <circle cx="23.5" cy="35.5" r="1.2" fill="white"/>
+            <circle cx="39.5" cy="35.5" r="1.2" fill="white"/>
+            <path d="M24,50 Q30,57 36,50" fill="none" stroke="#92400e" stroke-width="1.9" stroke-linecap="round"/>
+          </g>
+          <!-- back-of-head shown when password focused -->
+          <g id="bl-y-back" style="display:none">
+            <path d="M19,44 Q25,37 30,44 Q35,51 41,44" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"/>
+            <path d="M22,56 Q27,50 32,56" fill="none" stroke="#d97706" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- MIDDLE: orange dome (shortest — aligns to bottom via flex-end) -->
+      <div class="bl-wrap" id="bl-o-wrap">
+        <div class="bl-bub" id="bl-o-bub">হাই!</div>
+        <svg id="bl-o-svg" class="bl-svg" viewBox="0 0 70 56" width="66" height="54" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5,56 Q5,8 35,8 Q65,8 65,56 Z" fill="#f97316"/>
+          <g id="bl-o-face">
+            <ellipse cx="22" cy="41" rx="6" ry="3.5" fill="rgba(251,113,133,.42)"/>
+            <ellipse cx="48" cy="41" rx="6" ry="3.5" fill="rgba(251,113,133,.42)"/>
+            <circle cx="26" cy="28" r="6" fill="white"/>
+            <circle cx="44" cy="28" r="6" fill="white"/>
+            <circle id="bl-o-lp" cx="26" cy="25" r="3.5" fill="#1a1a2e"/>
+            <circle id="bl-o-rp" cx="44" cy="25" r="3.5" fill="#1a1a2e"/>
+            <circle cx="27.4" cy="23.5" r="1.2" fill="white"/>
+            <circle cx="45.4" cy="23.5" r="1.2" fill="white"/>
+            <path d="M27,37 Q35,43 43,37" fill="none" stroke="#c2410c" stroke-width="1.9" stroke-linecap="round"/>
+          </g>
+          <!-- hands-up peek: arms rise from sides, eyes stay visible -->
+          <g id="bl-o-hands" style="display:none">
+            <line x1="5"  y1="52" x2="17" y2="22" stroke="#f97316" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="17" cy="19" r="9" fill="#f97316" stroke="#ea580c" stroke-width="1.8"/>
+            <line x1="65" y1="52" x2="53" y2="22" stroke="#f97316" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="53" cy="19" r="9" fill="#f97316" stroke="#ea580c" stroke-width="1.8"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- RIGHT: purple capsule -->
+      <div class="bl-wrap" id="bl-p-wrap">
+        <div class="bl-bub" id="bl-p-bub"></div>
+        <svg id="bl-p-svg" class="bl-svg" viewBox="0 0 52 88" width="46" height="82" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="5" width="40" height="78" rx="20" fill="#a855f7"/>
+          <g id="bl-p-face">
+            <ellipse cx="16" cy="50" rx="5" ry="3" fill="rgba(251,113,133,.42)"/>
+            <ellipse cx="36" cy="50" rx="5" ry="3" fill="rgba(251,113,133,.42)"/>
+            <circle cx="19" cy="37" r="6" fill="white"/>
+            <circle cx="33" cy="37" r="6" fill="white"/>
+            <circle id="bl-p-lp" cx="19" cy="34" r="3.5" fill="#1a1a2e"/>
+            <circle id="bl-p-rp" cx="33" cy="34" r="3.5" fill="#1a1a2e"/>
+            <circle cx="20.5" cy="32.5" r="1.2" fill="white"/>
+            <circle cx="34.5" cy="32.5" r="1.2" fill="white"/>
+            <path d="M20,47 Q26,53 32,47" fill="none" stroke="#6b21a8" stroke-width="1.9" stroke-linecap="round"/>
+          </g>
+          <!-- hands covering eyes -->
+          <g id="bl-p-hands" style="display:none">
+            <ellipse cx="19" cy="37" rx="11" ry="8" fill="#c084fc" stroke="#a855f7" stroke-width="1.6"/>
+            <ellipse cx="33" cy="37" rx="11" ry="8" fill="#c084fc" stroke="#a855f7" stroke-width="1.6"/>
+          </g>
+        </svg>
+      </div>
+
+    </div><!-- /.bl-trio -->
+
     <h2>Welcome to <span>Dipti AI!</span></h2>
     <p id="login-modal-sub">Login or create a free account to start chatting.<br><strong>10 questions/day</strong> at no cost.</p>
     <div class="login-tabs">
@@ -1467,6 +1563,14 @@ function renderProjects(){
   });
 }
 
+function _cleanSidebarTitle(t){
+  if(!t)return'New Chat';
+  // Strip markdown syntax: bold, italic, code, headings, links
+  t=t.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').replace(/[*_`#~>|]+/g,'').replace(/\s+/g,' ').trim();
+  // Reject literal "None" and empty
+  if(!t||/^(none|null|n\/a)$/i.test(t))return'New Chat';
+  return t;
+}
 function renderHistory(){
   const list=document.getElementById('sidebar-chat-list');
   const label=document.getElementById('history-label');
@@ -1481,7 +1585,7 @@ function renderHistory(){
   allChatsList.forEach((c,i)=>{
     const item=document.createElement('div');
     item.className='chat-item'+(c.id===currentChatId?' active':'');
-    item.innerHTML=`<div class="chat-item-dot ${i===0?'green':'gray'}"></div><div class="chat-item-info"><div class="chat-item-title">${escapeHtml(c.title||'New Chat')}</div><div class="chat-item-sub">${timeAgo(c.updated_at)}</div></div><button class="chat-delete-btn" onclick="event.stopPropagation();deleteChatById('${c.id}')" title="Delete">✕</button>`;
+    item.innerHTML=`<div class="chat-item-dot ${i===0?'green':'gray'}"></div><div class="chat-item-info"><div class="chat-item-title">${escapeHtml(_cleanSidebarTitle(c.title))}</div><div class="chat-item-sub">${timeAgo(c.updated_at)}</div></div><button class="chat-delete-btn" onclick="event.stopPropagation();deleteChatById('${c.id}')" title="Delete">✕</button>`;
     item.addEventListener('click',()=>loadChatById(c.id));
     list.appendChild(item);
   });
@@ -1508,23 +1612,26 @@ async function loadChatById(chatId){
 
     chatBox.innerHTML = ''; navReset(); mmReset();
     (chat.messages || []).forEach(m => {
-      if(m.role === 'user'){
-        // Now reads image_url back from saved messages — image survives reload
-        addUserBubble(m.content, m.image_url || null);
-      } else if(m.role === 'assistant'){
-        const storedMcq=parseStoredMcq(m.content);
-        if(storedMcq){
-          chatBox.appendChild(renderStoredMcqBubble(storedMcq));
-        }else{
-          const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content.replace(/^([ \t]*)•[ \t]+/gm,'$1* ').replace(/^ {4,}([*\-] )/gm,'  $1')))));
-          chatBox.appendChild(div);
-          const bub=div.querySelector('.bubble');
-          renderMath(bub);renderMermaid(bub);renderSVG(bub);
+      try{
+        if(m.role === 'user'){
+          addUserBubble(m.content, m.image_url || null);
+        } else if(m.role === 'assistant'){
+          const storedMcq=parseStoredMcq(m.content);
+          if(storedMcq){
+            chatBox.appendChild(renderStoredMcqBubble(storedMcq));
+          }else{
+            const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content.replace(/^([ \t]*)•[ \t]+/gm,'$1* ').replace(/^ {4,}([*\-] )/gm,'  $1')))));
+            chatBox.appendChild(div);
+            const bub=div.querySelector('.bubble');
+            try{renderMath(bub);}catch(e){}
+            try{renderMermaid(bub);}catch(e){}
+            try{renderSVG(bub);}catch(e){console.warn('[loadChat] renderSVG error:',e);}
+          }
         }
-      }
+      }catch(e){console.warn('[loadChat] message render error:',e);}
     });
 
-    document.getElementById('topic-bar-title').textContent = chat.title || 'Chat';
+    document.getElementById('topic-bar-title').textContent = _cleanSidebarTitle(chat.title) || 'Chat';
     document.getElementById('topic-bar-tag').style.display = '';
     chatBox.scrollTop = chatBox.scrollHeight;
     activeSubject = chat.subject || 'biology';
@@ -1874,7 +1981,23 @@ function createBotWrapper(html){
   return div;
 }
 
-function renderMath(el){try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}],throwOnError:false});}catch(e){}}
+function renderMath(el){
+  try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false}],throwOnError:false});}catch(e){}
+  // auto-render skips <code>/<pre> by default — sweep any that still contain $ patterns
+  el.querySelectorAll('code').forEach(code=>{
+    const txt=code.textContent||'';
+    if(!/\$/.test(txt)) return;
+    const wrap=document.createElement('span');
+    wrap.textContent=txt;
+    try{
+      renderMathInElement(wrap,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});
+      if(wrap.querySelector('.katex')){
+        const pre=code.closest('pre');
+        if(pre) pre.replaceWith(wrap); else code.replaceWith(wrap);
+      }
+    }catch(e){}
+  });
+}
 
 function convertLatexEq(eq){
   eq=eq.replace(/\\begin\{[^}]+\}([\s\S]*?)\\end\{[^}]+\}/g,'$1');
@@ -1947,6 +2070,11 @@ function preprocessMath(text){
   text = text.replace(/([০-৯]+)([A-Za-z])/g, (_, n, l) => bn2ar(n) + l);
   text = text.replace(/([A-Za-z])([০-৯]+)/g, (_, l, n) => l + bn2ar(n));
 
+  // SHARED: strip code-fences wrapping lone display-math (LLM sometimes wraps $$…$$ in ```)
+  text = text.replace(/^```[a-z]*\s*\n(\$\$[^\n]+\$\$)\s*\n```/gm, '\n$1\n');
+  // SHARED: strip 4-space / tab indent from display-math lines (Markdown treats them as code)
+  text = text.replace(/^(?:    |\t)(\$\$[^\n]+\$\$)[ \t]*$/gm, '$1');
+
   // SHARED: normalise \[...\] and \(...\) delimiters
   text = text.replace(/\\\[([\s\S]*?)\\\]/g, (_, eq) => `\n$$${eq.trim()}$$\n`);
   text = text.replace(/\\\(([\s\S]*?)\\\)/g, (_, eq) => `$${eq.trim()}$`);
@@ -1985,6 +2113,10 @@ function preprocessMath(text){
 
   // SHARED: typo fix
   text = text.replace(/\\overtime/g, '\\overline');
+  // SHARED: fix missing _ before subscripts after \text{} — LLM sometimes writes
+  // \text{C}6 or \text{H}{12} instead of \text{C}_{6} or \text{H}_{12}
+  text = text.replace(/\\text\{([^}]+)\}(\d)/g, '\\text{$1}_{$2}');
+  text = text.replace(/\\text\{([^}]+)\}\{(\d+)\}/g, '\\text{$1}_{$2}');
   // SHARED: strip orphan $ before Bengali punctuation — only when space precedes it.
   // "expr$ $।" → "expr$।"  (space + $ + ।  =  orphan)
   // "$expr$।"  → unchanged  ($ immediately before ।  =  valid closing delimiter)
@@ -2173,7 +2305,16 @@ function renderSVG(el){
     const wrap=document.createElement('div');
     wrap.className='svg-wrap';
     wrap.innerHTML=clean;
+    // Fix mpath href namespace: HTML parser doesn't bind xlink:href — set both forms
+    {const _XL='http://www.w3.org/1999/xlink';
+    wrap.querySelectorAll('mpath').forEach(mp=>{
+      const ref=mp.getAttribute('href')||mp.getAttributeNS(_XL,'href')||'';
+      if(ref) mp.setAttributeNS(_XL,'xlink:href',ref);
+    });}
     const svg=wrap.querySelector('svg');
+    // Hoist flags to forEach-callback scope so they're accessible after if(svg){} closes
+    let hasKeyframes=false;
+    let hasSMIL=false;
     if(svg){
       const svgMaxW=svg.style.maxWidth;
       if(svgMaxW && svgMaxW!=='100%'){
@@ -2191,24 +2332,34 @@ function renderSVG(el){
       if(!svg.querySelector('rect[fill="#ffffff"],rect[fill="white"]')){
         svg.style.background='transparent';
       }
-      // Auto-animate SVG children with staggered fade-in (no animation code needed from model)
       const SKIP=new Set(['defs','style','title','desc','filter','clippath','lineargradient','radialgradient','marker']);
-      const kids=[...svg.children].filter(el=>!SKIP.has(el.tagName.toLowerCase()));
-      if(kids.length>=2){
-        const uid='svga'+Math.random().toString(36).slice(2,8);
-        svg.id=uid;
-        const styleEl=document.createElement('style');
-        styleEl.textContent=`@keyframes _sfi{from{opacity:0}to{opacity:1}}`;
-        svg.prepend(styleEl);
-        const maxDelay=1.2;
-        kids.forEach((el,i)=>{
-          if(!el.style.opacity&&el.getAttribute('opacity')!=='0'){
-            const delay=kids.length>1?(i/(kids.length-1)*maxDelay).toFixed(2):0;
-            el.style.opacity='0';
-            el.style.animation=`_sfi .4s ease ${delay}s forwards`;
-          }
+      // Check if model provided its own @keyframes / SMIL
+      const modelStyle=svg.querySelector('style');
+      hasKeyframes=!!(modelStyle&&/@keyframes/i.test(modelStyle.textContent));
+      hasSMIL=!!svg.querySelector('animateMotion,animateTransform,animate');
+      console.log('[SVG] hasKeyframes:',hasKeyframes,' hasSMIL:',hasSMIL,
+                  ' animateMotion count:',svg.querySelectorAll('animateMotion').length);
+
+      function _liftSvgStyle(svgEl, rawCss, id){
+        // Remove orphaned style tags whose SVG is no longer in the DOM (Replay dedup)
+        document.querySelectorAll('style[data-svgId]').forEach(s=>{
+          if(!document.getElementById(s.dataset.svgId)) s.remove();
         });
-        // Replay button
+        const ds = document.createElement('style');
+        ds.dataset.svgId = id;
+        ds.textContent =
+          `svg#${id} * { transform-box:fill-box; transform-origin:center; }\n` + rawCss;
+        document.head.appendChild(ds);
+        // Remove internal <style> to avoid duplicate/conflicting rules
+        const internal = svgEl.querySelector('style');
+        if(internal) internal.remove();
+      }
+
+      if(hasKeyframes){
+        const svgId='svga'+Math.random().toString(36).slice(2,8);
+        svg.id=svgId;
+        _liftSvgStyle(svg, modelStyle.textContent, svgId);
+
         const btn=document.createElement('button');
         btn.className='svg-replay-btn';
         btn.innerHTML='&#8635; Replay';
@@ -2218,23 +2369,114 @@ function renderSVG(el){
           tmp.innerHTML=clean;
           const fresh=tmp.querySelector('svg');if(!fresh)return;
           fresh.style.maxWidth='100%';fresh.style.height='auto';fresh.style.background='transparent';
-          const newUid='svga'+Math.random().toString(36).slice(2,8);
-          fresh.id=newUid;
-          const s2=document.createElement('style');
-          s2.textContent=`@keyframes _sfi{from{opacity:0}to{opacity:1}}`;
-          fresh.prepend(s2);
-          const fKids=[...fresh.children].filter(el=>!SKIP.has(el.tagName.toLowerCase())&&el.tagName.toLowerCase()!=='style');
-          fKids.forEach((el,i)=>{
-            const delay=fKids.length>1?(i/(fKids.length-1)*1.2).toFixed(2):0;
-            el.style.opacity='0';
-            el.style.animation=`_sfi .4s ease ${delay}s forwards`;
-          });
+          const newId='svga'+Math.random().toString(36).slice(2,8);
+          fresh.id=newId;
+          const ms=fresh.querySelector('style');
+          if(ms) _liftSvgStyle(fresh, ms.textContent, newId);
           cur.replaceWith(fresh);
+          // Apply inline transform-box on all animated elements after fresh SVG is in DOM
+          requestAnimationFrame(()=>{
+            fresh.querySelectorAll('*').forEach(el=>{
+              const cs=getComputedStyle(el);
+              if(!cs.animationName||cs.animationName==='none') return;
+              el.style.transformBox='fill-box';
+              el.style.transformOrigin='center';
+              const savedName=cs.animationName;
+              el.style.animationName='none';
+              el.getBoundingClientRect();
+              el.style.animationName=savedName;
+            });
+            fresh.querySelectorAll('animateMotion,animate,animateTransform').forEach(a=>{
+              try{a.beginElement();}catch(e){}
+            });
+          });
         };
         wrap.appendChild(btn);
+      } else if(!hasSMIL){
+        // No model @keyframes and no SMIL — apply staggered fade-in entrance
+        const kids=[...svg.children].filter(el=>!SKIP.has(el.tagName.toLowerCase()));
+        if(kids.length>=2){
+          const uid='svga'+Math.random().toString(36).slice(2,8);
+          svg.id=uid;
+          const styleEl=document.createElement('style');
+          styleEl.textContent=`@keyframes _sfi{from{opacity:0}to{opacity:1}}`;
+          svg.prepend(styleEl);
+          const maxDelay=1.2;
+          kids.forEach((el,i)=>{
+            if(!el.style.opacity&&el.getAttribute('opacity')!=='0'){
+              const delay=kids.length>1?(i/(kids.length-1)*maxDelay).toFixed(2):0;
+              el.style.opacity='0';
+              el.style.animation=`_sfi .4s ease ${delay}s forwards`;
+            }
+          });
+          const btn=document.createElement('button');
+          btn.className='svg-replay-btn';
+          btn.innerHTML='&#8635; Replay';
+          btn.onclick=()=>{
+            const cur=wrap.querySelector('svg');if(!cur)return;
+            const tmp=document.createElement('div');
+            tmp.innerHTML=clean;
+            const fresh=tmp.querySelector('svg');if(!fresh)return;
+            fresh.style.maxWidth='100%';fresh.style.height='auto';fresh.style.background='transparent';
+            const newUid='svga'+Math.random().toString(36).slice(2,8);
+            fresh.id=newUid;
+            const s2=document.createElement('style');
+            s2.textContent=`@keyframes _sfi{from{opacity:0}to{opacity:1}}`;
+            fresh.prepend(s2);
+            const fKids=[...fresh.children].filter(el=>!SKIP.has(el.tagName.toLowerCase())&&el.tagName.toLowerCase()!=='style');
+            fKids.forEach((el,i)=>{
+              const delay=fKids.length>1?(i/(fKids.length-1)*1.2).toFixed(2):0;
+              el.style.opacity='0';
+              el.style.animation=`_sfi .4s ease ${delay}s forwards`;
+            });
+            cur.replaceWith(fresh);
+          };
+          wrap.appendChild(btn);
+        }
       }
     }
     block.parentElement.replaceWith(wrap);
+    // SMIL: debug mpath linkage, then force-start (innerHTML injection doesn't auto-start SMIL)
+    if(hasSMIL){
+      try{
+        const _XL='http://www.w3.org/1999/xlink';
+        // Confirm animateMotion tags survived DOM injection
+        const amEls=svg.querySelectorAll('animateMotion');
+        console.log('[SVG SMIL] animateMotion in live DOM:',amEls.length);
+        if(amEls.length===0){
+          console.warn('[SVG SMIL] 0 animateMotion found — check if sanitizer/markdown stripped them. SVG innerHTML snippet:',
+            svg.innerHTML.slice(0,400));
+        }
+        amEls.forEach((am,i)=>{
+          const mp=am.querySelector('mpath');if(!mp) return;
+          const ref=mp.getAttribute('href')||mp.getAttributeNS(_XL,'href')||'';
+          const target=ref?(svg.querySelector(ref)||document.querySelector(ref)):null;
+          console.log(`[SVG anim#${i}] mpath="${ref}" →`,target?target.tagName+' (ok)':'NOT FOUND ← href broken');
+        });
+        svg.querySelectorAll('animateMotion,animate,animateTransform').forEach(a=>{
+          try{a.beginElement();}catch(e){}
+        });
+      }catch(err){
+        console.error('[SVG SMIL] processing error:',err);
+      }
+    }
+    // Force CSS animation restart after SVG enters DOM — covers style-before-DOM timing gap
+    if(hasKeyframes){
+      requestAnimationFrame(()=>{
+        svg.querySelectorAll('*').forEach(el=>{
+          const cs = getComputedStyle(el);
+          if(!cs.animationName || cs.animationName === 'none') return;
+          // Inline override — highest specificity, beats any class/ID rule in rawCss
+          el.style.transformBox = 'fill-box';
+          el.style.transformOrigin = 'center';
+          // Restart: freeze name, reflow, restore
+          const savedName = cs.animationName;
+          el.style.animationName = 'none';
+          el.getBoundingClientRect();
+          el.style.animationName = savedName;
+        });
+      });
+    }
   });
 }
 
@@ -2446,13 +2688,28 @@ function _safeStreamText(s){
   if(singles % 2 === 1){ const i = s.lastIndexOf('$'); s = s.slice(0, i); }
   return s;
 }
+function _streamHasOpenSvgFence(text){
+  // Returns true if any ```svg block in the stream hasn't received its closing ``` yet.
+  // Scanning line-by-line is reliable for all edge cases (multiple fences, nested ticks).
+  let open=false;
+  for(const line of text.split('\n')){
+    const t=line.trim();
+    if(!open && t.startsWith('```svg')) open=true;
+    else if(open && t==='```') open=false;
+  }
+  return open;
+}
+
 function _flushStream(){
   _streamRafId = null;
   if(!_streamBub || !_streamPending) return;
   _streamPending = '';
   const safe = preprocessMath(_safeStreamText(_streamText));
   _streamBub.innerHTML = marked.parse(safe, {breaks:true, gfm:true});
-  renderMath(_streamBub);renderSVG(_streamBub);
+  renderMath(_streamBub);
+  // Skip SVG rendering while any svg fence block is still open — prevents beginElement()
+  // firing on half-streamed SVGs whose <path id> targets haven't arrived yet.
+  if(!_streamHasOpenSvgFence(_streamText)) renderSVG(_streamBub);
   if(chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 120)
     chatBox.scrollTop = chatBox.scrollHeight;
 }
@@ -3902,6 +4159,121 @@ function showLoginPrompt(limit){
   document.getElementById('login-card').classList.add('dismissible');
   document.getElementById('login-overlay').classList.add('active');
   setTimeout(()=>document.getElementById('card-email')?.focus(),350);
+  initMascots();
+}
+
+// ── Blob mascot trio controller ──────────────────────────────────────────────
+let _mascotsReady=false;
+function initMascots(){
+  if(!document.getElementById('bl')) return;
+
+  // Neutral pupil positions (raised = cheerful; 3 units above eye centre)
+  const CFG=[
+    {id:'y', lx:22, ly:37, rx:38, ry:37},  // yellow arch
+    {id:'o', lx:26, ly:25, rx:44, ry:25},  // orange dome
+    {id:'p', lx:19, ly:34, rx:33, ry:34}   // purple capsule
+  ];
+  const P={};
+  CFG.forEach(c=>{
+    P[c.id]={
+      lp:document.getElementById('bl-'+c.id+'-lp'),
+      rp:document.getElementById('bl-'+c.id+'-rp'),
+      svg:document.getElementById('bl-'+c.id+'-svg'),
+      lx:c.lx, ly:c.ly, rx:c.rx, ry:c.ry
+    };
+  });
+
+  // Entry wave (staggered) + shared হাই! bubble every time modal opens
+  ['y','o','p'].forEach((id,i)=>{
+    setTimeout(()=>{
+      const w=document.getElementById('bl-'+id+'-wrap');
+      if(!w) return;
+      w.classList.remove('bl-wave'); void w.offsetWidth;
+      w.classList.add('bl-wave');
+      setTimeout(()=>w.classList.remove('bl-wave'),600);
+    },i*110);
+  });
+  setTimeout(()=>{
+    const b=document.getElementById('bl-o-bub');
+    if(!b) return;
+    b.classList.add('show');
+    setTimeout(()=>b.classList.remove('show'),2200);
+  },250);
+
+  if(_mascotsReady) return;   // register listeners only once
+  _mascotsReady=true;
+
+  // ── Eye cursor tracking ──
+  const overlay=document.getElementById('login-overlay');
+  overlay.addEventListener('mousemove',e=>{
+    const isPwd=document.activeElement===document.getElementById('card-password');
+    CFG.forEach(c=>{
+      // yellow turns away, purple covers eyes → no tracking for those in pwd mode
+      if(isPwd&&(c.id==='y'||c.id==='p')) return;
+      const p=P[c.id]; if(!p.lp) return;
+      const r=p.svg.getBoundingClientRect();
+      const dx=(e.clientX-(r.left+r.width/2))/(window.innerWidth/2);
+      const dy=(e.clientY-(r.top+r.height/2))/(window.innerHeight/2);
+      const M=2.2;
+      const ox=Math.max(-M,Math.min(M,dx*M));
+      const oy=Math.max(-M,Math.min(M,dy*M));
+      p.lp.setAttribute('cx',p.lx+ox); p.lp.setAttribute('cy',p.ly+oy);
+      p.rp.setAttribute('cx',p.rx+ox); p.rp.setAttribute('cy',p.ry+oy);
+    });
+  });
+
+  // ── Password state ──
+  function setPwd(on){
+    // orange: raise hands (peeks over them — eyes remain visible)
+    const oh=document.getElementById('bl-o-hands');
+    if(oh) oh.style.display=on?'':'none';
+    // yellow: show back of head, hide face
+    const yf=document.getElementById('bl-y-face'),yb=document.getElementById('bl-y-back');
+    if(yf) yf.style.display=on?'none':'';
+    if(yb) yb.style.display=on?'':'none';
+    // purple: cover eyes with hands
+    const ph=document.getElementById('bl-p-hands');
+    if(ph) ph.style.display=on?'':'none';
+    // reset pupils to neutral for blobs whose eyes are now hidden
+    if(on){
+      ['y','p'].forEach(id=>{
+        const p=P[id]; if(!p||!p.lp) return;
+        p.lp.setAttribute('cx',p.lx); p.lp.setAttribute('cy',p.ly);
+        p.rp.setAttribute('cx',p.rx); p.rp.setAttribute('cy',p.ry);
+      });
+    }
+  }
+  const pwd=document.getElementById('card-password');
+  if(pwd){
+    pwd.addEventListener('focus',()=>setPwd(true));
+    pwd.addEventListener('blur', ()=>setPwd(false));
+  }
+
+  // ── Boop-hop on click ──
+  ['y','o','p'].forEach(id=>{
+    const w=document.getElementById('bl-'+id+'-wrap');
+    if(!w) return;
+    w.addEventListener('click',()=>{
+      w.classList.remove('bl-hop'); void w.offsetWidth;
+      w.classList.add('bl-hop');
+      setTimeout(()=>w.classList.remove('bl-hop'),520);
+    });
+  });
+
+  // ── Submit: team shake (empty) or team hop (filled) ──
+  const sub=document.getElementById('card-submit');
+  if(sub){
+    sub.addEventListener('mousedown',()=>{
+      const ok=!!(document.getElementById('card-email')?.value.trim()
+                &&document.getElementById('card-password')?.value.trim());
+      ['y','o','p'].forEach(id=>{
+        const w=document.getElementById('bl-'+id+'-wrap'); if(!w) return;
+        w.classList.remove('bl-hop','bl-shake'); void w.offsetWidth;
+        w.classList.add(ok?'bl-hop':'bl-shake');
+        setTimeout(()=>w.classList.remove('bl-hop','bl-shake'),600);
+      });
+    });
+  }
 }
 function tryDismissLogin(){if(document.getElementById('login-card').classList.contains('dismissible'))hideLoginPrompt();}
 function hideLoginPrompt(){document.getElementById('login-overlay').classList.remove('active');clearCardMessages();}

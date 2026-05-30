@@ -25,7 +25,7 @@ flash_llm = ChatOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.7,
-    model_kwargs={"extra_body": {"thinking": {"type": "disabled"}}},
+    extra_body={"thinking": {"type": "disabled"}},
 )
 vision_llm = flash_llm  # same model — supports vision natively
 

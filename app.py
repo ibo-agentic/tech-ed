@@ -34,7 +34,7 @@ app.secret_key = os.getenv("FLASK_SECRET", "bangla-edtech_2026")
 import time as _req_time
 import logging
 from flask import g as _g
-logging.getLogger('werkzeug').setLevel(logging.WARNING)  # suppress duplicate werkzeug lines
+logging.getLogger('werkzeug').setLevel(logging.ERROR)  # suppress per-request access logs; startup banners use direct print so they still show
 
 @app.before_request
 def _before():
@@ -114,6 +114,15 @@ _DEFAULT_IMAGE_CAPTION = "এই ছবিটি দেখে বুঝিয়
 
 _GOODBYE_WORDS = {"bye", "thanks", "thank", "ধন্যবাদ", "রাখি", "বিদায়", "যাচ্ছি", "শুক্রিয়া", "done", "শেষ"}
 
+def _strip_md_title(t: str) -> str:
+    """Strip markdown syntax from a chat title."""
+    import re
+    t = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', t)   # [text](url) → text
+    t = re.sub(r'[*_`#~>|]+', '', t)                  # bold, italic, code, headings
+    t = re.sub(r'\s+', ' ', t).strip()
+    return t
+
+
 def auto_title(chat_id, user_message):
     try:
         msg = user_message.strip()
@@ -135,12 +144,15 @@ def auto_title(chat_id, user_message):
                 f"বাংলা বা English যেটায় বার্তাটি লেখা। শুধু title, কোনো extra text বা চিহ্ন না।\n\n"
                 f"বার্তা: {msg[:300]}"
             )
-            title = (flash_llm | StrOutputParser()).invoke([HumanMessage(content=_prompt)]).strip()[:60]
-            if not title:
-                raise ValueError("empty")
+            raw = (flash_llm | StrOutputParser()).invoke([HumanMessage(content=_prompt)]).strip()
+            title = _strip_md_title(raw)[:60]
+            if not title or title.lower() in ('none', 'null', 'n/a', ''):
+                raise ValueError("bad title")
         except Exception:
-            title = msg[:50] + ('...' if len(msg) > 50 else '')
-        admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
+            # Fallback: clean first 50 chars of the user's own message
+            title = _strip_md_title(msg)[:50] + ('...' if len(msg) > 50 else '')
+        if title:
+            admin.table('chats').update({'title': title}).eq('id', chat_id).execute()
     except Exception:
         pass
 
@@ -160,7 +172,7 @@ def auto_title_image(chat_id, subject: str, answer: str):
         subj_label = subject_map.get(subject, subject.title())
         # Find first meaningful sentence in the answer (skip headers/tables/empty lines)
         for line in answer.split('\n'):
-            line = line.strip().lstrip('#*>|- ').strip()
+            line = _strip_md_title(line.strip())
             if len(line) > 20 and not line.startswith('|') and not line.startswith('---'):
                 snippet = line[:40] + ('...' if len(line) > 40 else '')
                 title = f"{subj_label}: {snippet}"
@@ -698,6 +710,19 @@ def ask_stream():
                 if effective_subject not in _STREAM_SUBJECTS[stream]:
                     effective_subject = _STREAM_DEFAULTS[stream]
 
+            # 5. Hard validation — never let an unknown subject reach ChromaDB.
+            #    Falls back: last-known (frontend activeSubject) → stream default → "biology".
+            from rag.chapters import SUBJECT_STREAM as _SUBJECT_STREAM_MAP
+            _KNOWN = frozenset(_SUBJECT_STREAM_MAP.keys())
+            if effective_subject not in _KNOWN:
+                if subject in _KNOWN:
+                    print(f"[Subject] '{effective_subject}' invalid — using last known subject '{subject}'", flush=True)
+                    effective_subject = subject
+                else:
+                    _fallback = _STREAM_DEFAULTS.get(stream, 'biology')
+                    print(f"[Subject] '{effective_subject}' and '{subject}' both invalid — defaulting to '{_fallback}'", flush=True)
+                    effective_subject = _fallback
+
             # ── ROADMAP: must run BEFORE mismatch check (no subject needed) ──
             if is_roadmap_request(user_message):
                 # Use stream's primary subject if student didn't name one
@@ -995,7 +1020,7 @@ def ask_stream():
             _t_llm_start = _time.time()
             _first_token_time = None
             _llm_kwargs = dict(stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model)
-            _max_retries = 2
+            _max_retries = 3
             for _attempt in range(_max_retries):
                 try:
                     for chunk in stream_llm(user_message, history, nctb_context, _spi(project_instructions), **_llm_kwargs):
@@ -1007,10 +1032,13 @@ def ask_stream():
                     break  # success
                 except Exception as _llm_err:
                     _err_str = str(_llm_err)
+                    _is_json_sse = "JSON error" in _err_str or "json" in _err_str.lower()
                     if _attempt < _max_retries - 1 and not reply:
-                        print(f"[LLM retry {_attempt+1}] {_err_str}", flush=True)
-                        _time.sleep(1.5)
-                        yield sse({"type": "stage", "text": "আবার চেষ্টা করছি..."})
+                        _sleep = 0.5 if _is_json_sse else 1.5
+                        print(f"[LLM retry {_attempt+1}/{_max_retries}] {type(_llm_err).__name__}: {_err_str[:120]}", flush=True)
+                        _time.sleep(_sleep)
+                        if not _is_json_sse:
+                            yield sse({"type": "stage", "text": "আবার চেষ্টা করছি..."})
                     else:
                         raise
             _t_llm_end = _time.time()
@@ -1297,8 +1325,9 @@ def send_test_summary():
         return jsonify({'ok': False, 'error': str(e)}), 500
 
 
-from email_summary import start_scheduler
-start_scheduler()
-
 if __name__ == "__main__":
-    app.run(debug=True, threaded=True, use_reloader=False)
+    from email_summary import start_scheduler
+    start_scheduler()
+    port = int(os.environ.get("PORT", 5000))
+    print(f" * Running on http://127.0.0.1:{port}", flush=True)
+    app.run(host="0.0.0.0", port=port, debug=True, threaded=True, use_reloader=False)

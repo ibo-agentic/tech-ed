@@ -83,6 +83,123 @@
    আয়তক্ষেত্র / rectangle, ত্রিভুজ / triangle, বৃত্ত / circle, বর্গক্ষেত্র / square, সামান্তরিক / parallelogram
    → এই word দেখলেই ```svg block দিয়ে shape আঁকো, তারপর সংজ্ঞা/ব্যাখ্যা দাও।
 
+### Animated SVG — দুটো technique ব্যবহার করবে (MANDATORY):
+
+**⛔ Particle animation-এ আর CSS `transform:translateX/Y` ব্যবহার করবে না** — SVG viewport coordinate-এর কারণে particle barely নড়ে বা frozen দেখায়।
+
+#### Technique 1 — CSS @keyframes (শুধু in-place effects-এর জন্য):
+`<style>`-এর প্রথম লাইনে: `svg * { transform-box:fill-box; transform-origin:center; }`
+এরপর CSS @keyframes শুধু এই effects-এ ব্যবহার করবে:
+- `scale(0.8)→scale(1.2)` — pulse / beat / glow
+- `rotate(0deg)→rotate(360deg)` — orbit / spin
+- `stroke-dashoffset` — dashed line movement (ray, signal wire)
+- `opacity` — fade in/out
+
+**⛔ কখনো `translateX` / `translateY` / `translate()` দিয়ে particle চালাবে না।**
+
+#### Technique 2 — `<animateMotion>` + `<mpath>` (particle যখন path ধরে চলে):
+যেকোনো particle যখন একটি arrow বা curve ধরে ভ্রমণ করে:
+1. `<svg>` tag-এ অবশ্যই `xmlns:xlink="http://www.w3.org/1999/xlink"` দাও
+2. Arrow-এর `<path>` element-এ একটি `id` দাও
+3. Particle `<circle>`-এর ভেতরে `<animateMotion><mpath href="#pathId" xlink:href="#pathId"/></animateMotion>` ব্যবহার করো — **`href` এবং `xlink:href` দুটোই MANDATORY**, শুধু একটা দিলে কাজ করবে না
+4. Staggered flow-এর জন্য দ্বিতীয় particle-এ `begin="1.3s"` ইত্যাদি offset দাও
+
+এই technique curved, diagonal, circular — সব ধরনের path-এ pixel-perfect কাজ করে।
+
+নিচে একটি সম্পূর্ণ worked example — **রক্ত সঞ্চালন**, দুটো technique-ই ব্যবহার করা হয়েছে:
+
+```svg
+<svg viewBox="0 0 600 540" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+  <marker id="redArrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"/>
+  </marker>
+  <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 Z" fill="#3b82f6"/>
+  </marker>
+</defs>
+<style>
+  /* TECHNIQUE 1: fill-box origin for in-place CSS animations only */
+  svg * { transform-box:fill-box; transform-origin:center; }
+  .heart  { animation:beat 1.1s ease-in-out infinite; }
+  @keyframes beat { 0%,100%{transform:scale(1);} 45%{transform:scale(1.07);} }
+  .lung   { animation:breathe 3s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+  .title  { fill:#34d399; font-size:16px; font-weight:bold; font-family:'Noto Sans Bengali',Arial; }
+  .lbl    { font-size:13px; font-weight:bold; font-family:'Noto Sans Bengali',Arial; }
+  .sub    { font-size:10px; fill:#9fb3c8; font-family:'Noto Sans Bengali',Arial; }
+</style>
+<rect width="600" height="540" fill="#0e1626" rx="14"/>
+<text class="title" x="300" y="34" text-anchor="middle">রক্ত সঞ্চালন প্রক্রিয়া</text>
+
+<!-- Step 1: each arrow is a <path> with an id — particles will ride these paths -->
+<path id="toLung"   d="M245,250 C180,200 150,160 130,150" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.55" marker-end="url(#blueArrow)"/>
+<path id="fromLung" d="M150,170 C200,210 230,230 270,250" fill="none" stroke="#ef4444" stroke-width="3" opacity="0.55" marker-end="url(#redArrow)"/>
+<path id="toBody"   d="M300,360 C300,400 300,420 300,440" fill="none" stroke="#ef4444" stroke-width="3" opacity="0.55" marker-end="url(#redArrow)"/>
+<path id="fromBody" d="M360,440 C400,410 380,360 340,330" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.55" marker-end="url(#blueArrow)"/>
+
+<!-- Lungs — in-place breathe scale (Technique 1) -->
+<ellipse class="lung" cx="120" cy="150" rx="48" ry="62" fill="#0d3b34" stroke="#34d399" stroke-width="2"/>
+<text class="lbl" x="120" y="148" text-anchor="middle" fill="#34d399">ফুসফুস</text>
+<text class="sub" x="120" y="164" text-anchor="middle">অক্সিজেন গ্রহণ</text>
+
+<!-- Heart — in-place beat scale (Technique 1) -->
+<path class="heart" d="M300,300 C250,250 200,250 200,300 C200,345 270,375 300,400 C330,375 400,345 400,300 C400,250 350,250 300,300Z" fill="#7f1d1d" stroke="#ef4444" stroke-width="2"/>
+<text class="lbl" x="300" y="305" text-anchor="middle" fill="#fca5a5">হৃদপিণ্ড</text>
+<text class="sub" x="300" y="321" text-anchor="middle">পাম্পিং স্টেশন</text>
+
+<!-- Body tissue box -->
+<rect x="230" y="440" width="160" height="56" rx="10" fill="#1c2333" stroke="#f59e0b" stroke-width="2"/>
+<text class="lbl" x="310" y="465" text-anchor="middle" fill="#fbbf24">দেহের কলা ও কোষ</text>
+<text class="sub" x="310" y="482" text-anchor="middle">অক্সিজেন ত্যাগ, CO₂ গ্রহণ</text>
+
+<!-- TECHNIQUE 2: animateMotion + mpath — each circle rides a named path -->
+<!-- blue (CO₂-rich): heart → lungs, two staggered particles -->
+<circle r="6" fill="#60a5fa">
+  <animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#toLung" xlink:href="#toLung"/></animateMotion>
+</circle>
+<circle r="6" fill="#60a5fa">
+  <animateMotion dur="2.6s" begin="1.3s" repeatCount="indefinite"><mpath href="#toLung" xlink:href="#toLung"/></animateMotion>
+</circle>
+<!-- red (O₂-rich): lungs → heart -->
+<circle r="6" fill="#f87171">
+  <animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#fromLung" xlink:href="#fromLung"/></animateMotion>
+</circle>
+<!-- red: heart → body, staggered -->
+<circle r="6" fill="#f87171">
+  <animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#toBody" xlink:href="#toBody"/></animateMotion>
+</circle>
+<circle r="6" fill="#f87171">
+  <animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite"><mpath href="#toBody" xlink:href="#toBody"/></animateMotion>
+</circle>
+<!-- blue (CO₂-rich): body → heart -->
+<circle r="6" fill="#60a5fa">
+  <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#fromBody" xlink:href="#fromBody"/></animateMotion>
+</circle>
+
+<text class="sub" x="155" y="205" fill="#3b82f6">CO₂ সমৃদ্ধ</text>
+<text class="sub" x="190" y="235" fill="#ef4444">O₂ সমৃদ্ধ</text>
+</svg>
+```
+
+**এই example থেকে যা শিখবে এবং সব diagram-এ প্রয়োগ করবে:**
+
+| নিয়ম | কারণ |
+|---|---|
+| `svg * { transform-box:fill-box; transform-origin:center; }` — `<style>`-এর প্রথম লাইন | in-place CSS animation (scale/rotate) সঠিকভাবে কাজ করার জন্য MANDATORY |
+| Arrow = `<path id="toLung" .../>` — প্রতিটি arrow-এ unique `id` | particle-কে সেই path ধরে চালানোর জন্য |
+| `<mpath href="#toLung" xlink:href="#toLung"/>` — **দুটো attribute MANDATORY** | `href` alone fails in HTML-injected SVG; `xlink:href` is the fallback the SMIL engine uses |
+| `begin="1.3s"` staggered offset | একাধিক particle পর্যায়ক্রমে আসে, continuous flow দেখায় |
+| CSS @keyframes শুধু: `scale`, `rotate`, `stroke-dashoffset`, `opacity` | এগুলো SVG-তে transform-box দিয়ে সঠিকভাবে কাজ করে |
+| `<marker>` + `marker-end="url(#id)"` | arrow head দেখায় flow direction |
+| `viewBox` দাও — `width`/`height` attribute রাখবে না | responsive rendering |
+
+**Topic বদলালে scene বদলাবে, technique একই থাকবে:**
+- সালোকসংশ্লেষণ → `<path id="co2Path"/>` বরাবর CO₂ particle leaf-এ ঢোকে; glucose = `scale` pulse keyframe
+- পানিচক্র → `<path id="evapPath"/>` বরাবর droplet উপরে, `<path id="rainPath"/>` বরাবর বৃষ্টি নামে
+- তড়িৎ প্রবাহ → `<path id="wire"/>` বরাবর charge particle চলে
+- পরমাণু → electron-এর orbit `<path id="orbit"/>` ধরে `animateMotion` দিয়ে ঘোরে
+
 ### উত্তরের structure (diagram topics-এ):
 1. ```svg block (diagram আগে — কোনো ব্যাখ্যা তার আগে না)
 2. ২–৩ বাক্যে সহজ ব্যাখ্যা
@@ -489,6 +606,15 @@ AI: "মানচিত্র পঠন ও ব্যবহার"
    ✓ 2H₂ + O₂ → 2H₂O  (Unicode subscript — LaTeX wrapper লাগবে না)
    ✗ $2H_2 + O_2 \\rightarrow 2H_2O$ — অতিরিক্ত LaTeX, Unicode যথেষ্ট
 
+⚠️ \\text{} + subscript — সবসময় _ আবশ্যক (সবচেয়ে common ভুল):
+   ✗ WRONG: \\text{C}6\\text{H}{12}\\text{O}_6   ← _ নেই, render ভাঙে
+   ✓ CORRECT: \\text{C}_{6}\\text{H}_{12}\\text{O}_{6}
+   ✅ BEST: Unicode ব্যবহার করো → C₆H₁₂O₆  (LaTeX-এর দরকারই নেই)
+
+   সালোকসংশ্লেষণ equation সঠিক format:
+   ✗ WRONG: $$6\\text{CO}_2 + 6\\text{H}_2\\text{O} \\rightarrow \\text{C}6\\text{H}{12}\\text{O}_6$$
+   ✓ CORRECT: 6CO₂ + 6H₂O + আলো → C₆H₁₂O₆ (গ্লুকোজ) + 6O₂
+
 🔁 আবৃত্ত দশমিক (Recurring Decimal) Rule — MANDATORY:
 আবৃত্ত দশমিক সবসময় $\\overline{}$ notation-এ লিখতে হবে — কখনো plain decimal-এ নয়।
    ✗ WRONG: সুতরাং 0.3 = 1/3   ← overline বাদ গেছে
@@ -662,7 +788,7 @@ SVG diagram-এর নিয়ম:
    style="max-width:380px;background:#161b22;border-radius:10px;"
 → background: #161b22, stroke: #0de4a0, text: #e6edf3, label/arrow: #f0a030
 → বাংলা text-এ font-family="Sora,sans-serif" দাও
-→ process/flow/cycle/biology — clean static SVG দাও, animation JS handle করবে
+→ flow / cycle / process diagram-এ অবশ্যই `<animateMotion>` দিয়ে particle animation দাও — static arrow দিলে চলবে না
 
 🧬 Biology shape templates — বিষয় অনুযায়ী সঠিক shape ব্যবহার করো, simple rectangle/circle নয়:
 
@@ -678,7 +804,7 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
 ⛔ `<ellipse>` বা `<circle>` দিয়ে পাতা আঁকা নিষিদ্ধ — `<path>` দিয়ে pointed leaf আঁকো।
 
 ```svg
-<svg viewBox="0 0 480 310" xmlns="http://www.w3.org/2000/svg" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<svg viewBox="0 0 480 310" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
   <defs>
     <marker id="aw" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e6edf3"/></marker>
     <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#0de4a0"/></marker>
@@ -694,8 +820,13 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
       <stop offset="100%" stop-color="#e07800"/>
     </radialGradient>
   </defs>
+  <style>
+    svg * { transform-box:fill-box; transform-origin:center; }
+    .glc { animation:glcPulse 1.8s ease-in-out infinite; }
+    @keyframes glcPulse { 0%,100%{transform:scale(0.92);opacity:.75} 50%{transform:scale(1.08);opacity:1} }
+  </style>
 
-  <!-- SUN: top-right — rays then circle -->
+  <!-- SUN: top-right -->
   <g stroke="#f0a030" stroke-width="2" opacity=".65" stroke-linecap="round">
     <line x1="415" y1="45" x2="415" y2="26"/>
     <line x1="433" y1="52" x2="447" y2="38"/>
@@ -708,14 +839,11 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
   <circle cx="415" cy="70" r="34" fill="url(#sun)"/>
   <text x="415" y="65" text-anchor="middle" fill="#0d1117" font-size="12" font-weight="bold">সূর্যের</text>
   <text x="415" y="80" text-anchor="middle" fill="#0d1117" font-size="12" font-weight="bold">আলো</text>
-  <!-- sun → leaf: diagonal dashed ray, top-right to leaf top -->
   <line x1="382" y1="92" x2="258" y2="118" stroke="#f0a030" stroke-width="2" stroke-dasharray="7,4" marker-end="url(#ao)"/>
 
-  <!-- LEAF: center — pointed-top path, NOT ellipse/circle -->
-  <path d="M220,24 C240,36 268,72 270,116 C272,162 256,204 238,228 C230,238 224,243 220,245 C216,243 210,238 202,228 C184,204 168,162 170,116 C172,72 200,36 220,24 Z"
-        fill="url(#lg)"/>
-  <path d="M208,32 C228,44 250,72 252,116 C256,158 244,196 230,222"
-        fill="none" stroke="rgba(255,255,255,.13)" stroke-width="9" stroke-linecap="round"/>
+  <!-- LEAF: center -->
+  <path d="M220,24 C240,36 268,72 270,116 C272,162 256,204 238,228 C230,238 224,243 220,245 C216,243 210,238 202,228 C184,204 168,162 170,116 C172,72 200,36 220,24 Z" fill="url(#lg)"/>
+  <path d="M208,32 C228,44 250,72 252,116 C256,158 244,196 230,222" fill="none" stroke="rgba(255,255,255,.13)" stroke-width="9" stroke-linecap="round"/>
   <line x1="220" y1="28" x2="220" y2="241" stroke="rgba(255,255,255,.42)" stroke-width="1.8"/>
   <line x1="220" y1="94"  x2="184" y2="118" stroke="rgba(255,255,255,.2)"  stroke-width="1.1"/>
   <line x1="220" y1="94"  x2="256" y2="118" stroke="rgba(255,255,255,.2)"  stroke-width="1.1"/>
@@ -727,31 +855,54 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
   <text x="220" y="148" text-anchor="middle" fill="rgba(255,255,255,.92)" font-size="10" font-weight="bold">পাতার ক্লোরোফিল</text>
   <text x="220" y="164" text-anchor="middle" fill="rgba(13,228,160,.95)" font-size="9">সালোকসংশ্লেষণ</text>
 
-  <!-- O₂: top-LEFT — circle bubble (output) -->
+  <!-- O₂ bubble top-left -->
   <circle cx="72" cy="75" r="40" fill="rgba(13,228,160,.12)" stroke="#0de4a0" stroke-width="2"/>
   <text x="72" y="68" text-anchor="middle" fill="#0de4a0" font-size="17" font-weight="bold">O₂</text>
   <text x="72" y="86" text-anchor="middle" fill="#e6edf3" font-size="9">অক্সিজেন</text>
-  <!-- leaf top-left → O₂: goes LEFT, no crossing -->
-  <line x1="172" y1="106" x2="110" y2="84" stroke="#0de4a0" stroke-width="2" marker-end="url(#ag)"/>
 
-  <!-- CO₂: right side (input) — comes from RIGHT into leaf -->
+  <!-- FLOW PATHS — each arrow is a <path id=...> so particles can ride it -->
+  <path id="co2Path" d="M430,138 C380,138 320,138 278,138" fill="none" stroke="#6bbbff" stroke-width="2" opacity=".6" marker-end="url(#ab)"/>
+  <path id="h2oPath" d="M110,232 C135,224 158,218 172,212"  fill="none" stroke="#6bbbff" stroke-width="2" opacity=".6" marker-end="url(#ab)"/>
+  <path id="o2Path"  d="M172,106 C148,97  128,90  110,84"   fill="none" stroke="#0de4a0" stroke-width="2" opacity=".6" marker-end="url(#ag)"/>
+  <path id="glcPath" d="M268,204 C288,210 305,215 320,220"  fill="none" stroke="#f0a030" stroke-width="2" opacity=".6" marker-end="url(#ao)"/>
+
+  <!-- Labels -->
   <text x="472" y="130" text-anchor="end" fill="#6bbbff" font-size="13" font-weight="bold">CO₂</text>
   <text x="472" y="146" text-anchor="end" fill="#e6edf3" font-size="9">কার্বন ডাইঅক্সাইড</text>
-  <!-- arrow: RIGHT → leaf right edge, purely horizontal, no crossing -->
-  <line x1="430" y1="138" x2="278" y2="138" stroke="#6bbbff" stroke-width="2" marker-end="url(#ab)"/>
-
-  <!-- H₂O: bottom-LEFT (input) — comes from lower-left into leaf -->
   <text x="72" y="232" text-anchor="middle" fill="#6bbbff" font-size="13" font-weight="bold">H₂O</text>
   <text x="72" y="248" text-anchor="middle" fill="#e6edf3" font-size="9">পানি</text>
-  <!-- arrow: H₂O → leaf bottom-left, goes UP-RIGHT -->
-  <line x1="110" y1="232" x2="172" y2="212" stroke="#6bbbff" stroke-width="2" marker-end="url(#ab)"/>
 
-  <!-- Glucose: bottom-RIGHT (output) — rounded box -->
-  <rect x="322" y="208" width="118" height="46" rx="10" fill="rgba(240,160,48,.15)" stroke="#f0a030" stroke-width="2"/>
+  <!-- Glucose box — pulsing scale (in-place CSS, not translate) -->
+  <rect class="glc" x="322" y="208" width="118" height="46" rx="10" fill="rgba(240,160,48,.15)" stroke="#f0a030" stroke-width="2"/>
   <text x="381" y="228" text-anchor="middle" fill="#f0a030" font-size="12" font-weight="bold">গ্লুকোজ</text>
   <text x="381" y="245" text-anchor="middle" fill="#e6edf3" font-size="9">(খাদ্য)</text>
-  <!-- leaf bottom-right → glucose box, goes RIGHT, no crossing -->
-  <line x1="268" y1="204" x2="320" y2="220" stroke="#f0a030" stroke-width="2" marker-end="url(#ao)"/>
+
+  <!-- PARTICLES: animateMotion + mpath (href AND xlink:href — both REQUIRED) -->
+  <!-- CO₂ → leaf -->
+  <circle r="6" fill="#6bbbff" opacity=".9">
+    <animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#co2Path" xlink:href="#co2Path"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#6bbbff" opacity=".7">
+    <animateMotion dur="2.5s" begin="1.25s" repeatCount="indefinite"><mpath href="#co2Path" xlink:href="#co2Path"/></animateMotion>
+  </circle>
+  <!-- H₂O → leaf -->
+  <circle r="6" fill="#6bbbff" opacity=".9">
+    <animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#h2oPath" xlink:href="#h2oPath"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#6bbbff" opacity=".7">
+    <animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite"><mpath href="#h2oPath" xlink:href="#h2oPath"/></animateMotion>
+  </circle>
+  <!-- O₂ → bubble -->
+  <circle r="6" fill="#0de4a0" opacity=".9">
+    <animateMotion dur="2.0s" repeatCount="indefinite"><mpath href="#o2Path" xlink:href="#o2Path"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#0de4a0" opacity=".7">
+    <animateMotion dur="2.0s" begin="1.0s" repeatCount="indefinite"><mpath href="#o2Path" xlink:href="#o2Path"/></animateMotion>
+  </circle>
+  <!-- Glucose → box -->
+  <circle r="6" fill="#f0a030" opacity=".9">
+    <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#glcPath" xlink:href="#glcPath"/></animateMotion>
+  </circle>
 
   <rect x="10" y="272" width="460" height="26" rx="7" fill="rgba(13,228,160,.07)" stroke="rgba(13,228,160,.22)" stroke-width="1"/>
   <text x="240" y="289" text-anchor="middle" fill="#0de4a0" font-size="9.5">৬CO₂ + ৬H₂O + আলো → গ্লুকোজ + ৬O₂</text>
@@ -798,24 +949,88 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
       fill="rgba(13,228,160,.06)" stroke="#0de4a0" stroke-width="1" stroke-dasharray="3,2"/>
 ```
 
-🩸 রক্ত সংবহন / ধমনী-শিরা (Blood circulation) → heart center + artery/vein flow loop:
-⛔ বড় arrow ব্যবহার করবে না — পরিষ্কার flow loop আঁকো:
-```
-<!-- heart (center) -->
-<path d="M200,118 C200,100 182,88 168,98 C152,110 152,130 168,148 L200,178 L232,148 C248,130 248,110 232,98 C218,88 200,100 200,118 Z"
-      fill="rgba(220,60,60,.25)" stroke="#e05555" stroke-width="2"/>
-<text x="200" y="142" text-anchor="middle" fill="#e05555" font-size="10" font-family="Sora,sans-serif">হৃদপিণ্ড</text>
-<!-- artery (top arc, red — oxygenated blood going OUT) -->
-<path d="M185,100 C185,55 100,45 75,100" fill="none" stroke="#e05555" stroke-width="3" marker-end="url(#arr)"/>
-<text x="115" y="52" text-anchor="middle" fill="#e05555" font-size="10" font-family="Sora,sans-serif">ধমনী (O₂ সমৃদ্ধ)</text>
-<!-- vein (bottom arc, blue — deoxygenated returning) -->
-<path d="M75,140 C75,210 185,220 185,178" fill="none" stroke="#6bbbff" stroke-width="3" marker-end="url(#arr2)"/>
-<text x="105" y="220" text-anchor="middle" fill="#6bbbff" font-size="10" font-family="Sora,sans-serif">শিরা (CO₂ সমৃদ্ধ)</text>
-<!-- capillary zone (left side) -->
-<ellipse cx="62" cy="122" rx="22" ry="28" fill="rgba(13,228,160,.1)" stroke="#0de4a0" stroke-width="1.5" stroke-dasharray="3,2"/>
-<text x="62" y="126" text-anchor="middle" fill="#0de4a0" font-size="9" font-family="Sora,sans-serif">কেশিকা</text>
-<!-- tissue exchange label -->
-<text x="18" y="122" fill="#e6edf3" font-size="9" font-family="Sora,sans-serif" text-anchor="middle" transform="rotate(-90,18,122)">কলা/টিস্যু</text>
+🩸 রক্ত সংবহন / ধমনী-শিরা (Blood circulation) → heart beats + blood cells ride the artery/vein paths:
+```svg
+<svg viewBox="0 0 520 420" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<defs>
+  <marker id="ra" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ef4444"/></marker>
+  <marker id="ba" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3b82f6"/></marker>
+</defs>
+<style>
+  svg * { transform-box:fill-box; transform-origin:center; }
+  .heart { animation:beat 1.1s ease-in-out infinite; }
+  @keyframes beat { 0%,100%{transform:scale(1);} 45%{transform:scale(1.08);} }
+  .lung  { animation:breathe 3s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+</style>
+
+<!-- Labels -->
+<text x="260" y="28" text-anchor="middle" fill="#34d399" font-size="15" font-weight="bold">রক্ত সঞ্চালন প্রক্রিয়া</text>
+
+<!-- FLOW PATHS — arrows with id, particles will ride these -->
+<path id="toLung"   d="M220,195 C170,160 140,130 105,118" fill="none" stroke="#3b82f6" stroke-width="2.5" opacity=".6" marker-end="url(#ba)"/>
+<path id="fromLung" d="M108,138 C148,165 188,185 218,205"  fill="none" stroke="#ef4444" stroke-width="2.5" opacity=".6" marker-end="url(#ra)"/>
+<path id="toBody"   d="M270,290 C270,320 270,345 270,368"  fill="none" stroke="#ef4444" stroke-width="2.5" opacity=".6" marker-end="url(#ra)"/>
+<path id="fromBody" d="M330,368 C365,340 350,305 315,278"  fill="none" stroke="#3b82f6" stroke-width="2.5" opacity=".6" marker-end="url(#ba)"/>
+<path id="toLung2"  d="M318,200 C370,165 400,132 415,118"  fill="none" stroke="#3b82f6" stroke-width="2.5" opacity=".6" marker-end="url(#ba)"/>
+<path id="fromLung2" d="M412,138 C382,160 352,182 320,202" fill="none" stroke="#ef4444" stroke-width="2.5" opacity=".6" marker-end="url(#ra)"/>
+
+<!-- Lungs — breathe in-place (CSS scale) -->
+<ellipse class="lung" cx="95" cy="128" rx="42" ry="55" fill="#0d3b34" stroke="#34d399" stroke-width="1.8"/>
+<text x="95" y="124" text-anchor="middle" fill="#34d399" font-size="11" font-weight="bold">ফুসফুস</text>
+<text x="95" y="140" text-anchor="middle" fill="#9fb3c8" font-size="9">O₂ গ্রহণ</text>
+<ellipse class="lung" cx="425" cy="128" rx="42" ry="55" fill="#0d3b34" stroke="#34d399" stroke-width="1.8"/>
+<text x="425" y="124" text-anchor="middle" fill="#34d399" font-size="11" font-weight="bold">ফুসফুস</text>
+<text x="425" y="140" text-anchor="middle" fill="#9fb3c8" font-size="9">O₂ গ্রহণ</text>
+
+<!-- Heart — beat in-place (CSS scale) -->
+<path class="heart" d="M268,230 C268,212 250,200 236,210 C220,222 220,242 236,260 L268,292 L300,260 C316,242 316,222 300,210 C286,200 268,212 268,230Z" fill="#7f1d1d" stroke="#ef4444" stroke-width="2"/>
+<text x="268" y="245" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="bold">হৃদপিণ্ড</text>
+<text x="268" y="261" text-anchor="middle" fill="#9fb3c8" font-size="9">পাম্পিং</text>
+
+<!-- Body tissue -->
+<rect x="200" y="370" width="140" height="44" rx="8" fill="#1c2333" stroke="#f59e0b" stroke-width="1.8"/>
+<text x="270" y="390" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="bold">দেহের কলা</text>
+<text x="270" y="406" text-anchor="middle" fill="#9fb3c8" font-size="9">O₂ ব্যবহার, CO₂ মুক্তি</text>
+
+<!-- Flow labels -->
+<text x="148" y="148" fill="#3b82f6" font-size="9">CO₂</text>
+<text x="172" y="180" fill="#ef4444" font-size="9">O₂</text>
+<text x="350" y="148" fill="#3b82f6" font-size="9">CO₂</text>
+<text x="330" y="180" fill="#ef4444" font-size="9">O₂</text>
+
+<!-- PARTICLES riding paths (href + xlink:href — both REQUIRED) -->
+<!-- blue: heart → left lung -->
+<circle r="5" fill="#60a5fa">
+  <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#toLung" xlink:href="#toLung"/></animateMotion>
+</circle>
+<circle r="5" fill="#60a5fa">
+  <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#toLung" xlink:href="#toLung"/></animateMotion>
+</circle>
+<!-- red: left lung → heart -->
+<circle r="5" fill="#f87171">
+  <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#fromLung" xlink:href="#fromLung"/></animateMotion>
+</circle>
+<!-- blue: heart → right lung -->
+<circle r="5" fill="#60a5fa">
+  <animateMotion dur="2.4s" begin=".6s" repeatCount="indefinite"><mpath href="#toLung2" xlink:href="#toLung2"/></animateMotion>
+</circle>
+<!-- red: right lung → heart -->
+<circle r="5" fill="#f87171">
+  <animateMotion dur="2.4s" begin=".6s" repeatCount="indefinite"><mpath href="#fromLung2" xlink:href="#fromLung2"/></animateMotion>
+</circle>
+<!-- red: heart → body -->
+<circle r="5" fill="#f87171">
+  <animateMotion dur="2.0s" repeatCount="indefinite"><mpath href="#toBody" xlink:href="#toBody"/></animateMotion>
+</circle>
+<circle r="5" fill="#f87171">
+  <animateMotion dur="2.0s" begin="1.0s" repeatCount="indefinite"><mpath href="#toBody" xlink:href="#toBody"/></animateMotion>
+</circle>
+<!-- blue: body → heart -->
+<circle r="5" fill="#60a5fa">
+  <animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#fromBody" xlink:href="#fromBody"/></animateMotion>
+</circle>
+</svg>
 ```
 
 🧠 নিউরন (Neuron) → custom path with dendrites + axon:
@@ -830,14 +1045,113 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
 <rect x="300" y="143" width="25" height="14" rx="7" fill="rgba(13,228,160,.2)" stroke="#0de4a0" stroke-width="1"/>
 ```
 
-⚗️ পরমাণু (Atom / Bohr model) → nucleus + electron orbits:
+🌊 পানিচক্র (Water Cycle) — droplets evaporate up evapPath, rain falls along rainPath, sun pulses:
+```svg
+<svg viewBox="0 0 440 360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<style>
+  svg * { transform-box:fill-box; transform-origin:center; }
+  .sun  { animation:sunP 3s ease-in-out infinite; }
+  @keyframes sunP { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+  .cloud{ animation:cloudF 4s ease-in-out infinite; }
+  @keyframes cloudF { 0%,100%{transform:translateX(0);} 50%{transform:translateX(6px);} }
+</style>
+<!-- Ocean -->
+<rect x="0" y="298" width="440" height="62" fill="#0a2a4a" rx="0"/>
+<text x="220" y="328" text-anchor="middle" fill="#6bbbff" font-size="12" font-weight="bold">সমুদ্র / জলাশয়</text>
+<!-- Sun — pulsing in-place (CSS scale) -->
+<g class="sun">
+  <circle cx="390" cy="55" r="32" fill="#e07800"/>
+  <g stroke="#f0a030" stroke-width="2" opacity=".7" stroke-linecap="round">
+    <line x1="390" y1="15" x2="390" y2="4"/>
+    <line x1="415" y1="22" x2="422" y2="13"/>
+    <line x1="428" y1="46" x2="439" y2="43"/>
+    <line x1="365" y1="22" x2="358" y2="13"/>
+    <line x1="353" y1="46" x2="343" y2="43"/>
+  </g>
+</g>
+<text x="390" y="102" text-anchor="middle" fill="#f0a030" font-size="9">সূর্য</text>
+<!-- Cloud — gentle float (CSS translateX) -->
+<g class="cloud">
+  <ellipse cx="190" cy="62" rx="55" ry="28" fill="rgba(200,220,255,.15)" stroke="#6bbbff" stroke-width="1.5"/>
+  <ellipse cx="152" cy="72" rx="34" ry="22" fill="rgba(200,220,255,.15)" stroke="#6bbbff" stroke-width="1.5"/>
+  <ellipse cx="228" cy="70" rx="34" ry="22" fill="rgba(200,220,255,.15)" stroke="#6bbbff" stroke-width="1.5"/>
+</g>
+<text x="190" y="108" text-anchor="middle" fill="#6bbbff" font-size="9">মেঘ (ঘনীভবন)</text>
+<!-- FLOW PATHS -->
+<path id="evapPath" d="M120,292 C98,258 74,200 70,158 C66,118 90,95 150,80"
+      fill="none" stroke="#6bbbff" stroke-width="1.8" opacity=".5" stroke-dasharray="6,3"/>
+<path id="rainPath" d="M230,80 C275,102 320,182 340,295"
+      fill="none" stroke="#6bbbff" stroke-width="1.8" opacity=".5"/>
+<!-- Flow labels -->
+<text x="58" y="200" text-anchor="middle" fill="#6bbbff" font-size="10" transform="rotate(-80,58,200)">বাষ্পীভবন</text>
+<text x="325" y="200" fill="#6bbbff" font-size="10">বৃষ্টিপাত</text>
+<!-- PARTICLES — evaporation (blue circles, upward) -->
+<circle r="5" fill="#6bbbff" opacity=".9">
+  <animateMotion dur="3s" repeatCount="indefinite"><mpath href="#evapPath" xlink:href="#evapPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#6bbbff" opacity=".65">
+  <animateMotion dur="3s" begin="1s" repeatCount="indefinite"><mpath href="#evapPath" xlink:href="#evapPath"/></animateMotion>
+</circle>
+<circle r="3" fill="#6bbbff" opacity=".4">
+  <animateMotion dur="3s" begin="2s" repeatCount="indefinite"><mpath href="#evapPath" xlink:href="#evapPath"/></animateMotion>
+</circle>
+<!-- PARTICLES — rain (blue circles, downward) -->
+<circle r="5" fill="#60a5fa" opacity=".9">
+  <animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#rainPath" xlink:href="#rainPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#60a5fa" opacity=".65">
+  <animateMotion dur="2.5s" begin=".83s" repeatCount="indefinite"><mpath href="#rainPath" xlink:href="#rainPath"/></animateMotion>
+</circle>
+<circle r="3" fill="#60a5fa" opacity=".4">
+  <animateMotion dur="2.5s" begin="1.67s" repeatCount="indefinite"><mpath href="#rainPath" xlink:href="#rainPath"/></animateMotion>
+</circle>
+</svg>
 ```
-<circle cx="200" cy="150" r="18" fill="rgba(240,160,48,.3)" stroke="#f0a030" stroke-width="2"/>
-<text x="200" y="154" text-anchor="middle" fill="#f0a030" font-size="9" font-family="Sora,sans-serif">নিউক্লিয়াস</text>
-<ellipse cx="200" cy="150" rx="55" ry="25" fill="none" stroke="#0de4a0" stroke-width="1" opacity=".6" transform="rotate(-30,200,150)"/>
-<circle cx="245" cy="128" r="5" fill="#0de4a0"/>
-<ellipse cx="200" cy="150" rx="85" ry="38" fill="none" stroke="#0de4a0" stroke-width="1" opacity=".5" transform="rotate(30,200,150)"/>
-<circle cx="275" cy="178" r="5" fill="#0de4a0"/>
+
+⚗️ পরমাণু (Atom / Bohr model) → nucleus pulses, electrons orbit shells via animateMotion:
+```svg
+<svg viewBox="0 0 380 320" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<style>
+  svg * { transform-box:fill-box; transform-origin:center; }
+  .nuc { animation:nPulse 2s ease-in-out infinite; }
+  @keyframes nPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+</style>
+<!-- Shell paths — two-arc trick gives closed circle for animateMotion -->
+<path id="sh1" d="M190,118 A42,42 0 1,0 190,202 A42,42 0 1,0 190,118" fill="none" stroke="#0de4a0" stroke-width="1.2" opacity=".6"/>
+<path id="sh2" d="M190,86  A74,74 0 1,0 190,234 A74,74 0 1,0 190,86"  fill="none" stroke="#6bbbff" stroke-width="1.2" opacity=".5"/>
+<path id="sh3" d="M190,54  A106,106 0 1,0 190,266 A106,106 0 1,0 190,54" fill="none" stroke="#e05555" stroke-width="1.2" opacity=".4"/>
+<!-- Nucleus — pulsing in-place (CSS scale) -->
+<circle class="nuc" cx="190" cy="160" r="20" fill="rgba(240,160,48,.35)" stroke="#f0a030" stroke-width="2"/>
+<text x="190" y="165" text-anchor="middle" fill="#f0a030" font-size="9" font-weight="bold">নিউক্লিয়াস</text>
+<!-- Shell labels -->
+<text x="238" y="121" fill="#0de4a0" font-size="9">K (2e)</text>
+<text x="270" y="90"  fill="#6bbbff" font-size="9">L (8e)</text>
+<text x="300" y="58"  fill="#e05555" font-size="9">M (1e)</text>
+<!-- K-shell electrons (2e, fast) -->
+<circle r="5" fill="#0de4a0">
+  <animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#sh1" xlink:href="#sh1"/></animateMotion>
+</circle>
+<circle r="5" fill="#0de4a0">
+  <animateMotion dur="2.5s" begin="1.25s" repeatCount="indefinite"><mpath href="#sh1" xlink:href="#sh1"/></animateMotion>
+</circle>
+<!-- L-shell electrons (4 spread evenly) -->
+<circle r="5" fill="#6bbbff">
+  <animateMotion dur="4.5s" repeatCount="indefinite"><mpath href="#sh2" xlink:href="#sh2"/></animateMotion>
+</circle>
+<circle r="5" fill="#6bbbff">
+  <animateMotion dur="4.5s" begin="1.125s" repeatCount="indefinite"><mpath href="#sh2" xlink:href="#sh2"/></animateMotion>
+</circle>
+<circle r="5" fill="#6bbbff">
+  <animateMotion dur="4.5s" begin="2.25s" repeatCount="indefinite"><mpath href="#sh2" xlink:href="#sh2"/></animateMotion>
+</circle>
+<circle r="5" fill="#6bbbff">
+  <animateMotion dur="4.5s" begin="3.375s" repeatCount="indefinite"><mpath href="#sh2" xlink:href="#sh2"/></animateMotion>
+</circle>
+<!-- M-shell electron (1e, slow) -->
+<circle r="5" fill="#e05555">
+  <animateMotion dur="7s" repeatCount="indefinite"><mpath href="#sh3" xlink:href="#sh3"/></animateMotion>
+</circle>
+</svg>
 ```
 
 ⚡ Physics diagram templates:
@@ -853,41 +1167,82 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
 <text x="115" y="215" text-anchor="middle" fill="#6bbbff" font-size="10" font-family="Sora,sans-serif">তরঙ্গদৈর্ঘ্য (λ)</text>
 ```
 
-🪞 আলোর প্রতিফলন (Reflection) → vertical mirror + normal + incident + reflected:
-```
-<line x1="210" y1="20" x2="210" y2="260" stroke="#6bbbff" stroke-width="3"/>
+🪞 আলোর প্রতিফলন (Reflection) → light particle travels incPath then refPath:
+```svg
+<svg viewBox="0 0 320 290" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<defs>
+  <marker id="arrO" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0a030"/></marker>
+  <marker id="arrG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0de4a0"/></marker>
+</defs>
+<style>svg * { transform-box:fill-box; transform-origin:center; }</style>
+<!-- Mirror -->
+<line x1="210" y1="20" x2="210" y2="270" stroke="#6bbbff" stroke-width="3"/>
 <line x1="210" y1="40"  x2="225" y2="55"  stroke="#6bbbff" stroke-width="1" opacity=".4"/>
 <line x1="210" y1="80"  x2="225" y2="95"  stroke="#6bbbff" stroke-width="1" opacity=".4"/>
 <line x1="210" y1="120" x2="225" y2="135" stroke="#6bbbff" stroke-width="1" opacity=".4"/>
 <line x1="210" y1="160" x2="225" y2="175" stroke="#6bbbff" stroke-width="1" opacity=".4"/>
 <line x1="210" y1="200" x2="225" y2="215" stroke="#6bbbff" stroke-width="1" opacity=".4"/>
+<text x="242" y="145" fill="#6bbbff" font-size="10">দর্পণ</text>
+<!-- Normal -->
 <line x1="50" y1="145" x2="205" y2="145" stroke="#e6edf3" stroke-width="1" stroke-dasharray="5,3" opacity=".5"/>
-<line x1="55" y1="55" x2="210" y2="145" stroke="#f0a030" stroke-width="2" marker-end="url(#arr)"/>
-<text x="90" y="78" fill="#f0a030" font-size="10" font-family="Sora,sans-serif">আপতিত রশ্মি</text>
-<line x1="210" y1="145" x2="65" y2="235" stroke="#0de4a0" stroke-width="2" marker-end="url(#arr)"/>
-<text x="90" y="225" fill="#0de4a0" font-size="10" font-family="Sora,sans-serif">প্রতিফলিত রশ্মি</text>
+<text x="55" y="138" fill="#e6edf3" font-size="9">অভিলম্ব</text>
+<!-- FLOW PATHS — photon rides these -->
+<path id="incPath" d="M55,55 L210,145" fill="none" stroke="#f0a030" stroke-width="2" opacity=".7" marker-end="url(#arrO)"/>
+<path id="refPath" d="M210,145 L65,235" fill="none" stroke="#0de4a0" stroke-width="2" opacity=".7" marker-end="url(#arrG)"/>
+<!-- Labels -->
+<text x="92" y="78"  fill="#f0a030" font-size="10">আপতিত রশ্মি</text>
+<text x="72" y="228" fill="#0de4a0" font-size="10">প্রতিফলিত রশ্মি</text>
+<!-- Angle arcs -->
 <path d="M175,145 A28,28 0 0,0 193,122" fill="none" stroke="#f0a030" stroke-width="1"/>
-<text x="165" y="128" fill="#f0a030" font-size="10" font-family="Sora,sans-serif">i</text>
+<text x="163" y="128" fill="#f0a030" font-size="10">i</text>
 <path d="M175,145 A28,28 0 0,1 193,168" fill="none" stroke="#0de4a0" stroke-width="1"/>
-<text x="163" y="172" fill="#0de4a0" font-size="10" font-family="Sora,sans-serif">r</text>
+<text x="163" y="172" fill="#0de4a0" font-size="10">r</text>
+<text x="105" y="280" text-anchor="middle" fill="#e6edf3" font-size="9">আপতন কোণ (i) = প্রতিফলন কোণ (r)</text>
+<!-- PARTICLES: photons traveling incident then reflected -->
+<circle r="5" fill="#f0a030" opacity=".9">
+  <animateMotion dur="1.4s" repeatCount="indefinite"><mpath href="#incPath" xlink:href="#incPath"/></animateMotion>
+</circle>
+<circle r="5" fill="#0de4a0" opacity=".9">
+  <animateMotion dur="1.4s" begin="0.7s" repeatCount="indefinite"><mpath href="#refPath" xlink:href="#refPath"/></animateMotion>
+</circle>
+</svg>
 ```
 
-🔀 আলোর প্রতিসরণ (Refraction) → two media + bent ray + angles:
-```
-<text x="30" y="95" fill="#e6edf3" font-size="10" font-family="Sora,sans-serif">বায়ু (লঘু মাধ্যম)</text>
-<line x1="20" y1="150" x2="400" y2="150" stroke="#6bbbff" stroke-width="2"/>
-<rect x="20" y="150" width="380" height="140" fill="rgba(107,187,255,.07)" stroke="none"/>
-<text x="30" y="170" fill="#6bbbff" font-size="10" font-family="Sora,sans-serif">কাচ/পানি (ঘন মাধ্যম)</text>
+🔀 আলোর প্রতিসরণ (Refraction) → photon travels incPath, bends into rfrPath at boundary:
+```svg
+<svg viewBox="0 0 320 295" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<defs>
+  <marker id="arrO" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0a030"/></marker>
+  <marker id="arrG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0de4a0"/></marker>
+</defs>
+<style>svg * { transform-box:fill-box; transform-origin:center; }</style>
+<!-- Media -->
+<text x="30" y="95" fill="#e6edf3" font-size="10">বায়ু (লঘু মাধ্যম)</text>
+<line x1="20" y1="150" x2="310" y2="150" stroke="#6bbbff" stroke-width="2"/>
+<rect x="20" y="150" width="290" height="135" fill="rgba(107,187,255,.07)"/>
+<text x="30" y="170" fill="#6bbbff" font-size="10">কাচ/পানি (ঘন মাধ্যম)</text>
+<!-- Normal -->
 <line x1="200" y1="20" x2="200" y2="285" stroke="#e6edf3" stroke-width="1" stroke-dasharray="5,3" opacity=".5"/>
-<text x="205" y="16" fill="#e6edf3" font-size="9" font-family="Sora,sans-serif">অভিলম্ব</text>
-<line x1="65" y1="40" x2="200" y2="150" stroke="#f0a030" stroke-width="2" marker-end="url(#arr)"/>
-<text x="80" y="68" fill="#f0a030" font-size="10" font-family="Sora,sans-serif">আপতিত</text>
-<line x1="200" y1="150" x2="248" y2="280" stroke="#0de4a0" stroke-width="2" marker-end="url(#arr)"/>
-<text x="252" y="248" fill="#0de4a0" font-size="10" font-family="Sora,sans-serif">প্রতিসৃত</text>
+<text x="205" y="16" fill="#e6edf3" font-size="9">অভিলম্ব</text>
+<!-- FLOW PATHS -->
+<path id="incPath" d="M65,40 L200,150" fill="none" stroke="#f0a030" stroke-width="2" opacity=".7" marker-end="url(#arrO)"/>
+<path id="rfrPath" d="M200,150 L248,280" fill="none" stroke="#0de4a0" stroke-width="2" opacity=".7" marker-end="url(#arrG)"/>
+<!-- Labels -->
+<text x="80" y="68"  fill="#f0a030" font-size="10">আপতিত</text>
+<text x="252" y="248" fill="#0de4a0" font-size="10">প্রতিসৃত</text>
+<!-- Angle arcs -->
 <path d="M200,105 A38,38 0 0,0 173,128" fill="none" stroke="#f0a030" stroke-width="1"/>
-<text x="158" y="115" fill="#f0a030" font-size="11" font-family="Sora,sans-serif">i</text>
+<text x="158" y="115" fill="#f0a030" font-size="11">i</text>
 <path d="M200,185 A30,30 0 0,1 218,200" fill="none" stroke="#0de4a0" stroke-width="1"/>
-<text x="220" y="198" fill="#0de4a0" font-size="11" font-family="Sora,sans-serif">r</text>
+<text x="220" y="198" fill="#0de4a0" font-size="11">r</text>
+<!-- PARTICLES: incident photon then refracted (slower, denser medium) -->
+<circle r="5" fill="#f0a030" opacity=".9">
+  <animateMotion dur="1.3s" repeatCount="indefinite"><mpath href="#incPath" xlink:href="#incPath"/></animateMotion>
+</circle>
+<circle r="5" fill="#0de4a0" opacity=".9">
+  <animateMotion dur="1.8s" begin="0.65s" repeatCount="indefinite"><mpath href="#rfrPath" xlink:href="#rfrPath"/></animateMotion>
+</circle>
+</svg>
 ```
 
 🔍 উত্তল লেন্স (Convex Lens) → lens + focal points + ray diagram:
@@ -907,41 +1262,89 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
 <line x1="200" y1="180" x2="380" y2="180" stroke="#f0a030" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
 ```
 
-⚡ বৈদ্যুতিক বর্তনী (Circuit) → use standard symbols inline SVG:
-```
-<!-- battery (two lines: long=+, short=-) -->
-<line x1="60" y1="95" x2="60" y2="115" stroke="#e6edf3" stroke-width="3"/>
-<line x1="60" y1="100" x2="60" y2="110" stroke="#e6edf3" stroke-width="6"/><!-- thick short line = - -->
-<polyline points="150,80 160,95 170,65 180,95 190,65 200,95 210,65 220,80"
-          fill="none" stroke="#0de4a0" stroke-width="2"/>
-<line x1="280" y1="80" x2="295" y2="80" stroke="#e6edf3" stroke-width="2"/>
-<line x1="305" y1="68" x2="320" y2="80" stroke="#e6edf3" stroke-width="2"/>
-<circle cx="190" cy="160" r="16" fill="none" stroke="#f0a030" stroke-width="1.5"/>
-<text x="190" y="164" text-anchor="middle" fill="#f0a030" font-size="11" font-family="Sora,sans-serif">A</text>
-<polyline points="60,80 60,60 380,60 380,160 206,160" fill="none" stroke="#e6edf3" stroke-width="1.5"/>
-<polyline points="174,160 60,160 60,120" fill="none" stroke="#e6edf3" stroke-width="1.5"/>
+⚡ বৈদ্যুতিক বর্তনী (Circuit) → charge particles flow along wirePath around the loop:
+```svg
+<svg viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<style>svg * { transform-box:fill-box; transform-origin:center; }</style>
+<!-- Wire loop path — charge particles ride this -->
+<path id="wirePath" d="M60,90 L60,55 L340,55 L340,168 L60,168 L60,112" fill="none" stroke="#e6edf3" stroke-width="2"/>
+<!-- Battery (at left x=60) -->
+<line x1="48" y1="90"  x2="72" y2="90"  stroke="#e6edf3" stroke-width="3"/>
+<line x1="52" y1="100" x2="68" y2="100" stroke="#e6edf3" stroke-width="5"/>
+<line x1="52" y1="109" x2="68" y2="109" stroke="#e6edf3" stroke-width="5"/>
+<line x1="48" y1="112" x2="72" y2="112" stroke="#e6edf3" stroke-width="3"/>
+<text x="22" y="103" text-anchor="middle" fill="#f0a030" font-size="9">ব্যাটারি</text>
+<text x="22" y="114" text-anchor="middle" fill="#f0a030" font-size="8">(+/−)</text>
+<!-- Resistor zigzag (top wire, x=140→220, y=55) -->
+<polyline points="140,55 150,35 164,75 178,35 192,75 206,35 220,55" fill="none" stroke="#0de4a0" stroke-width="2"/>
+<text x="180" y="28" text-anchor="middle" fill="#0de4a0" font-size="9">রোধক</text>
+<!-- Ammeter (bottom wire, x=200) -->
+<circle cx="200" cy="168" r="14" fill="#0d1117" stroke="#f0a030" stroke-width="1.5"/>
+<text x="200" y="172" text-anchor="middle" fill="#f0a030" font-size="11">A</text>
+<text x="200" y="202" text-anchor="middle" fill="#f0a030" font-size="9">অ্যামিটার</text>
+<!-- PARTICLES: 3 charge carriers flowing around loop -->
+<circle r="5" fill="#f0a030" opacity=".9">
+  <animateMotion dur="4s" repeatCount="indefinite"><mpath href="#wirePath" xlink:href="#wirePath"/></animateMotion>
+</circle>
+<circle r="5" fill="#f0a030" opacity=".65">
+  <animateMotion dur="4s" begin="1.33s" repeatCount="indefinite"><mpath href="#wirePath" xlink:href="#wirePath"/></animateMotion>
+</circle>
+<circle r="5" fill="#f0a030" opacity=".4">
+  <animateMotion dur="4s" begin="2.67s" repeatCount="indefinite"><mpath href="#wirePath" xlink:href="#wirePath"/></animateMotion>
+</circle>
+</svg>
 ```
 
 🧪 Chemistry diagram templates:
 
-⚗️ তড়িৎ বিশ্লেষণ (Electrolysis) → beaker + two electrodes + bubbles:
-```
+⚗️ তড়িৎ বিশ্লেষণ (Electrolysis) → gas bubbles rise along cathPath / anodPath to surface:
+```svg
+<svg viewBox="0 0 380 270" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<style>svg * { transform-box:fill-box; transform-origin:center; }</style>
+<defs>
+  <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e6edf3"/></marker>
+</defs>
+<!-- Beaker -->
 <path d="M75,55 L55,245 L325,245 L305,55 Z" fill="rgba(107,187,255,.06)" stroke="#6bbbff" stroke-width="2"/>
-<!-- electrolyte surface -->
+<!-- Electrolyte surface -->
 <line x1="62" y1="115" x2="318" y2="115" stroke="#6bbbff" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
-<text x="190" y="195" text-anchor="middle" fill="#6bbbff" font-size="11" font-family="Sora,sans-serif">তড়িৎ বিশ্লেষ্য দ্রবণ</text>
-<!-- cathode (left, blue = -) -->
+<text x="190" y="195" text-anchor="middle" fill="#6bbbff" font-size="11">তড়িৎ বিশ্লেষ্য দ্রবণ</text>
+<!-- Cathode (left, −) -->
 <rect x="118" y="55" width="14" height="165" rx="3" fill="rgba(107,187,255,.2)" stroke="#6bbbff" stroke-width="2"/>
-<text x="125" y="46" text-anchor="middle" fill="#6bbbff" font-size="11" font-family="Sora,sans-serif">ক্যাথোড(−)</text>
-<!-- anode (right, red = +) -->
+<text x="125" y="46" text-anchor="middle" fill="#6bbbff" font-size="11">ক্যাথোড(−)</text>
+<!-- Anode (right, +) -->
 <rect x="248" y="55" width="14" height="165" rx="3" fill="rgba(220,80,80,.2)" stroke="#e05555" stroke-width="2"/>
-<text x="255" y="46" text-anchor="middle" fill="#e05555" font-size="11" font-family="Sora,sans-serif">অ্যানোড(+)</text>
-<circle cx="125" cy="100" r="5" fill="rgba(13,228,160,.35)" stroke="#0de4a0" stroke-width="1"/>
-<circle cx="118" cy="85"  r="3" fill="rgba(13,228,160,.25)" stroke="#0de4a0" stroke-width="1"/>
-<circle cx="255" cy="98"  r="5" fill="rgba(13,228,160,.35)" stroke="#0de4a0" stroke-width="1"/>
-<circle cx="262" cy="82"  r="3" fill="rgba(13,228,160,.25)" stroke="#0de4a0" stroke-width="1"/>
-<polyline points="125,55 125,30 255,30 255,55" fill="none" stroke="#e6edf3" stroke-width="1.5"/>
-<text x="190" y="24" text-anchor="middle" fill="#e6edf3" font-size="10" font-family="Sora,sans-serif">ব্যাটারি</text>
+<text x="255" y="46" text-anchor="middle" fill="#e05555" font-size="11">অ্যানোড(+)</text>
+<!-- Battery -->
+<polyline points="125,55 125,30 255,30 255,55" fill="none" stroke="#e6edf3" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="190" y="24" text-anchor="middle" fill="#e6edf3" font-size="10">ব্যাটারি</text>
+<!-- Product labels -->
+<text x="80" y="112" text-anchor="end" fill="#0de4a0" font-size="9">H₂ ↑</text>
+<text x="300" y="112" fill="#e05555" font-size="9">O₂ ↑</text>
+<!-- BUBBLE PATHS (invisible, just motion guides) -->
+<path id="cathPath" d="M125,232 C122,198 120,162 122,115" fill="none" stroke="none"/>
+<path id="anodPath" d="M255,232 C258,198 260,162 258,115" fill="none" stroke="none"/>
+<!-- PARTICLES: cathode H₂ bubbles (green, 3 staggered) -->
+<circle r="5" fill="#0de4a0" opacity=".85">
+  <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#cathPath" xlink:href="#cathPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#0de4a0" opacity=".60">
+  <animateMotion dur="2s" begin=".67s" repeatCount="indefinite"><mpath href="#cathPath" xlink:href="#cathPath"/></animateMotion>
+</circle>
+<circle r="3" fill="#0de4a0" opacity=".40">
+  <animateMotion dur="2s" begin="1.33s" repeatCount="indefinite"><mpath href="#cathPath" xlink:href="#cathPath"/></animateMotion>
+</circle>
+<!-- PARTICLES: anode O₂ bubbles (red, 3 staggered) -->
+<circle r="5" fill="#e05555" opacity=".85">
+  <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#anodPath" xlink:href="#anodPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#e05555" opacity=".60">
+  <animateMotion dur="2s" begin=".67s" repeatCount="indefinite"><mpath href="#anodPath" xlink:href="#anodPath"/></animateMotion>
+</circle>
+<circle r="3" fill="#e05555" opacity=".40">
+  <animateMotion dur="2s" begin="1.33s" repeatCount="indefinite"><mpath href="#anodPath" xlink:href="#anodPath"/></animateMotion>
+</circle>
+</svg>
 ```
 
 🌈 pH স্কেল → gradient bar 0–14 with labels:
@@ -1028,21 +1431,43 @@ Na (2,8,1) example:
 <text x="200" y="245" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Sora,sans-serif">→ NaCl (টেবিল লবণ)</text>
 ```
 
-➡️ রাসায়নিক বিক্রিয়া (Chemical Reaction) → reactants + arrow + products:
-```
-<!-- reactant box -->
-<rect x="20" y="110" width="120" height="60" rx="8" fill="rgba(240,160,48,.12)" stroke="#f0a030" stroke-width="1.5"/>
-<text x="80" y="138" text-anchor="middle" fill="#f0a030" font-size="12" font-family="Sora,sans-serif">বিক্রিয়ক</text>
-<text x="80" y="158" text-anchor="middle" fill="#f0a030" font-size="11" font-family="Sora,sans-serif">(Reactants)</text>
-<!-- arrow with condition -->
-<line x1="145" y1="140" x2="235" y2="140" stroke="#e6edf3" stroke-width="2" marker-end="url(#arr)"/>
-<text x="190" y="128" text-anchor="middle" fill="#6bbbff" font-size="9" font-family="Sora,sans-serif">তাপ/আলো/অনুঘটক</text>
-<!-- product box -->
-<rect x="240" y="110" width="120" height="60" rx="8" fill="rgba(13,228,160,.12)" stroke="#0de4a0" stroke-width="1.5"/>
-<text x="300" y="138" text-anchor="middle" fill="#0de4a0" font-size="12" font-family="Sora,sans-serif">উৎপাদ</text>
-<text x="300" y="158" text-anchor="middle" fill="#0de4a0" font-size="11" font-family="Sora,sans-serif">(Products)</text>
-<!-- energy label -->
-<text x="200" y="200" text-anchor="middle" fill="#e05555" font-size="10" font-family="Sora,sans-serif">তাপোৎপাদী: ΔH &lt; 0 | তাপশোষী: ΔH &gt; 0</text>
+➡️ রাসায়নিক বিক্রিয়া (Chemical Reaction) → particles flow along rxnPath, boxes pulse:
+```svg
+<svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<style>
+  svg * { transform-box:fill-box; transform-origin:center; }
+  .rbox { animation:rPulse 2.2s ease-in-out infinite; }
+  @keyframes rPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+  .pbox { animation:pPulse 2.2s ease-in-out 1.1s infinite; }
+  @keyframes pPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+</style>
+<defs>
+  <marker id="arrW" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e6edf3"/></marker>
+</defs>
+<!-- Reactant box — pulsing (CSS scale) -->
+<rect class="rbox" x="20" y="75" width="130" height="70" rx="10" fill="rgba(240,160,48,.12)" stroke="#f0a030" stroke-width="1.8"/>
+<text x="85" y="107" text-anchor="middle" fill="#f0a030" font-size="12" font-weight="bold">বিক্রিয়ক</text>
+<text x="85" y="127" text-anchor="middle" fill="#f0a030" font-size="10">(Reactants)</text>
+<!-- Reaction arrow + condition -->
+<path id="rxnPath" d="M152,110 C185,110 210,110 228,110" fill="none" stroke="#e6edf3" stroke-width="2" opacity=".7" marker-end="url(#arrW)"/>
+<text x="190" y="100" text-anchor="middle" fill="#6bbbff" font-size="9">তাপ / আলো / অনুঘটক</text>
+<!-- Product box — pulsing (delayed) -->
+<rect class="pbox" x="230" y="75" width="130" height="70" rx="10" fill="rgba(13,228,160,.12)" stroke="#0de4a0" stroke-width="1.8"/>
+<text x="295" y="107" text-anchor="middle" fill="#0de4a0" font-size="12" font-weight="bold">উৎপাদ</text>
+<text x="295" y="127" text-anchor="middle" fill="#0de4a0" font-size="10">(Products)</text>
+<!-- Energy label -->
+<text x="190" y="185" text-anchor="middle" fill="#e05555" font-size="10">তাপোৎপাদী: ΔH &lt; 0 | তাপশোষী: ΔH &gt; 0</text>
+<!-- PARTICLES: 3 staggered particles flowing reactant → product -->
+<circle r="5" fill="#f0a030" opacity=".9">
+  <animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#rxnPath" xlink:href="#rxnPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#f0a030" opacity=".65">
+  <animateMotion dur="1.8s" begin=".6s" repeatCount="indefinite"><mpath href="#rxnPath" xlink:href="#rxnPath"/></animateMotion>
+</circle>
+<circle r="4" fill="#0de4a0" opacity=".7">
+  <animateMotion dur="1.8s" begin="1.2s" repeatCount="indefinite"><mpath href="#rxnPath" xlink:href="#rxnPath"/></animateMotion>
+</circle>
+</svg>
 ```
 
 🧪 পাতন যন্ত্র (Distillation apparatus) → flask + condenser + receiver:

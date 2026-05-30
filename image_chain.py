@@ -13,6 +13,7 @@ from query import get_relevant_chunks
 
 # Reuse the LLM clients from chain.py — single source of truth
 from chain import flash_llm, vision_llm, gemini_pro_llm, gpt54_mini_llm
+from chapters import SUBJECT_STREAM as _KNOWN_SUBJECTS
 
 load_dotenv()
 
@@ -27,7 +28,11 @@ gpt54_mini_vision_chain = gpt54_mini_llm | parser
 _DEFAULT_CAPTION = "এই ছবিটি দেখে বুঝিয়ে দাও।"
 
 
-def detect_subject_from_image(image_base64: str, image_type: str) -> str:
+_IMAGE_KNOWN = frozenset(_KNOWN_SUBJECTS.keys()) | {"accounting_hard", "accounting_simple"}
+_STREAM_DEFAULTS = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
+
+
+def detect_subject_from_image(image_base64: str, image_type: str, fallback: str = "biology") -> str:
     """Use Flash to classify the image. Returns 'accounting_hard', 'accounting_simple', or subject name."""
     msg = HumanMessage(content=[
         {"type": "image_url", "image_url": {"url": f"data:{image_type};base64,{image_base64}"}},
@@ -56,6 +61,9 @@ def detect_subject_from_image(image_base64: str, image_type: str) -> str:
         return "accounting_simple"
     if any(w in result for w in ("math", "geometry", "উপপাদ্য", "জ্যামিতি", "সংখ্যা", "number", "algebra", "trigon")):
         return "math"
+    if result not in _IMAGE_KNOWN:
+        print(f"[Image Subject] LLM returned '{result}' — not a known subject, using fallback '{fallback}'", flush=True)
+        return fallback
     return result
 
 
@@ -64,10 +72,10 @@ def _img_parts(images: list) -> list:
     return [{"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}} for b64, mime in images]
 
 
-def pick_vision_chain(images: list) -> tuple:
+def pick_vision_chain(images: list, fallback: str = "biology") -> tuple:
     """Detect subject from first image and return (chain, detected_subject)."""
     first_b64, first_mime = images[0]
-    subject = detect_subject_from_image(first_b64, first_mime)
+    subject = detect_subject_from_image(first_b64, first_mime, fallback=fallback)
     if subject == "accounting_hard":
         print(f"[Image Routing] complex accounting -> Gemini 2.5 Pro")
         return pro_vision_chain, "accounting"
@@ -189,8 +197,10 @@ def get_answer_with_image(
         answer = solve_chain.invoke(msgs)
         return answer, True, detected_subj
 
-    # Auto-detect subject from first image — overrides whatever the frontend sent
-    selected_chain, subject = pick_vision_chain(images)
+    # Auto-detect subject from first image — overrides whatever the frontend sent.
+    # Compute fallback: stream default > chat subject > "biology"
+    _img_fallback = _STREAM_DEFAULTS.get(stream) or subject or "biology"
+    selected_chain, subject = pick_vision_chain(images, fallback=_img_fallback)
 
     # Stream mismatch check — return redirect before hitting the LLM
     mismatch = check_stream_mismatch(stream, subject)

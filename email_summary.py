@@ -325,6 +325,7 @@ def start_scheduler():
     import time
 
     def _loop():
+        time.sleep(3)  # let Flask finish printing its startup banner first
         while True:
             now    = datetime.now(timezone.utc)
             target = now.replace(hour=15, minute=0, second=0, microsecond=0)

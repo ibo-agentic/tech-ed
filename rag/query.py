@@ -1,11 +1,13 @@
 import os
 from dotenv import load_dotenv
+from chapters import SUBJECT_STREAM as _KNOWN_SUBJECTS
 
 load_dotenv()
 
 # Tuned for text-embedding-3-small + Bangla queries.
-# Real subject questions score ~1.0-1.2, casual chat scores 1.4+.
-RELEVANCE_THRESHOLD = 1.20
+# Real subject questions score ~1.0-1.25, casual chat scores 1.4+.
+# 1.25 captures borderline cases like "রক্ত সঞ্চালন" (1.218) while keeping casual out.
+RELEVANCE_THRESHOLD = 1.25
 
 _vectorstore = None
 _chroma_unavailable = False
@@ -32,8 +34,15 @@ def _get_vectorstore():
         return None
 
 
+_KNOWN = frozenset(_KNOWN_SUBJECTS.keys())
+
+
 def _search_with_relevance(question, subject, top_k, threshold=None):
     if not subject:
+        return []
+
+    if subject not in _KNOWN:
+        print(f"[RAG MISS] subject='{subject}' is not a known subject — q='{question[:80]}' → returning no chunks", flush=True)
         return []
 
     vs = _get_vectorstore()
@@ -53,7 +62,10 @@ def _search_with_relevance(question, subject, top_k, threshold=None):
 
         all_scores = [round(s, 3) for _, s in results]
         kept_scores = [round(s, 3) for _, s in relevant]
-        print(f"[RAG] q='{question[:50]}' subject={subject} all={all_scores} kept={kept_scores}")
+        print(f"[RAG] q='{question[:50]}' subject={subject} all={all_scores} kept={kept_scores}", flush=True)
+
+        if not relevant:
+            print(f"[RAG MISS] subject='{subject}' q='{question[:80]}' scores={all_scores} threshold={threshold:.2f} → no chunks passed, answering ungrounded", flush=True)
 
         return relevant
     except Exception as e:
