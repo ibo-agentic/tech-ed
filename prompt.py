@@ -1245,21 +1245,46 @@ LAYOUT RULE — প্রতিটি উপাদান আলাদা কো�
 </svg>
 ```
 
-🔍 উত্তল লেন্স (Convex Lens) → lens + focal points + ray diagram:
-```
-<path d="M200,40 C235,80 235,190 200,230 C165,190 165,80 200,40 Z"
-      fill="rgba(107,187,255,.15)" stroke="#6bbbff" stroke-width="2"/>
-<!-- principal axis -->
-<line x1="20" y1="135" x2="390" y2="135" stroke="#e6edf3" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+🔍 উত্তল লেন্স (Convex Lens) → photons travel ray1 (parallel→F) and ray2 (through F→parallel):
+```svg
+<svg viewBox="0 0 410 250" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:Sora,sans-serif;">
+<defs>
+  <marker id="arrG" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0de4a0"/></marker>
+  <marker id="arrO" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f0a030"/></marker>
+</defs>
+<style>svg * { transform-box:fill-box; transform-origin:center; }</style>
+<!-- Lens -->
+<path d="M200,40 C235,80 235,190 200,230 C165,190 165,80 200,40 Z" fill="rgba(107,187,255,.15)" stroke="#6bbbff" stroke-width="2"/>
+<!-- Principal axis -->
+<line x1="20" y1="135" x2="395" y2="135" stroke="#e6edf3" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+<!-- Focal points -->
 <circle cx="118" cy="135" r="4" fill="#f0a030"/>
 <text x="118" y="150" text-anchor="middle" fill="#f0a030" font-size="10" font-family="Sora,sans-serif">F</text>
 <circle cx="282" cy="135" r="4" fill="#f0a030"/>
 <text x="282" y="150" text-anchor="middle" fill="#f0a030" font-size="10" font-family="Sora,sans-serif">F</text>
-<line x1="30" y1="85" x2="198" y2="85" stroke="#0de4a0" stroke-width="1.5" marker-end="url(#arr)"/>
-<line x1="200" y1="85" x2="282" y2="135" stroke="#0de4a0" stroke-width="1.5" marker-end="url(#arr)"/>
-<line x1="30" y1="180" x2="118" y2="135" stroke="#f0a030" stroke-width="1.5" opacity=".7"/>
-<line x1="118" y1="135" x2="198" y2="180" stroke="#f0a030" stroke-width="1.5" opacity=".7"/>
-<line x1="200" y1="180" x2="380" y2="180" stroke="#f0a030" stroke-width="1.5" marker-end="url(#arr)" opacity=".7"/>
+<!-- RAY PATHS — particles ride these -->
+<!-- Ray 1: parallel incident ray → bends at lens → converges to right F -->
+<path id="ray1" d="M30,85 L199,85 L282,135" fill="none" stroke="#0de4a0" stroke-width="1.5" opacity=".7" marker-end="url(#arrG)"/>
+<!-- Ray 2: comes through left F → bends at lens → exits parallel to axis -->
+<path id="ray2" d="M30,180 L118,135 L199,180 L386,180" fill="none" stroke="#f0a030" stroke-width="1.5" opacity=".7" marker-end="url(#arrO)"/>
+<!-- Labels -->
+<text x="60" y="76" fill="#0de4a0" font-size="9" font-family="Sora,sans-serif">সমান্তরাল রশ্মি</text>
+<text x="315" y="128" fill="#0de4a0" font-size="9" font-family="Sora,sans-serif">F-তে মিলন</text>
+<text x="315" y="193" fill="#f0a030" font-size="9" font-family="Sora,sans-serif">সমান্তরালে বের</text>
+<!-- PARTICLES: photons along ray paths (href + xlink:href both REQUIRED) -->
+<circle r="5" fill="#0de4a0" opacity=".9">
+  <animateMotion dur="2s" repeatCount="indefinite"><mpath href="#ray1" xlink:href="#ray1"/></animateMotion>
+</circle>
+<circle r="4" fill="#0de4a0" opacity=".55">
+  <animateMotion dur="2s" begin="1s" repeatCount="indefinite"><mpath href="#ray1" xlink:href="#ray1"/></animateMotion>
+</circle>
+<circle r="5" fill="#f0a030" opacity=".9">
+  <animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#ray2" xlink:href="#ray2"/></animateMotion>
+</circle>
+<circle r="4" fill="#f0a030" opacity=".55">
+  <animateMotion dur="2.6s" begin="1.3s" repeatCount="indefinite"><mpath href="#ray2" xlink:href="#ray2"/></animateMotion>
+</circle>
+</svg>
 ```
 
 ⚡ বৈদ্যুতিক বর্তনী (Circuit) → charge particles flow along wirePath around the loop:

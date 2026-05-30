@@ -2707,9 +2707,9 @@ function _flushStream(){
   const safe = preprocessMath(_safeStreamText(_streamText));
   _streamBub.innerHTML = marked.parse(safe, {breaks:true, gfm:true});
   renderMath(_streamBub);
-  // Skip SVG rendering while any svg fence block is still open — prevents beginElement()
-  // firing on half-streamed SVGs whose <path id> targets haven't arrived yet.
-  if(!_streamHasOpenSvgFence(_streamText)) renderSVG(_streamBub);
+  // SVG rendering intentionally skipped during streaming: _streamBub.innerHTML is rebuilt
+  // from raw text on every tick, which destroys any previously-rendered svg-wrap and races
+  // with the rAF beginElement() call. addBotMessage() renders SVG once on the final text.
   if(chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 120)
     chatBox.scrollTop = chatBox.scrollHeight;
 }
