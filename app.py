@@ -15,7 +15,7 @@ elif hasattr(sys.stdout, 'buffer'):
 
 from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context, send_from_directory
 from dotenv import load_dotenv
-from chain import get_answer
+from chain import get_answer, STREAM_INFO
 from auth import auth_bp, login_required, check_message_limit, increment_message_count, get_admin_client
 from image_chain import get_answer_with_image
 from flask_limiter import Limiter
@@ -463,7 +463,7 @@ def student_opening():
     # Weak topics filtered to current stream
     all_weak = (profile.get('weak_topics') or []) if profile else []
     if current_stream and all_weak:
-        from chain import STREAM_INFO, detect_subject_from_question
+        from chain import detect_subject_from_question
         allowed = set(STREAM_INFO.get(current_stream, {}).get('subjects', []))
         filtered = [t for t in all_weak if detect_subject_from_question(t, fallback=None) in allowed]
         weak_topics = filtered[-2:]
@@ -666,9 +666,14 @@ def ask_stream():
         session.modified = True
 
     def event_stream():
-        from chain import do_rag_lookup, run_llm, is_toc_question, build_toc_response, detect_subject_in_question, detect_subject_from_question, is_casual_chat, instant_reply, check_stream_mismatch, is_roadmap_request, detect_chapter_from_message, generate_section_list, is_despair, detect_subject_for_roadmap
+        print(">>> 1 EVENT_STREAM STARTED", flush=True)
+        from chain import (do_rag_lookup, run_llm, is_toc_question, build_toc_response,
+            detect_subject_in_question, detect_subject_from_question, is_casual_chat,
+            instant_reply, check_stream_mismatch, is_roadmap_request,
+            detect_chapter_from_message, generate_section_list, is_despair, detect_subject_for_roadmap)
         from memory import get_student_profile
         student_profile = get_student_profile(user_id) if is_logged_in else None
+        print(">>> 2 profile loaded", flush=True)
 
         def sse(payload):
             return f"data: {json.dumps(payload)}\n\n"
@@ -690,8 +695,10 @@ def ask_stream():
             return _SOCRATIC_BLOCK + ("\n\n" + pi.strip() if pi and pi.strip() else "")
 
         try:
+            print(">>> 3 entered try", flush=True)
             # 1. Check if user explicitly named a subject ("biology chapter", "physics question")
             explicit_subject = detect_subject_in_question(user_message, fallback=None)
+            print(f">>> 4 explicit={explicit_subject}", flush=True)
             # 2. Try content keyword detection ("সালোকসংশ্লেষণ" → biology)
             content_subject = detect_subject_from_question(user_message, fallback=None) if not explicit_subject else None
             # 3. Resolve: explicit > content-detected > frontend activeSubject
@@ -700,11 +707,7 @@ def ask_stream():
 
             # 4. Stream-consistency guard: if subject wasn't confirmed by detection,
             #    ensure it belongs to the current stream (prevents stale cross-stream subjects).
-            _STREAM_SUBJECTS = {
-                'science':  {'biology', 'physics', 'chemistry', 'math', 'bangla'},
-                'commerce': {'accounting', 'math', 'bangla'},
-                'arts':     {'geography', 'math', 'bangla'},
-            }
+            _STREAM_SUBJECTS = {k: set(v['subjects']) for k, v in STREAM_INFO.items()}
             _STREAM_DEFAULTS = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
             if not subject_confirmed and stream and stream in _STREAM_SUBJECTS:
                 if effective_subject not in _STREAM_SUBJECTS[stream]:
@@ -723,7 +726,14 @@ def ask_stream():
                     print(f"[Subject] '{effective_subject}' and '{subject}' both invalid — defaulting to '{_fallback}'", flush=True)
                     effective_subject = _fallback
 
+            # Stream is authoritative: never let an out-of-stream subject survive
+            if stream in _STREAM_SUBJECTS and effective_subject not in _STREAM_SUBJECTS[stream]:
+                effective_subject = _STREAM_DEFAULTS[stream]
+                subject_confirmed = False
+
+            print(f">>> 5 effective={effective_subject}", flush=True)
             # ── ROADMAP: must run BEFORE mismatch check (no subject needed) ──
+            print(f">>> 6 checking roadmap, is_roadmap={is_roadmap_request(user_message)}", flush=True)
             if is_roadmap_request(user_message):
                 # Use stream's primary subject if student didn't name one
                 _stream_primary = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
@@ -759,9 +769,12 @@ def ask_stream():
                     return
 
             # ── STREAM MISMATCH: soft redirect before doing any LLM work ──
-            # Skip mismatch check when subject is ambiguous + it's a TOC question —
-            # those go to the clarify path below and don't need stream enforcement.
-            mismatch_msg = check_stream_mismatch(stream, effective_subject) if subject_confirmed else None
+            # Only fire when the user explicitly named a subject — content-detected or
+            # frontend-guessed subjects should never trigger a redirect.
+            mismatch_msg = check_stream_mismatch(stream, effective_subject) if explicit_subject else None
+            # "নতুন বিষয়" is a navigation intent, not a subject request — never redirect it.
+            if mismatch_msg and "নতুন বিষয়" in user_message:
+                mismatch_msg = None
             if mismatch_msg:
                 current_chat_id = None
                 if is_logged_in:
@@ -779,6 +792,7 @@ def ask_stream():
                 return
 
             # ── TOC QUESTIONS: BYPASS LLM ENTIRELY ──
+            print(f">>> 7 checking toc, is_toc={is_toc_question(user_message)}", flush=True)
             if is_toc_question(user_message):
                 # If no subject was explicitly named or content-detected, ask rather than guess wrong
                 if not subject_confirmed:
@@ -842,7 +856,7 @@ def ask_stream():
                     history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in messages_list[-10:]]
                     if project_id:
                         project_instructions = get_project_instructions(project_id, user_id)
-                nctb_context, _ = do_rag_lookup(section_name, subject=effective_subject)
+                nctb_context, _, _ = do_rag_lookup(section_name, subject=effective_subject)
                 guide_query = (
                     f"এখন শুধু এই section টি পড়াও: **{section_name}**\n"
                     f"NCTB বই এর ক্রম অনুযায়ী সহজ ভাষায় explain করো। "
@@ -865,14 +879,20 @@ def ask_stream():
                 return
 
             # ── QUIZ: chip trigger OR natural language ("10 ta quiz kore dayow") ──
+            print(">>> 8 reaching quiz block", flush=True)
             _is_chip = (user_message == '__QUIZ__' or user_message == '__REVIEW_QUIZ__')
             if user_message == '__REVIEW_QUIZ__':
                 _quiz_total = 3
             elif not _is_chip:
-                from chain import parse_quiz_request
-                _quiz_total = parse_quiz_request(user_message)
+                # Skip quiz parsing for obvious casual/short messages — avoids misfire
+                if is_casual_chat(user_message):
+                    _quiz_total = 0
+                else:
+                    from chain import parse_quiz_request
+                    _quiz_total = parse_quiz_request(user_message)
             else:
                 _quiz_total = 1
+            print(f"[Route] q={user_message[:50]!r} subject={effective_subject} casual={is_casual_chat(user_message)} quiz_total={_quiz_total}", flush=True)
             if _is_chip or _quiz_total > 0:
                 from chain import generate_quiz_mcq
                 yield sse({"type": "stage", "text": "একটু দাঁড়াও, প্রশ্নটা রেডি করে নিচ্ছি... 🎯"})
@@ -919,6 +939,7 @@ def ask_stream():
                 return
 
             # ── CASUAL CHAT: skip RAG and stage indicators entirely ──
+            print(f">>> 9 reaching casual check, is_casual={is_casual_chat(user_message)}", flush=True)
             if is_casual_chat(user_message):
                 current_chat_id = None
                 messages_list = []
@@ -932,21 +953,38 @@ def ask_stream():
                     current_chat_id = chat['id']
                     messages_list = chat.get('messages', [])
                 if reply is None:
-                    # Needs LLM but still skip RAG
+                    # Stream the LLM response token-by-token (skip RAG, no trace stages)
                     if is_logged_in:
                         recent = messages_list[-10:] if len(messages_list) > 10 else messages_list
                         history = [{k: m[k] for k in ("role", "content", "image_url") if k in m} for m in recent]
                     else:
                         history = history_session[-10:]
-                    reply = run_llm(user_message, history, nctb_context="", project_instructions=_spi(project_instructions), stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model)
+                    from chain import stream_llm as _stream_llm
+                    _casual_kwargs = dict(stream=stream, student_name=student_name, subject=effective_subject, student_profile=student_profile, preferred_model=_preferred_model)
+                    try:
+                        for _chunk in _stream_llm(user_message, history, "", _spi(project_instructions), **_casual_kwargs):
+                            if _chunk:
+                                reply = (reply or "") + _chunk
+                                yield sse({"type": "token", "text": _chunk})
+                        print(f"[Casual stream] reply_len={len(reply or '')}", flush=True)
+                    except Exception as _casual_err:
+                        import traceback as _tb
+                        print(f"[Casual LLM ERROR] {type(_casual_err).__name__}: {_casual_err}", flush=True)
+                        _tb.print_exc()
+                        reply = "এই মুহূর্তে উত্তর দিতে পারছি না — আরেকবার চেষ্টা করো! 🌱"
+                        yield sse({"type": "token", "text": reply})
                 if is_logged_in:
                     messages_list.append({"role": "user", "content": user_message})
-                    messages_list.append({"role": "assistant", "content": reply})
+                    messages_list.append({"role": "assistant", "content": reply or ""})
                     threading.Thread(
                         target=background_save,
                         args=(current_chat_id, messages_list, user_message, user_id),
                         daemon=True
                     ).start()
+                if not (reply or '').strip():
+                    print(f"[Casual EMPTY] subject={effective_subject} q={user_message[:60]!r}", flush=True)
+                    yield sse({"type": "token", "text": "এই মুহূর্তে উত্তর দিতে পারছি না — আরেকবার চেষ্টা করো! 🌱"})
+                    reply = "এই মুহূর্তে উত্তর দিতে পারছি না — আরেকবার চেষ্টা করো! 🌱"
                 yield sse({"type": "reply", "reply": reply, "chat_id": current_chat_id, "chapters_found": [], "chips": False})
 
                 # Wrap-up: goodbye after a real session (casual path)
@@ -964,20 +1002,51 @@ def ask_stream():
                             ).start()
                 return
 
-            # ── STAGE 1: Generic thinking placeholder ──
-            yield sse({"type": "stage", "text": "Thinking..."})
+            print(">>> 10 reaching trace stages", flush=True)
+            # ── TRACE STAGE 1: প্রসঙ্গ বুঝছি ──
+            yield sse({"type": "trace", "event": "start", "id": "context",
+                       "label": "প্রসঙ্গ বুঝছি",
+                       "detail": "আগের সেশনে কী পড়েছিলে দেখে নিচ্ছি…"})
+            _has_prior = bool(chat_id) or len(history_session) > 0
+            _SUBJ_BN = {
+                "biology": "জীববিজ্ঞান", "physics": "পদার্থবিজ্ঞান",
+                "chemistry": "রসায়ন", "math": "গণিত",
+                "bangla": "বাংলা", "accounting": "হিসাববিজ্ঞান",
+                "geography": "ভূগোল",
+            }
+            _subj_label = _SUBJ_BN.get(effective_subject, effective_subject)
+            _context_done = (
+                f"মনে পড়েছে! গতবার তুমি {_subj_label} করেছিলে।"
+                if _has_prior else "নতুন শুরু, চলো এগোই।"
+            )
+            _req_time.sleep(0.35)
+            yield sse({"type": "trace", "event": "done", "id": "context", "detail": _context_done})
 
-            # Run RAG silently — don't tell the user we're searching unless we actually find something
-            nctb_context, chapters_found = do_rag_lookup(user_message, subject=effective_subject)
+            # ── TRACE STAGE 2: প্রশ্ন বিশ্লেষণ ──
+            yield sse({"type": "trace", "event": "start", "id": "analyze",
+                       "label": "প্রশ্ন বিশ্লেষণ",
+                       "detail": "তোমার প্রশ্নটা ভালো করে বুঝছি…"})
+            _req_time.sleep(0.35)
+            yield sse({"type": "trace", "event": "done", "id": "analyze", "detail": "বুঝে গেছি ✓"})
+
+            # ── TRACE STAGE 3: বই থেকে খুঁজছি (RAG — natural latency, no sleep needed) ──
+            yield sse({"type": "trace", "event": "start", "id": "rag",
+                       "label": "বই থেকে খুঁজছি",
+                       "detail": "NCTB বই থেকে সম্পর্কিত অংশ খুঁজছি…"})
+            nctb_context, chapters_found, chunk_count = do_rag_lookup(user_message, subject=effective_subject)
             is_biology = bool(nctb_context and nctb_context.strip()) and bool(chapters_found)
-
-            # ── STAGE 2: Only show "found in textbook" if we actually found relevant content ──
             if is_biology:
-                yield sse({"type": "stage", "text": "Searching NCTB textbook..."})
+                _rag_done = f"✓ {chunk_count}টি জায়গা থেকে তথ্য পেলাম।"
+                yield sse({"type": "trace", "event": "done", "id": "rag", "detail": _rag_done, "chunks": chunk_count})
                 yield sse({"type": "chapters", "chapters": chapters_found})
+            else:
+                yield sse({"type": "trace", "event": "done", "id": "rag", "detail": "সরাসরি উত্তর দিচ্ছি।", "chunks": 0})
 
-            # ── STAGE 3: Writing answer ──
-            yield sse({"type": "stage", "text": "Writing your answer..."})
+            # ── TRACE STAGE 4: উত্তর সাজাচ্ছি ──
+            yield sse({"type": "trace", "event": "start", "id": "compose",
+                       "label": "উত্তর সাজাচ্ছি",
+                       "detail": "সব মিলিয়ে তোমার জন্য উত্তর লিখছি…"})
+            _req_time.sleep(0.35)
 
             project_instructions = ""
             current_chat_id = None
@@ -1014,6 +1083,7 @@ def ask_stream():
             if effective_subject == "bangla" and nctb_context.startswith("[✅"):
                 history = []
 
+            print(f"[LLM] subject={effective_subject} confirmed={subject_confirmed} q={user_message[:60]!r}", flush=True)
             from chain import stream_llm
             import time as _time
             reply = ""
@@ -1067,6 +1137,13 @@ def ask_stream():
                     daemon=True
                 ).start()
 
+            # Guard: if reply is empty after stripping, use a friendly fallback
+            print(f"[LLM done] reply_len={len(reply)} reply_clean_len={len(reply_clean.strip())} subject={effective_subject}", flush=True)
+            if not reply_clean.strip():
+                print(f"[EMPTY REPLY] subject={effective_subject} q={user_message[:60]!r}", flush=True)
+                reply_clean = "এই মুহূর্তে উত্তর তৈরি করতে পারলাম না রে, আরেকবার জিজ্ঞেস করো তো! 🌱"
+                reply = reply_clean
+
             chips_value = "offer_roadmap" if is_despair(user_message) else True
             _elapsed = round(_t_llm_end - _t_llm_start, 1)
             _first_token = round((_first_token_time - _t_llm_start), 1) if _first_token_time else None
@@ -1097,6 +1174,7 @@ def ask_stream():
 
         except Exception as e:
             import traceback
+            print(">>> EXCEPTION IN GENERATOR:", flush=True)
             traceback.print_exc()
             yield sse({"type": "error", "error": str(e)})
 

@@ -224,9 +224,15 @@
     .avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
     .user .avatar{background:linear-gradient(135deg,var(--blue),var(--purple));font-size:10px;font-weight:700;color:#fff;}
 
-    .disha-avatar-wrap{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:#fff;border:2px solid rgba(255,143,184,.5);box-shadow:0 0 12px rgba(255,143,184,.25),0 2px 8px rgba(0,0,0,.4);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
+    .disha-avatar-wrap{width:38px;height:38px;flex-shrink:0;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.25);overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
     .disha-avatar-wrap.thinking{animation:disha-pulse 1.6s ease-in-out infinite;}
-    @keyframes disha-pulse{0%,100%{box-shadow:0 0 8px rgba(255,143,184,.3),0 2px 8px rgba(0,0,0,.4);}50%{box-shadow:0 0 20px rgba(255,143,184,.7),0 2px 8px rgba(0,0,0,.4);}}
+    @keyframes disha-pulse{0%,100%{box-shadow:0 0 6px rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.4);}50%{box-shadow:0 0 16px rgba(85,153,255,.35),0 2px 8px rgba(0,0,0,.4);}}
+    .dipti-bar{transform-box:fill-box;}
+    .disha-avatar-wrap.thinking .dipti-bar{animation:dipti-bar-pulse 1.3s ease-in-out infinite;}
+    .disha-avatar-wrap.thinking .dipti-bar:nth-child(1){animation-delay:0s;}
+    .disha-avatar-wrap.thinking .dipti-bar:nth-child(2){animation-delay:.18s;}
+    .disha-avatar-wrap.thinking .dipti-bar:nth-child(3){animation-delay:.36s;}
+    @keyframes dipti-bar-pulse{0%,100%{opacity:.45;}50%{opacity:1;}}
 
     .disha-name-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
     .disha-name-label{font-size:11px;font-weight:700;color:var(--green);letter-spacing:.02em;font-family:'Sora',sans-serif;}
@@ -648,13 +654,31 @@
       mask-image:linear-gradient(to bottom,black 0%,black 62%,transparent 92%);
     }
     .stream-text{white-space:pre-wrap;font-size:inherit;line-height:1.7;word-break:break-word;display:block;}
-    .thinking-stages{display:flex;flex-direction:column;gap:6px;}
-    .thinking-stage{display:flex;align-items:center;gap:7px;font-size:12px;animation:fadeUp .3s ease both;padding:2px 0;}
+    .thinking-stages{display:flex;flex-direction:column;gap:8px;}
+    .thinking-stage{display:flex;align-items:flex-start;gap:8px;font-size:12px;animation:fadeUp .3s ease both;padding:2px 0;}
+    .stage-dot{flex-shrink:0;margin-top:2px;}
     .stage-dot.loading{color:var(--green);display:inline-block;animation:spin 1.2s linear infinite;font-size:12px;width:14px;text-align:center;}
     .stage-dot.done{color:var(--green);font-size:13px;width:14px;text-align:center;}
+    .stage-main{flex:1;display:flex;flex-direction:column;gap:2px;}
+    .stage-label{font-size:12.5px;font-weight:600;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.3;}
+    .stage-label.done-label{color:var(--green);}
+    .stage-detail{font-size:11px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;}
     .stage-text-done{color:var(--text2);font-size:12px;}
     .stage-chapter{color:var(--green);font-weight:600;font-size:12px;background:var(--green-bg);padding:1px 8px;border-radius:10px;border:1px solid rgba(13,228,160,.2);font-family:'Noto Sans Bengali','Sora',sans-serif;}
     @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    /* Trace collapse header — shown after answer arrives */
+    .trace-collapse-header{display:none;align-items:center;justify-content:space-between;gap:8px;}
+    .thinking-bubble.trace-collapsed .trace-collapse-header{display:flex;}
+    .thinking-bubble.trace-collapsed .thinking-stages{display:none;}
+    .thinking-bubble.trace-open .thinking-stages{display:flex!important;}
+    .trace-summary{font-size:11.5px;color:var(--green);font-weight:600;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .trace-toggle-btn{font-size:11px;color:var(--text2);background:none;border:none;cursor:pointer;padding:0;font-family:'Noto Sans Bengali','Sora',sans-serif;display:flex;align-items:center;gap:3px;transition:color .15s;}
+    .trace-toggle-btn:hover{color:var(--green);}
+    .trace-arrow{display:inline-block;transition:transform .2s ease;font-size:9px;}
+    .thinking-bubble.trace-open .trace-arrow{transform:rotate(180deg);}
+    .thinking-bubble.collapsed{opacity:.8!important;transition:all .3s ease;padding:7px 12px!important;}
+    .mascot-loader{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0 8px;}
+    .thinking-bubble.trace-collapsed .mascot-loader,.thinking-bubble.collapsed .mascot-loader{display:none;}
 
     /* ── STREAM PICKER ── */
     .stream-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
@@ -695,6 +719,50 @@
     .step-nav-btn.primary{border-color:var(--green);color:var(--green);}
     .step-nav-btn:disabled{opacity:.45;cursor:default;}
     .step-nav-btn:disabled:hover{border-color:var(--border2);color:var(--text2);background:transparent;}
+    /* Concept explainer card upgrades — reuses .step-card/.step-num/.step-body */
+    .eq-strip{background:rgba(13,228,160,.06);border:1px solid rgba(13,228,160,.18);border-radius:8px;padding:10px 14px;margin:8px 0;overflow-x:auto;}
+    /* Title header row */
+    .concept-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,rgba(13,228,160,.07),rgba(85,153,255,.05));border:1px solid rgba(13,228,160,.18);border-radius:10px;margin-bottom:6px;}
+    .concept-header-icon{font-size:22px;line-height:1;}
+    .concept-header-title{font-size:14px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;}
+    .concept-header-chip{font-size:10px;font-weight:600;color:var(--green);background:rgba(13,228,160,.1);border:1px solid rgba(13,228,160,.2);border-radius:6px;padding:1px 6px;margin-top:2px;display:inline-block;font-family:'Sora',sans-serif;}
+    /* Step card: Bangla head + right icon */
+    .step-card-head{font-size:12px;font-weight:700;color:var(--green);margin-bottom:5px;font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
+    .step-card-r-icon{font-size:18px;flex-shrink:0;opacity:.65;align-self:center;margin-left:2px;}
+    /* Memory tips grid */
+    .memory-tips-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px;}
+    .memory-tips-grid.single{grid-template-columns:1fr;}
+    @media(max-width:480px){.memory-tips-grid{grid-template-columns:1fr;}}
+    .memory-tip-cell{display:flex;align-items:flex-start;gap:7px;background:rgba(240,160,48,.07);border:1px solid rgba(240,160,48,.2);border-radius:8px;padding:8px 10px;}
+    .memory-tip-cell-icon{font-size:14px;flex-shrink:0;margin-top:2px;}
+    .memory-tip-cell-text{font-size:12.5px;color:var(--text2);line-height:1.85;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .memory-tip-label{font-size:10px;font-weight:700;letter-spacing:.7px;color:var(--amber);margin-bottom:3px;font-family:'Sora',sans-serif;}
+    /* ── Explainer card (```card JSON blocks) ── */
+    .xcard{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin:6px 0;}
+    .xcard-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:15px 18px 11px;background:linear-gradient(135deg,rgba(13,228,160,.07),rgba(85,153,255,.04));}
+    .xcard-hdr-left{flex:1;min-width:0;}
+    .xcard-pretitle{font-size:11px;color:var(--text3);font-family:'Noto Sans Bengali','Sora',sans-serif;margin-bottom:3px;}
+    .xcard-title{font-size:16px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;margin-bottom:4px;}
+    .xcard-subtitle{font-size:12px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.6;}
+    .xcard-hdr-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+    .xcard-eq{background:rgba(13,228,160,.07);border-top:1px solid rgba(13,228,160,.14);border-bottom:1px solid rgba(13,228,160,.14);padding:10px 18px;font-size:13.5px;color:var(--green);font-family:'Sora',monospace;text-align:center;letter-spacing:.02em;}
+    .xcard-steps-label{padding:12px 18px 4px;font-size:13px;font-weight:600;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .xcard-steps{display:flex;flex-direction:column;gap:8px;padding:8px 12px 12px;}
+    .xcard-step{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 13px;animation:fadeUp .35s ease both;}
+    .xcard-step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--green);color:#0d1117;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif;}
+    .xcard-step-l-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center;}
+    .xcard-step-body{flex:1;min-width:0;}
+    .xcard-step-head{font-size:13px;font-weight:700;color:var(--green);margin-bottom:3px;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .xcard-step-text{font-size:13px;color:var(--text);line-height:1.9;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .xcard-step-r-icon{font-size:22px;flex-shrink:0;opacity:.6;margin-left:2px;}
+    .xcard-tips{border-top:1px solid var(--border);padding:12px 18px 14px;}
+    .xcard-tips-hdr{font-size:13px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;margin-bottom:8px;}
+    .xcard-tips-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+    @media(max-width:520px){.xcard-tips-grid{grid-template-columns:repeat(2,1fr);}}
+    .xcard-tip-cell{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}
+    .xcard-tip-icon{font-size:20px;}
+    .xcard-tip-title{font-size:11px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;}
+    .xcard-tip-body{font-size:10.5px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
   </style>
 </head>
 <body>
@@ -702,74 +770,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" id="disha-svg-defs">
   <symbol id="disha-girl" viewBox="0 0 100 100">
     <defs>
+      <radialGradient id="dipti-bg" cx="50%" cy="35%">
+        <stop offset="0%" stop-color="#2A1F3D"/>
+        <stop offset="100%" stop-color="#16102A"/>
+      </radialGradient>
+      <linearGradient id="dipti-hair" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#C77DFF"/>
+        <stop offset="100%" stop-color="#9B4DCA"/>
+      </linearGradient>
       <radialGradient id="dipti-skin" cx="50%" cy="40%">
-        <stop offset="0%" stop-color="#FFE5D0"/>
+        <stop offset="0%" stop-color="#FFE0CC"/>
         <stop offset="100%" stop-color="#FFCDB0"/>
       </radialGradient>
-      <linearGradient id="dipti-bg" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FFF0F5"/>
-        <stop offset="100%" stop-color="#FFE0EC"/>
-      </linearGradient>
-      <linearGradient id="dipti-hair" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FF8FB8"/>
-        <stop offset="100%" stop-color="#FF5D9E"/>
-      </linearGradient>
     </defs>
-
-    <!-- Background circle (soft pink) -->
-    <circle cx="50" cy="50" r="48" fill="url(#dipti-bg)"/>
-
-    <!-- Sparkles -->
-    <text x="78" y="28" font-size="8" fill="#FFD700">★</text>
-    <text x="14" y="34" font-size="6" fill="#FF8FB8">✦</text>
-    <text x="82" y="60" font-size="5" fill="#A0E8FF">✧</text>
-
-    <!-- Long pink hair (back) -->
-    <path d="M22 40 Q22 22 38 14 Q44 10 50 10 Q56 10 62 14 Q78 22 78 40 L80 80 L72 78 L70 70 L62 72 L50 70 L38 72 L30 70 L28 78 L20 80 Z" fill="url(#dipti-hair)"/>
-
-    <!-- Face -->
+    <circle cx="50" cy="50" r="50" fill="url(#dipti-bg)"/>
+    <!-- stars -->
+    <circle cx="78" cy="24" r="1.5" fill="#fff"/>
+    <circle cx="20" cy="30" r="1" fill="#C77DFF"/>
+    <circle cx="82" cy="60" r="1.2" fill="#fff"/>
+    <circle cx="16" cy="62" r="1" fill="#A0E8FF" opacity=".8"/>
+    <text x="13" y="26" font-size="8" fill="#FFD86B">✦</text>
+    <text x="84" y="42" font-size="6" fill="#C77DFF">✧</text>
+    <!-- back hair -->
+    <path d="M22 44 Q22 22 40 14 Q46 10 50 10 Q54 10 60 14 Q78 22 78 44 L80 82 L70 78 L68 70 L60 72 L50 70 L40 72 L32 70 L30 78 L20 82 Z" fill="url(#dipti-hair)"/>
+    <!-- face -->
     <ellipse cx="50" cy="52" rx="20" ry="22" fill="url(#dipti-skin)"/>
-
-    <!-- Pink hair bangs (front) -->
-    <path d="M30 38 Q34 30 42 34 Q46 32 50 34 Q54 32 58 34 Q66 30 70 38 Q66 44 58 42 Q54 40 50 41 Q46 40 42 42 Q34 44 30 38 Z" fill="url(#dipti-hair)"/>
-
-    <!-- Side hair locks -->
+    <!-- bangs -->
+    <path d="M28 40 Q33 30 42 35 Q46 33 50 35 Q54 33 58 35 Q67 30 72 40 Q67 46 58 43 Q54 41 50 42 Q46 41 42 43 Q33 46 28 40 Z" fill="url(#dipti-hair)"/>
+    <!-- side locks -->
     <path d="M24 48 Q20 62 22 74 L28 70 L26 56 Z" fill="url(#dipti-hair)"/>
     <path d="M76 48 Q80 62 78 74 L72 70 L74 56 Z" fill="url(#dipti-hair)"/>
-
-    <!-- Pink flower hair clip (left side) -->
-    <circle cx="30" cy="32" r="4" fill="#FF4F8F"/>
-    <circle cx="30" cy="32" r="1.5" fill="#FFD700"/>
-
-    <!-- Big purple anime eyes -->
-    <ellipse cx="42" cy="55" rx="3.5" ry="5" fill="#fff"/>
-    <ellipse cx="58" cy="55" rx="3.5" ry="5" fill="#fff"/>
-    <ellipse cx="42" cy="55" rx="3" ry="4.2" fill="#8B5FBF"/>
-    <ellipse cx="58" cy="55" rx="3" ry="4.2" fill="#8B5FBF"/>
-    <ellipse cx="42" cy="56" rx="2" ry="3" fill="#5B2C8F"/>
-    <ellipse cx="58" cy="56" rx="2" ry="3" fill="#5B2C8F"/>
-
-    <!-- Eye highlights (sparkly) -->
+    <!-- green flower clip -->
+    <circle cx="29" cy="31" r="4" fill="#16E0A3"/>
+    <circle cx="29" cy="31" r="1.6" fill="#0d1117"/>
+    <!-- glowing green eyes -->
+    <ellipse cx="42" cy="55" rx="3.6" ry="5" fill="#fff"/>
+    <ellipse cx="58" cy="55" rx="3.6" ry="5" fill="#fff"/>
+    <ellipse cx="42" cy="55" rx="3" ry="4.2" fill="#16E0A3"/>
+    <ellipse cx="58" cy="55" rx="3" ry="4.2" fill="#16E0A3"/>
+    <ellipse cx="42" cy="56" rx="2" ry="3" fill="#0E9C70"/>
+    <ellipse cx="58" cy="56" rx="2" ry="3" fill="#0E9C70"/>
     <circle cx="43" cy="53" r="1.3" fill="#fff"/>
     <circle cx="59" cy="53" r="1.3" fill="#fff"/>
-    <circle cx="41" cy="57" r="0.6" fill="#fff" opacity="0.8"/>
-    <circle cx="57" cy="57" r="0.6" fill="#fff" opacity="0.8"/>
-
-    <!-- Eyebrows (thin pink) -->
-    <path d="M38 49 Q41 47 45 49" stroke="#D4537A" stroke-width="1" fill="none" stroke-linecap="round"/>
-    <path d="M55 49 Q59 47 62 49" stroke="#D4537A" stroke-width="1" fill="none" stroke-linecap="round"/>
-
-    <!-- Pink cheek blush -->
-    <ellipse cx="33" cy="63" rx="3.5" ry="2.2" fill="#FF9FBF" opacity="0.6"/>
-    <ellipse cx="67" cy="63" rx="3.5" ry="2.2" fill="#FF9FBF" opacity="0.6"/>
-
-    <!-- Tiny smile (cute open mouth) -->
-    <ellipse cx="50" cy="68" rx="1.8" ry="1.2" fill="#D4537A"/>
-
-    <!-- Cyan/blue magical girl top -->
-    <path d="M30 86 Q30 78 38 76 L62 76 Q70 78 70 86 L70 100 L30 100 Z" fill="#4FC3E8"/>
-    <!-- White collar V -->
-    <path d="M42 76 L50 84 L58 76" stroke="#fff" stroke-width="1.5" fill="none"/>
+    <!-- eyebrows -->
+    <path d="M38 49 Q41 47 45 49" stroke="#B86DD8" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M55 49 Q59 47 62 49" stroke="#B86DD8" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <!-- blush -->
+    <ellipse cx="33" cy="63" rx="3.5" ry="2.2" fill="#C77DFF" opacity=".4"/>
+    <ellipse cx="67" cy="63" rx="3.5" ry="2.2" fill="#C77DFF" opacity=".4"/>
+    <!-- smile -->
+    <path d="M44 66 Q50 71 56 66" stroke="#C77DFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- top -->
+    <path d="M30 86 Q30 78 38 76 L62 76 Q70 78 70 86 L70 100 L30 100 Z" fill="#16B583"/>
+    <path d="M42 76 L50 84 L58 76" stroke="#0d1117" stroke-width="1.5" fill="none"/>
+  </symbol>
+  <symbol id="dipti-logo" viewBox="0 0 100 100">
+    <rect x="50" y="50" width="50" height="50" fill="none"/>
+    <g id="dipti-bars">
+      <g class="dipti-bar" style="transform-origin:center;">
+        <rect x="26" y="30" width="40" height="9" rx="4.5" fill="#5599FF"/>
+        <circle cx="66" cy="34.5" r="6" fill="var(--bg)"/>
+        <circle cx="66" cy="34.5" r="3.6" fill="#6699FF"/>
+      </g>
+      <g class="dipti-bar" style="transform-origin:center;">
+        <rect x="20" y="45" width="52" height="9" rx="4.5" fill="#F5A820"/>
+        <circle cx="72" cy="49.5" r="6" fill="var(--bg)"/>
+        <circle cx="72" cy="49.5" r="3.6" fill="#F5A820"/>
+      </g>
+      <g class="dipti-bar" style="transform-origin:center;">
+        <rect x="30" y="60" width="42" height="9" rx="4.5" fill="#9B6BD5"/>
+        <circle cx="68" cy="64.5" r="6" fill="var(--bg)"/>
+        <circle cx="68" cy="64.5" r="3.6" fill="#9B6BD5"/>
+      </g>
+    </g>
   </symbol>
 </svg>
 
@@ -1626,6 +1699,7 @@ async function loadChatById(chatId){
             try{renderMath(bub);}catch(e){}
             try{renderMermaid(bub);}catch(e){}
             try{renderSVG(bub);}catch(e){console.warn('[loadChat] renderSVG error:',e);}
+            try{postProcessConceptCard(bub);}catch(e){}
           }
         }
       }catch(e){console.warn('[loadChat] message render error:',e);}
@@ -1886,7 +1960,23 @@ chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatB
 function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
 
 function makeDiptiSVG(size=38){
-  return `<svg width="${size}" height="${size}" style="display:block;border-radius:50%;"><use href="#disha-girl"/></svg>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" style="display:block;">` +
+    `<g class="dipti-bar">` +
+      `<rect x="26" y="30" width="40" height="9" rx="4.5" fill="#5599FF"/>` +
+      `<circle cx="66" cy="34.5" r="6" fill="var(--bg)"/>` +
+      `<circle cx="66" cy="34.5" r="3.6" fill="#6699FF"/>` +
+    `</g>` +
+    `<g class="dipti-bar">` +
+      `<rect x="20" y="45" width="52" height="9" rx="4.5" fill="#F5A820"/>` +
+      `<circle cx="72" cy="49.5" r="6" fill="var(--bg)"/>` +
+      `<circle cx="72" cy="49.5" r="3.6" fill="#F5A820"/>` +
+    `</g>` +
+    `<g class="dipti-bar">` +
+      `<rect x="30" y="60" width="42" height="9" rx="4.5" fill="#9B6BD5"/>` +
+      `<circle cx="68" cy="64.5" r="6" fill="var(--bg)"/>` +
+      `<circle cx="68" cy="64.5" r="3.6" fill="#9B6BD5"/>` +
+    `</g>` +
+  `</svg>`;
 }
 
 function addUserBubble(text, fileInfos=[]){
@@ -2062,6 +2152,25 @@ function latexToPlainText(text){
 function preprocessMath(text){
   const isGemini = selectedModel === 'gemini';
 
+  // SHARED: wrap bare <svg>…</svg> blocks in ```svg fences so renderSVG can find them
+  // (model sometimes outputs SVG without code fences)
+  {
+    const _sf=[];
+    // protect already-fenced SVG blocks first
+    text=text.replace(/```svg[\s\S]*?```/g,m=>{_sf.push(m);return`\x02F${_sf.length-1}\x02`;});
+    // wrap any remaining bare <svg> blocks
+    text=text.replace(/(<svg\b[\s\S]*?<\/svg>)/gi,m=>`\n\`\`\`svg\n${m.trim()}\n\`\`\`\n`);
+    // restore protected fences
+    text=text.replace(/\x02F(\d+)\x02/g,(_,i)=>_sf[+i]);
+  }
+
+  // SHARED: normalise *term* → **term** inside list items (single-asterisk italic
+  // conflicts with the bullet * marker in marked.js, leaving literal asterisks in output)
+  text = text.replace(/^([ \t]*[*\-] )\*([^*\n][^\n]*?)\*/gm, '$1**$2**');
+
+  // SHARED: strip zero-width / invisible Unicode chars that corrupt equations
+  text = text.replace(/[​‌‍‎‏﻿]/g, '');
+
   // SHARED: strip markers, Cyrillic, normalise Bengali digits
   text = text.replace(/^[^\n]*\[S\][^\n]*\n?/gm, '');
   text = text.replace(/^[^\n]*\[C\][^\n]*\n?/gm, '');
@@ -2107,8 +2216,11 @@ function preprocessMath(text){
   if (!isGemini) {
     text = text.replace(/^(?![\$ঀ-৿])([^\nঀ-৿]*\\[a-zA-Z][^\n]*?)\$\$\s*$/gm,
       (_, inner) => `$$${inner.replace(/\$/g, '').trim()}$$`);
-    text = text.replace(/\$\$([^$\n]*?)\s*[\(（]?\s*[ঀ-৿][^\n$]*\$\$/g,
-      (_, before) => `$$${before.trimEnd()}$$`);
+    text = text.replace(/\$\$([^$\n]*?)\s*[\(（]?\s*[ঀ-৿][^\n$]*\$\$/g, (match, before) => {
+      // Don't strip when Bengali is intentionally inside \text{} (e.g. \text{আলো})
+      if (/\\text\{[^}]*[ঀ-৿]/.test(match)) return match;
+      return `$$${before.trimEnd()}$$`;
+    });
   }
 
   // SHARED: typo fix
@@ -2295,13 +2407,55 @@ async function renderMermaid(el){
   }
 }
 
+function _startSvgParticles(wrap){
+  const cv=document.createElement('canvas');
+  cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;border-radius:inherit;';
+  wrap.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  const COLORS=['120','165','210','262','310']; // green→teal→blue→purple→pink
+  let W=0,H=0,pts=[],raf=null,resized=false;
+  function resize(){
+    const rc=wrap.getBoundingClientRect();
+    W=Math.max(rc.width,1);H=Math.max(rc.height,1);
+    cv.width=W*devicePixelRatio;cv.height=H*devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    resized=true;
+  }
+  function mkPt(fromBottom){
+    return{x:Math.random()*W,y:fromBottom?H+4:Math.random()*H,r:.6+Math.random()*1.6,
+      vx:(Math.random()-.5)*.35,vy:-.45-Math.random()*.6,
+      alpha:.06+Math.random()*.2,hue:COLORS[0|Math.random()*COLORS.length],
+      age:0,life:160+Math.random()*180};
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    while(pts.length<30) pts.push(mkPt(false));
+    for(let i=pts.length-1;i>=0;i--){
+      const p=pts[i];p.x+=p.vx;p.y+=p.vy;p.age++;
+      const t=p.age/p.life,fade=t<.1?t*10:t>.72?(1-t)/.28:1;
+      ctx.save();ctx.globalAlpha=p.alpha*fade;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.2832);
+      ctx.fillStyle=`hsl(${p.hue},80%,68%)`;ctx.fill();ctx.restore();
+      if(p.age>=p.life||p.y<-4) pts[i]=mkPt(true);
+    }
+    raf=requestAnimationFrame(tick);
+  }
+  const obs=new IntersectionObserver(e=>{
+    if(e[0].isIntersecting){if(!resized)resize();if(!raf)raf=requestAnimationFrame(tick);}
+    else{if(raf){cancelAnimationFrame(raf);raf=null;}}
+  },{threshold:.05});
+  obs.observe(wrap);
+}
+
 function renderSVG(el){
   el.querySelectorAll('pre > code.language-svg').forEach(block=>{
     const raw=block.textContent.trim();
-    const clean=raw
+    let clean=raw
       .replace(/<script[\s\S]*?<\/script>/gi,'')
       .replace(/\bon\w+\s*=/gi,'data-x=')
       .replace(/javascript:/gi,'');
+    // Strip any leading non-SVG content (e.g. a literal "```svg" echo from the model)
+    {const _si=clean.search(/<svg\b/i);if(_si>0) clean=clean.slice(_si);}
     const wrap=document.createElement('div');
     wrap.className='svg-wrap';
     wrap.innerHTML=clean;
@@ -2436,6 +2590,7 @@ function renderSVG(el){
       }
     }
     block.parentElement.replaceWith(wrap);
+    _startSvgParticles(wrap);
     // SMIL: debug mpath linkage, then force-start (innerHTML injection doesn't auto-start SMIL)
     if(hasSMIL){
       try{
@@ -2585,6 +2740,211 @@ function buildStepCard(problem, parsed) {
   return wrap;
 }
 
+function buildExplainerCard(data){
+  const subj=typeof activeSubject!=='undefined'?activeSubject:'biology';
+  const _S={biology:{icon:'🧬',label:'জীববিজ্ঞান'},physics:{icon:'⚛️',label:'পদার্থবিজ্ঞান'},chemistry:{icon:'⚗️',label:'রসায়ন'},geography:{icon:'🌍',label:'ভূগোল'},accounting:{icon:'💼',label:'হিসাববিজ্ঞান'},math:{icon:'🔢',label:'গণিত'},higher_math:{icon:'📐',label:'উচ্চতর গণিত'},bangla:{icon:'📖',label:'বাংলা সাহিত্য'}};
+  const si=_S[subj]||{icon:'📘',label:''};
+  const bnD='০১২৩৪৫৬৭৮৯';
+  const toBn=n=>String(n).split('').map(d=>bnD[+d]||d).join('');
+
+  const card=document.createElement('div');
+  card.className='xcard';
+
+  // Header row: pretitle + bold title + subtitle + subject icon
+  const hdr=document.createElement('div');hdr.className='xcard-hdr';
+  hdr.innerHTML=
+    `<div class="xcard-hdr-left">`+
+      `<div class="xcard-pretitle">চল, খুব সহজে বুয়ে নেই...</div>`+
+      `<div class="xcard-title">${escapeHtml(data.title||'')}</div>`+
+      (data.subtitle?`<div class="xcard-subtitle">${escapeHtml(data.subtitle)}</div>`:'')+
+    `</div>`+
+    `<div class="xcard-hdr-icon">${si.icon}</div>`;
+  card.appendChild(hdr);
+
+  // Equation strip
+  if(data.eq&&data.eq.trim()){
+    const eq=document.createElement('div');eq.className='xcard-eq';eq.textContent=data.eq;
+    card.appendChild(eq);
+  }
+
+  // Steps
+  if(data.steps&&data.steps.length){
+    if(data.steps_label){
+      const sl=document.createElement('div');sl.className='xcard-steps-label';
+      sl.textContent='✨ '+data.steps_label;card.appendChild(sl);
+    }
+    const sw=document.createElement('div');sw.className='xcard-steps';
+    data.steps.forEach((step,i)=>{
+      const sc=document.createElement('div');sc.className='xcard-step';
+      sc.style.animationDelay=(i*.08)+'s';
+      sc.innerHTML=
+        `<div class="xcard-step-num">${toBn(i+1)}</div>`+
+        `<div class="xcard-step-l-icon">${escapeHtml(step.icon||'')}</div>`+
+        `<div class="xcard-step-body">`+
+          `<div class="xcard-step-head">${escapeHtml(step.head||'')}</div>`+
+          `<div class="xcard-step-text">${escapeHtml(step.body||'')}</div>`+
+        `</div>`+
+        (step.r?`<div class="xcard-step-r-icon">${escapeHtml(step.r)}</div>`:'');
+      sw.appendChild(sc);
+    });
+    card.appendChild(sw);
+  }
+
+  // Memory tips grid (3-4 cols)
+  if(data.tips&&data.tips.length){
+    const tw=document.createElement('div');tw.className='xcard-tips';
+    const th=document.createElement('div');th.className='xcard-tips-hdr';
+    th.textContent='💡 মনে রাখার সহজ টিপস';tw.appendChild(th);
+    const tg=document.createElement('div');tg.className='xcard-tips-grid';
+    data.tips.forEach(tip=>{
+      const tc=document.createElement('div');tc.className='xcard-tip-cell';
+      tc.innerHTML=
+        `<div class="xcard-tip-icon">${escapeHtml(tip.icon||'')}</div>`+
+        `<div class="xcard-tip-title">${escapeHtml(tip.title||'')}</div>`+
+        `<div class="xcard-tip-body">${escapeHtml(tip.body||'')}</div>`;
+      tg.appendChild(tc);
+    });
+    tw.appendChild(tg);card.appendChild(tw);
+  }
+
+  return card;
+}
+
+function postProcessConceptCard(bub){
+  // Guards: skip step-solver (math ধাপ), SVG diagrams, Mermaid, and data tables
+  if(bub.querySelector('.step-solver,.svg-wrap,.mermaid-wrap')) return;
+  if(bub.querySelector('table')) return;
+
+  const ols=[...bub.querySelectorAll('ol')];
+  if(!ols.length) return;
+
+  // Subject metadata
+  const _SUBJ={
+    biology:{icon:'🧬',label:'জীববিজ্ঞান'},physics:{icon:'⚛️',label:'পদার্থবিজ্ঞান'},
+    chemistry:{icon:'⚗️',label:'রসায়ন'},geography:{icon:'🌍',label:'ভূগোল'},
+    accounting:{icon:'💼',label:'হিসাববিজ্ঞান'},math:{icon:'🔢',label:'গণিত'},
+    higher_math:{icon:'📐',label:'উচ্চতর গণিত'},bangla:{icon:'📖',label:'বাংলা সাহিত্য'},
+  };
+  const _STEP_ICONS={
+    biology:    ['🌿','🔬','🧫','🌱','💧','☀️','🫀','🫁'],
+    physics:    ['⚡','🔭','💡','🌊','🔥','🧲','⚙️','📡'],
+    chemistry:  ['⚗️','🧪','💧','⚛️','🔥','💨','🫧','🌡️'],
+    geography:  ['🌍','🌊','🏔️','☁️','🌧️','🌡️','🗺️','🌋'],
+    accounting: ['💰','📊','📈','💳','🏦','📋','✍️','💼'],
+    math:       ['➕','✖️','➗','📐','📏','🔢','📊','🔑'],
+    higher_math:['📐','📊','🔢','📏','🔑','✨','📌','∞'],
+    bangla:     ['📖','✍️','📜','🖊️','📝','💬','🎭','📚'],
+  };
+  const subj=typeof activeSubject!=='undefined'?activeSubject:'biology';
+  const subjInfo=_SUBJ[subj]||{icon:'📘',label:''};
+  const stepIcons=_STEP_ICONS[subj]||['✨','💫','🌟','⭐','🎯','📌','🔑','💎'];
+
+  const bnD='০১২৩৪৫৬৭৮৯';
+  const toBn=n=>String(n).split('').map(d=>bnD[+d]||d).join('');
+
+  // Extract concept title from first heading or first bold term in first 2 paragraphs
+  function _title(){
+    const h=bub.querySelector('h1,h2,h3,h4');
+    if(h) return h.textContent.trim();
+    for(const p of [...bub.querySelectorAll('p')].slice(0,2)){
+      const s=p.querySelector('strong');
+      if(s){const t=s.textContent.trim();if(t.length>1&&t.length<60) return t;}
+    }
+    return '';
+  }
+
+  ols.forEach((ol,olIdx)=>{
+    const items=[...ol.querySelectorAll(':scope > li')];
+    if(items.length<2||items.length>10) return;
+
+    // Insert title header above the first qualifying ol only
+    if(olIdx===0){
+      const title=_title();
+      if(title){
+        const hdr=document.createElement('div');
+        hdr.className='concept-header';
+        hdr.innerHTML=
+          `<span class="concept-header-icon">${subjInfo.icon}</span>`+
+          `<div><div class="concept-header-title">${escapeHtml(title)}</div>`+
+          `<span class="concept-header-chip">${escapeHtml(subjInfo.label)}</span></div>`;
+        ol.parentNode.insertBefore(hdr,ol);
+      }
+    }
+
+    ol.style.cssText='list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:8px;';
+    items.forEach((li,i)=>{
+      li.className='step-card';
+      li.style.animation=`fadeUp .3s ease ${(i*.07).toFixed(2)}s both`;
+
+      // Detect bold heading at start of li (e.g. **শিরোনাম:** body)
+      let headText='';
+      const candidates=[
+        li.querySelector(':scope>strong:first-child'),
+        li.querySelector(':scope>p:first-child>strong:first-child'),
+      ];
+      for(const s of candidates){
+        if(!s) continue;
+        const t=s.textContent.replace(/[:—:]\s*$/,'').trim();
+        if(t.length>0&&t.length<60){headText=t;s.remove();break;}
+      }
+
+      // Build: [step-num] [step-content[head+body]] [r-icon]
+      const cont=document.createElement('div');
+      cont.className='step-content';
+      if(headText){
+        const hd=document.createElement('div');
+        hd.className='step-card-head';
+        hd.textContent=headText;
+        cont.appendChild(hd);
+      }
+      const body=document.createElement('div');
+      body.className='step-body';
+      while(li.firstChild) body.appendChild(li.firstChild);
+      cont.appendChild(body);
+
+      const num=document.createElement('div');num.className='step-num';num.textContent=toBn(i+1);
+      const rIc=document.createElement('div');rIc.className='step-card-r-icon';
+      rIc.textContent=stepIcons[i%stepIcons.length];
+
+      li.appendChild(num);li.appendChild(cont);li.appendChild(rIc);
+    });
+  });
+
+  // Wrap KaTeX display equations in a highlighted strip
+  bub.querySelectorAll('.katex-display').forEach(eq=>{
+    if(eq.closest('.eq-strip')) return;
+    const strip=document.createElement('div');strip.className='eq-strip';
+    eq.parentNode.insertBefore(strip,eq);strip.appendChild(eq);
+  });
+
+  // Convert blockquote → memory-tips grid (split on em-dash for 2-col layout)
+  bub.querySelectorAll('blockquote').forEach(bq=>{
+    const full=bq.textContent.trim();
+    const parts=full.split(/\s*[—;]\s*/).filter(s=>s.trim().length>4);
+    const cells=parts.length>=2?parts:[full];
+
+    const grid=document.createElement('div');
+    grid.className='memory-tips-grid'+(cells.length<2?' single':'');
+    const tipIcons=['💡','🔑','📌','✨'];
+    cells.forEach((cell,ci)=>{
+      const d=document.createElement('div');d.className='memory-tip-cell';
+      const ic=document.createElement('span');ic.className='memory-tip-cell-icon';
+      ic.textContent=tipIcons[ci]||'💡';
+      const inner=document.createElement('div');
+      if(ci===0){
+        const lbl=document.createElement('div');lbl.className='memory-tip-label';lbl.textContent='মনে রাখো';
+        inner.appendChild(lbl);
+      }
+      const txt=document.createElement('div');txt.className='memory-tip-cell-text';
+      txt.textContent=cell.trim();
+      inner.appendChild(txt);
+      d.appendChild(ic);d.appendChild(inner);
+      grid.appendChild(d);
+    });
+    bq.replaceWith(grid);
+  });
+}
+
 function addBotMessage(text, showChips=false){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
@@ -2598,9 +2958,37 @@ function addBotMessage(text, showChips=false){
   // them as block-level elements (breaks:true eats single newlines as <br>).
   text = text.replace(/([^\n])\n([ \t]*[*\-] )/g, '$1\n\n$2');
   text = text.replace(/([^\n])\n(#{1,6} )/g, '$1\n\n$2');
+  // Normalise single-asterisk italic inside list items to double-asterisk bold.
+  // LLM writes "* *term:* text" → marked.js conflicts bullet * with inline *, leaving literal *.
+  // Convert to "* **term:** text" so marked.js renders it cleanly as <strong>.
+  text = text.replace(/^([ \t]*[*\-] )\*([^*\n][^\n]*?)\*/gm, '$1**$2**');
   text=preprocessMath(text);
   text=fixGeometryMermaid(text);
   text=fixBareMermaid(text);
+
+  // Explainer card: ```card JSON block \u2192 structured card renderer
+  {
+    const _cm=text.match(/```card\s*\n([\s\S]+?)\n```/);
+    if(_cm){
+      try{
+        const _cd=JSON.parse(_cm[1]);
+        const _above=text.replace(/```card\s*\n[\s\S]+?\n```/,'').trim();
+        const div=createBotWrapper('');
+        const bub=div.querySelector('.bubble');
+        bub.style.lineHeight='2.1';
+        if(_above){
+          const intro=document.createElement('div');
+          intro.innerHTML=marked.parse(preprocessMath(_above),{breaks:true,gfm:true});
+          bub.appendChild(intro);renderMath(intro);renderSVG(intro);
+        }
+        bub.appendChild(buildExplainerCard(_cd));
+        chatBox.appendChild(div);mmRegister(div,'bot');
+        chatBox.scrollTop=chatBox.scrollHeight;
+        setTimeout(()=>{chatBox.scrollTop=chatBox.scrollHeight;mmRedraw();},150);
+        return;
+      }catch(e){/* JSON parse failed \u2014 fall through */}
+    }
+  }
 
   // Step solver: auto-detect numbered \u09A7\u09BE\u09AA steps for Gemini
   if (selectedModel === 'gemini') {
@@ -2622,7 +3010,7 @@ function addBotMessage(text, showChips=false){
   const div=createBotWrapper(html);
   const bub=div.querySelector('.bubble');
   bub.style.lineHeight=/[\u0980-\u09FF]/.test(text)?'2.1':'1.85';
-  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);renderSVG(bub);
+  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);renderSVG(bub);postProcessConceptCard(bub);
   if(showChips==='image_question'){
     const chips=document.createElement('div');chips.className='reply-chips';
     chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'img_solve')">\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \uD83D\uDCDD</button><button class="reply-chip" onclick="useChip(this,'img_teach')">\u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDCD6</button>`;
@@ -2704,8 +3092,15 @@ function _flushStream(){
   _streamRafId = null;
   if(!_streamBub || !_streamPending) return;
   _streamPending = '';
-  const safe = preprocessMath(_safeStreamText(_streamText));
-  _streamBub.innerHTML = marked.parse(safe, {breaks:true, gfm:true});
+  let safe = preprocessMath(_safeStreamText(_streamText));
+  // Strip in-progress ```card block — raw JSON in a code block looks terrible mid-stream;
+  // the full card renders once in addBotMessage when streaming completes.
+  {const _ci=safe.indexOf('```card');if(_ci!==-1&&!safe.slice(_ci+7).includes('```')) safe=safe.slice(0,_ci).trim();}
+  const html = marked.parse(safe, {breaks:true, gfm:true});
+  // Keep typing dots visible until we have actual renderable content.
+  // Empty markdown (newlines, whitespace, or an unclosed SVG fence stripped by _safeStreamText)
+  // would otherwise leave the bubble blank for the entire streaming duration.
+  if(html.replace(/<[^>]*>/g,'').trim().length>0) _streamBub.innerHTML=html;
   renderMath(_streamBub);
   // SVG rendering intentionally skipped during streaming: _streamBub.innerHTML is rebuilt
   // from raw text on every tick, which destroys any previously-rendered svg-wrap and races
@@ -3027,7 +3422,7 @@ function useChip(btn, action){
     chatBox.appendChild(_doneChips);chatBox.scrollTop=chatBox.scrollHeight;
   }else if(action==='img_solve'){
     input.value='\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993';
-    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09B2\u09C7\u0996\u09CB \u2014 \u0995, \u0996, \u0997, \u0998 \u09B8\u09AC \u0985\u0982\u09B6 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7\u0964 \u09B6\u09C1\u09A7\u09C1\u09AE\u09BE\u09A4\u09CD\u09B0 \u099B\u09AC\u09BF\u09A4\u09C7 \u09AF\u09BE \u09A6\u09C7\u0996\u09BE \u0997\u09C7\u099B\u09C7 \u09B8\u09C7\u0987 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u0997\u09C1\u09B2\u09CB solve \u0995\u09B0\u09CB \u2014 NCTB \u09AC\u0987 \u09AC\u09BE context \u09A5\u09C7\u0995\u09C7 \u0985\u09A4\u09BF\u09B0\u09BF\u0995\u09CD\u09A4 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7 \u09AF\u09CB\u0997 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u09AF\u09A6\u09BF \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u09C7\u09B0 \u0995\u09CB\u09A8\u09CB \u09A4\u09A5\u09CD\u09AF \u099B\u09AC\u09BF\u09A4\u09C7 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A8\u09BE \u09B9\u09AF\u09BC, \u09AC\u09B2\u09CB \u201C\u099B\u09AC\u09BF\u09A4\u09C7 \u098F\u0987 \u0985\u0982\u09B6 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09AC\u09CB\u099D\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09A8\u09BE\u201D \u2014 \u0985\u09A8\u09C1\u09AE\u09BE\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u0995\u09CB\u09A8\u09CB follow-up \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
+    _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u099B\u09AC\u09BF\u09B0 \u09AC\u09BF\u09B7\u09AF\u09BC\u09AC\u09B8\u09CD\u09A4\u09C1\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u09B8\u09AE\u09BE\u09A7\u09BE\u09A8 \u09A6\u09BE\u0993\u0964 \u09AF\u09A6\u09BF \u0995, \u0996, \u0997, \u0998 \u098F\u09B0 \u09AE\u09A4\u09CB \u0986\u09B2\u09BE\u09A6\u09BE \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A5\u09BE\u0995\u09C7, \u09A4\u09BE\u09B9\u09B2\u09C7 \u09AA\u09CD\u09B0\u09A4\u09BF\u099F\u09BF \u0985\u0982\u09B6\u09C7\u09B0 \u0989\u09A4\u09CD\u09A4\u09B0 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7 \u09B8\u09BE\u099C\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964 \u0986\u09B0 \u09AF\u09A6\u09BF \u0995\u09CB\u09A8\u09CB \u0986\u09B2\u09BE\u09A6\u09BE \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A8\u09BE \u09A5\u09C7\u0995\u09C7 \u09B6\u09C1\u09A7\u09C1 \u098F\u0995\u099F\u09BF \u0989\u09AA\u09AA\u09BE\u09A6\u09CD\u09AF, \u09B8\u0982\u099C\u09CD\u099E\u09BE \u09AC\u09BE \u09AC\u09BF\u09AC\u09C3\u09A4\u09BF \u09A5\u09BE\u0995\u09C7, \u09A4\u09BE\u09B9\u09B2\u09C7 \u09B8\u09C7\u099F\u09BF\u0995\u09C7\u0987 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3\u09AD\u09BE\u09AC\u09C7 \u09AC\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE \u0995\u09B0\u09CB \u2014 \u0989\u09AA\u09AA\u09BE\u09A6\u09CD\u09AF \u09B9\u09B2\u09C7 \u09A4\u09BE\u09B0 \u09AA\u09CD\u09B0\u09AE\u09BE\u09A3\u09B8\u09B9, \u099A\u09BF\u09A4\u09CD\u09B0\u09B8\u09B9 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964 \u099B\u09AC\u09BF\u09A4\u09C7 \u09AF\u09BE \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A6\u09C7\u0996\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09B6\u09C1\u09A7\u09C1 \u09B8\u09C7\u099F\u09BE\u0987 \u09A8\u09BF\u09AF\u09BC\u09C7 \u0995\u09BE\u099C \u0995\u09B0\u09CB, \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7 \u09A8\u09A4\u09C1\u09A8 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09AF\u09CB\u0997 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u0995\u09CB\u09A8\u09CB \u0985\u0982\u09B6 \u099B\u09AC\u09BF\u09A4\u09C7 \u0985\u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09B9\u09B2\u09C7 \u09AC\u09B2\u09CB \'\u099B\u09AC\u09BF\u09A4\u09C7 \u098F\u0987 \u0985\u0982\u09B6 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A8\u09BE\' \u2014 \u0985\u09A8\u09C1\u09AE\u09BE\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
     _stepCardProblem = _imageProblemText;
     _imageFollowUp=true; _imageTeachMode=false; resetTeachProgress();
     sendMessage();
@@ -3218,24 +3613,130 @@ function showQuizScore(){
   },800);
 }
 
+// ── WATERMELON MASCOT ──
+const MELON_STAGES = {
+  search: { cls:'search', browW:'2.5', browL:'M76,108 L98,102',  browR:'M144,108 L122,102', eyeL:'M76,118 Q86,113 96,118', eyeR:'M124,118 Q134,113 144,118', mouth:'M100,136 Q110,132 120,136' },
+  think:  { cls:'think',  browW:'3.5', browL:'M76,106 L98,100',  browR:'M144,106 L122,100', eyeL:'M78,120 L94,120',        eyeR:'M126,120 L142,120',         mouth:'M100,138 Q110,134 120,138' },
+  done:   { cls:'done',   browW:'0',   browL:'',                 browR:'',                  eyeL:'M76,122 Q86,112 96,122', eyeR:'M124,122 Q134,112 144,122',  mouth:'M96,132 Q110,148 124,132'  },
+};
+const _SEARCH_MSGS = ['কই গেল রে অধ্যায়টা 🔍','বইয়ের পাতা উল্টাচ্ছি 📖','পেয়ে যাব এক্ষুনি!','দাঁড়া দাঁড়া, এইখানে আছে মনে হয়','বইয়ের পোকা হয়ে গেলাম 🐛','একটু দাঁড়াও, খুঁজছি 🔍'];
+const _THINK_MSGS  = ['উফ এত প্রশ্ন! ভাবতে দে 😩','হুম… গুছিয়ে বলি…','এটা সহজ করে বলতে হবে 🌱','মাথা ঘুরছে কিন্তু পারবো 💪'];
+
+function _pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+let _mascotLoops = [];
+function _mascotClear(){ _mascotLoops.forEach(l=>clearInterval(l)); _mascotLoops=[]; }
+
+function _mascotSay(text){
+  const b=document.getElementById('mascot-bubble');
+  if(!b) return;
+  b.style.opacity='0'; b.style.transform='translateY(6px)';
+  setTimeout(()=>{ b.textContent=text; b.style.opacity='1'; b.style.transform='translateY(0)'; },120);
+}
+
+function setMelonFace(stage){
+  const s=MELON_STAGES[stage]||MELON_STAGES.search;
+  const body=document.getElementById('melon-body');
+  if(!body) return;
+  body.className=s.cls;
+  document.getElementById('mouth')?.setAttribute('d',s.mouth);
+  document.getElementById('eyeL')?.setAttribute('d',s.eyeL);
+  document.getElementById('eyeR')?.setAttribute('d',s.eyeR);
+  const bL=document.getElementById('browL'),bR=document.getElementById('browR');
+  if(bL){bL.setAttribute('stroke-width',s.browW);if(s.browL)bL.setAttribute('d',s.browL);}
+  if(bR){bR.setAttribute('stroke-width',s.browW);if(s.browR)bR.setAttribute('d',s.browR);}
+}
+
+function buildMascotLoader(){
+  const wrap=document.createElement('div');
+  wrap.className='mascot-loader';
+  wrap.innerHTML=`
+    <div style="min-height:30px;display:flex;justify-content:center;">
+      <div id="mascot-bubble" style="background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text);opacity:0;transition:opacity .25s,transform .25s;transform:translateY(6px);max-width:240px;text-align:center;line-height:1.4;font-family:'Noto Sans Bengali','Sora',sans-serif;">…</div>
+    </div>
+    <svg id="melon-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" style="width:190px;height:auto;">
+      <style>
+        #melon-body * { transform-box:fill-box; transform-origin:center; }
+        #melon-body.search { animation:lean 1.4s ease-in-out infinite; }
+        #melon-body.think  { animation:huff 1.3s ease-in-out infinite; }
+        #melon-body.done   { animation:hop  .6s ease-in-out infinite; }
+        @keyframes lean { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
+        @keyframes huff { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04,.96)} }
+        @keyframes hop  { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} }
+        #sweat { opacity:0; }
+        #melon-body.think #sweat { opacity:1; animation:drip 1.6s ease-in infinite; }
+        @keyframes drip { 0%{opacity:0;transform:translateY(0)} 30%{opacity:.9} 100%{opacity:0;transform:translateY(16px)} }
+        #glass { opacity:0; }
+        #melon-body.search #glass { opacity:1; }
+        #sparkle { opacity:0; }
+        #melon-body.done #sparkle { opacity:1; animation:spk 1s ease-out infinite; }
+        @keyframes spk { 0%{opacity:0;transform:scale(.5)} 40%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.3)} }
+      </style>
+      <g id="melon-body" class="search">
+        <ellipse cx="110" cy="224" rx="46" ry="8" fill="rgba(13,228,160,.12)"/>
+        <g id="sweat"><path d="M150,100 Q154,108 150,114 Q146,108 150,100 Z" fill="#6bbbff"/></g>
+        <g id="sparkle"><text x="40" y="60" font-size="20">✨</text><text x="160" y="70" font-size="16">✨</text></g>
+        <path d="M110,34 Q150,34 152,58 Q165,46 158,40" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+        <path d="M96,42 Q104,26 116,40 Q124,28 132,42 Z" fill="#3a8f3f" stroke="#1f5e23" stroke-width="2"/>
+        <ellipse cx="110" cy="120" rx="78" ry="76" fill="#5fb83f"/>
+        <ellipse cx="110" cy="120" rx="78" ry="76" fill="none" stroke="#3a8f3f" stroke-width="3"/>
+        <path d="M70,52 Q60,120 78,186" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
+        <path d="M110,46 Q104,120 110,194" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
+        <path d="M150,52 Q160,120 142,186" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
+        <line x1="92" y1="196" x2="90" y2="216" stroke="#3a8f3f" stroke-width="7" stroke-linecap="round"/>
+        <line x1="128" y1="196" x2="130" y2="216" stroke="#3a8f3f" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="86" cy="220" rx="13" ry="8" fill="#e0473f" stroke="#b8302a" stroke-width="2"/>
+        <ellipse cx="134" cy="220" rx="13" ry="8" fill="#e0473f" stroke="#b8302a" stroke-width="2"/>
+        <path id="browL" d="M76,108 L98,102" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path id="browR" d="M144,108 L122,102" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path id="eyeL" d="M76,118 Q86,113 96,118" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/>
+        <path id="eyeR" d="M124,118 Q134,113 144,118" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="74" cy="134" r="6" fill="rgba(232,65,63,.5)"/>
+        <circle cx="146" cy="134" r="6" fill="rgba(232,65,63,.5)"/>
+        <path id="mouth" d="M100,136 Q110,132 120,136" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+        <g id="glass"><circle cx="158" cy="150" r="15" fill="rgba(107,187,255,.15)" stroke="#1a1a1a" stroke-width="3"/><line x1="169" y1="161" x2="180" y2="172" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/></g>
+      </g>
+    </svg>`;
+  return wrap;
+}
+
+function mascotStage(stage){
+  _mascotClear();
+  setMelonFace(stage);
+  if(stage==='search'){
+    _mascotSay(_pick(_SEARCH_MSGS));
+    _mascotLoops.push(setInterval(()=>_mascotSay(_pick(_SEARCH_MSGS)),2000));
+  } else if(stage==='think'){
+    _mascotSay('উফ এত প্রশ্ন! ভাবতে দে 😩');
+    _mascotLoops.push(setInterval(()=>_mascotSay(_pick(_THINK_MSGS)),2000));
+  } else if(stage==='done'){
+    _mascotSay('এই নে তোর উত্তর ✨');
+  }
+}
+
 function showTyping(){
   document.getElementById('welcome-screen')?.remove();
+  // Remove any leftover typing indicator (e.g. collapsed trace from the previous turn).
+  // Without this, the old element keeps the id="typing-indicator" and all subsequent
+  // getElementById calls return it instead of the new one — leaving ghost empty bubbles.
+  document.getElementById('typing-indicator')?.remove();
   resetThinking();
   const div=document.createElement('div');div.className='message bot';div.id='typing-indicator';
   const aw=document.createElement('div');aw.className='disha-avatar-wrap thinking';aw.innerHTML=makeDiptiSVG(38);div.appendChild(aw);
   const col=document.createElement('div');col.className='bot-col';
   const nr=document.createElement('div');nr.className='disha-name-row';nr.innerHTML=`<span class="disha-name-label">Dipti</span><span class="disha-online-dot"></span>`;col.appendChild(nr);
   const bub=document.createElement('div');bub.className='bubble thinking-bubble';
-  bub.innerHTML=`<div class="thinking-stages" id="thinking-stages"></div>`;
-  col.appendChild(bub);div.appendChild(col);chatBox.appendChild(div);chatBox.scrollTop=chatBox.scrollHeight;
-
-  // Start with a generic "Thinking..." — will be replaced by first real stage from server
-  pushThinkingStage('Thinking...');
+  bub.innerHTML=`<div class="trace-collapse-header" id="trace-collapse-header"></div><div class="thinking-stages" id="thinking-stages" style="display:none;"></div>`;
+  col.appendChild(bub);div.appendChild(col);chatBox.appendChild(div);
+  const _mascotEl = buildMascotLoader();
+  bub.appendChild(_mascotEl);
+  mascotStage('search');
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
 
 // Tracks the currently-active loading stage so we can mark it "done" when the next stage arrives
 let activeStageEl = null;
 let stageCounter = 0;
+let _traceMap = {}; // id → stage DOM element for trace events
 
 // ── SCROLL MINIMAP ──
 const _mm = document.getElementById('chat-minimap');
@@ -3328,6 +3829,7 @@ document.addEventListener('click',e=>{
 function resetThinking(){
   activeStageEl = null;
   stageCounter = 0;
+  _traceMap = {};
 }
 
 function pushThinkingStage(text){
@@ -3359,18 +3861,97 @@ function pushChapterFound(chapters){
   activeStageEl = null; // this stage is now "done", next pushThinkingStage will start fresh
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-function removeTyping(){document.getElementById('typing-indicator')?.remove();}
+function removeTyping(){
+  _mascotClear();
+  document.getElementById('typing-indicator')?.remove();
+}
+
+// ── TRACE STAGE FUNCTIONS ──
+
+function traceStart(id, label, detail){
+  const stages = document.getElementById('thinking-stages');
+  if(!stages) return;
+  stageCounter++;
+  const stage = document.createElement('div');
+  stage.className = 'thinking-stage';
+  stage.dataset.traceId = id;
+  stage.innerHTML = `<span class="stage-dot loading">⟳</span><div class="stage-main"><span class="stage-label shimmer-text">${escapeHtml(label)}</span><span class="stage-detail">${escapeHtml(detail||'')}</span></div>`;
+  stages.appendChild(stage);
+  activeStageEl = stage;
+  _traceMap[id] = stage;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function traceDone(id, detail){
+  const stage = _traceMap[id] || null;
+  if(!stage) return;
+  const dot = stage.querySelector('.stage-dot');
+  const lbl = stage.querySelector('.stage-label');
+  const det = stage.querySelector('.stage-detail');
+  if(dot){ dot.classList.remove('loading'); dot.classList.add('done'); dot.textContent='✓'; }
+  if(lbl){ lbl.classList.remove('shimmer-text'); lbl.classList.add('done-label'); }
+  if(det && detail) det.textContent = detail;
+  if(stage === activeStageEl) activeStageEl = null;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function toggleTraceDetails(btn){
+  const bub = btn.closest('.thinking-bubble');
+  if(!bub) return;
+  const isOpen = bub.classList.toggle('trace-open');
+  const lbl = btn.querySelector('.trace-toggle-lbl');
+  if(lbl) lbl.textContent = isOpen ? 'লুকাও' : 'বিস্তারিত দেখো';
+}
+
+function collapseTrace(){
+  _mascotClear();
+  const indicator = document.getElementById('typing-indicator');
+  if(!indicator){ return; }
+  const bub = indicator.querySelector('.thinking-bubble');
+  const hasDoneStages = indicator.querySelector('.stage-dot.done');
+  if(!hasDoneStages){
+    // No meaningful trace — just remove (quiz/roadmap paths)
+    indicator.remove();
+    return;
+  }
+  // Force-complete every stage still in loading state (compose may not be activeStageEl
+  // if tokens started flowing and nulled it before collapseTrace ran)
+  indicator.querySelectorAll('.stage-dot.loading').forEach(dot => {
+    dot.classList.remove('loading'); dot.classList.add('done'); dot.textContent = '✓';
+    const stage = dot.closest('.thinking-stage');
+    const lbl = stage?.querySelector('.stage-label');
+    if(lbl){ lbl.classList.remove('shimmer-text'); lbl.classList.add('done-label'); }
+    const det = stage?.querySelector('.stage-detail');
+    if(det && /লিখছি/.test(det.textContent)) det.textContent = '✓ উত্তর তৈরি!';
+  });
+  activeStageEl = null;
+  // Stop avatar pulse
+  indicator.querySelector('.disha-avatar-wrap')?.classList.remove('thinking');
+  // Count AFTER the force-complete loop so all 4 stages register
+  const doneCount = indicator.querySelectorAll('.stage-dot.done').length;
+  const header = document.getElementById('trace-collapse-header');
+  if(header){
+    header.innerHTML = `<span class="trace-summary">✓ ${doneCount}টি ধাপ সম্পন্ন</span><button class="trace-toggle-btn" onclick="toggleTraceDetails(this)"><span class="trace-toggle-lbl">বিস্তারিত দেখো</span> <span class="trace-arrow">▾</span></button>`;
+  }
+  // Collapse: hide stages, show header, restore opacity
+  if(bub){
+    bub.classList.remove('sealed');
+    bub.classList.add('collapsed', 'trace-collapsed');
+  }
+}
 
 function sealThinking(){
-  // Mark active stage as done so all stages show green ✓
+  // Mark active stage done — all stages show ✓ while answer streams below
   if(activeStageEl){
     const dot=activeStageEl.querySelector('.stage-dot');
+    const lbl=activeStageEl.querySelector('.stage-label');
     const txt=activeStageEl.querySelector('.shimmer-text');
     if(dot){dot.classList.remove('loading');dot.classList.add('done');dot.textContent='✓';}
-    if(txt){txt.classList.remove('shimmer-text');txt.classList.add('stage-text-done');}
+    if(lbl){lbl.classList.remove('shimmer-text');lbl.classList.add('done-label');}
+    if(txt&&txt!==lbl){txt.classList.remove('shimmer-text');txt.classList.add('stage-text-done');}
     activeStageEl=null;
   }
-  // Dim the thinking bubble — it stays visible as context while text streams below
+  // Dim the thinking bubble while text streams below
   const bub=document.getElementById('typing-indicator')?.querySelector('.thinking-bubble');
   if(bub) bub.classList.add('sealed');
 }
@@ -3482,7 +4063,13 @@ async function sendMessage(){
   const filesSnap=[...selectedFiles];
   const fileInfos=filesSnap.map(f=>({url:URL.createObjectURL(f),type:f.type,name:f.name}));
   _lastSentText = text;
-  if(!_wasChip && text) _stepCardProblem = text;
+  if(!_wasChip && text){
+    _stepCardProblem = text;
+  } else if(!_wasChip && filesSnap.length){
+    // Image-only send: clear stale problem text so the PROBLEM card doesn't show
+    // the previous text question under the image answer
+    _stepCardProblem = '';
+  }
   _lastSentFile = filesSnap[0] || null;
   input.value='';input.style.height='auto';sendBtn.disabled=true;
   const _cc=document.getElementById('char-count');if(_cc)_cc.textContent='';
@@ -3583,6 +4170,16 @@ async function sendMessage(){
           pushThinkingStage('একটু সময় লাগছে... ⏳ (নিচের ■ বাটনে ক্লিক করে বন্ধ করতে পারো)');
         }
       }, 20000);
+      // Hard abort if no token AND no reply within 18s — hung stream
+      const _hangTimer = setTimeout(()=>{
+        if(!_firstTokenReceived && !finalReply){
+          console.warn('[Stream] hung — no token or reply in 18s, aborting');
+          _streamAbort?.abort();
+          if(_streamDiv){ if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;} _streamDiv.querySelector('.disha-avatar-wrap')?.classList.remove('thinking'); _streamDiv.remove(); _streamDiv=null; _streamBub=null; _streamText=''; _streamPending=''; }
+          removeTyping();
+          showRetryError('উত্তর আসছে না — আরেকবার চেষ্টা করো।');
+        }
+      }, 18000);
 
       try{
         while(true){
@@ -3599,8 +4196,15 @@ async function sendMessage(){
             let evt;
             try{ evt = JSON.parse(part.slice(6)); }catch(e){ continue; }
 
-            if(evt.type==='stage'){
-              // First server-sent stage replaces the placeholder "Thinking..."
+            if(evt.type==='trace'){
+              if(evt.event==='start'){
+                traceStart(evt.id, evt.label, evt.detail||'');
+                if(evt.id==='rag') mascotStage('search');
+                else if(evt.id==='compose') mascotStage('think');
+              } else if(evt.event==='done') traceDone(evt.id, evt.detail||null);
+              firstStageReplaced = true;
+            }else if(evt.type==='stage'){
+              // Legacy stage event (roadmap / despair paths) — simple one-liner
               if(!firstStageReplaced && activeStageEl){
                 const txt = activeStageEl.querySelector('.shimmer-text');
                 if(txt) txt.textContent = evt.text;
@@ -3612,7 +4216,7 @@ async function sendMessage(){
               if(!_imageTeachMode) pushChapterFound(evt.chapters);
               firstStageReplaced = true; // chapter event acts as a stage transition too
             }else if(evt.type==='reply'){
-              finalReply = evt;
+              finalReply = evt; clearTimeout(_hangTimer);
             }else if(evt.type==='wrapup'){
               // Session wrap-up arrives after the main reply — show as a second bot message
               if(evt.reply) setTimeout(()=>addBotMessage(evt.reply, false), 800);
@@ -3629,13 +4233,18 @@ async function sendMessage(){
               if(evt.chat_id) currentChatId=evt.chat_id;
               quizRendered=true;
             }else if(evt.type==='token'){
-              if(!_firstTokenReceived){ _firstTokenReceived=true; clearTimeout(_slowTimer); }
+              if(!_firstTokenReceived){ _firstTokenReceived=true; clearTimeout(_slowTimer); clearTimeout(_hangTimer); }
               if(!_streamDiv){
-                sealThinking();
+                mascotStage('done');
+                _mascotClear();
+                traceDone('compose', '✓ উত্তর তৈরি!');
+                collapseTrace();
                 document.getElementById('welcome-screen')?.remove();
                 _streamDiv = createBotWrapper('');
                 _streamBub = _streamDiv.querySelector('.bubble');
+                _streamBub.innerHTML='<div class="bubble-typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
                 _streamBub.classList.add('streaming');
+                _streamDiv.querySelector('.disha-avatar-wrap')?.classList.add('thinking');
                 chatBox.appendChild(_streamDiv);
               }
               _streamText += evt.text;
@@ -3647,7 +4256,7 @@ async function sendMessage(){
           }
         }
       }catch(e){
-        clearTimeout(_slowTimer);
+        clearTimeout(_slowTimer); clearTimeout(_hangTimer);
         const aborted = e.name === 'AbortError';
         if(!aborted) console.error('[SSE stream error]', e);
         streamError = true;
@@ -3655,18 +4264,22 @@ async function sendMessage(){
         // If we already started streaming, seal what we have
         if(_streamBub && _streamText){
           _streamBub.classList.remove('streaming');
+          _streamDiv?.querySelector('.disha-avatar-wrap')?.classList.remove('thinking');
           _streamBub.innerHTML = renderMarkdown(_streamText);
           postRenderMath(_streamBub);
         }
         _streamDiv=null; _streamBub=null; _streamText=''; _streamPending='';
-        _setStreaming(false); sendBtn.disabled=false; _streamAbort=null;
         if(!aborted){ removeTyping(); showRetryError('সংযোগ বিচ্ছিন্ন হয়েছে।'); }
         else { removeTyping(); }
         return;
+      } finally {
+        // Guaranteed reset — stop button never stays stuck regardless of path
+        clearTimeout(_slowTimer); clearTimeout(_hangTimer);
+        _setStreaming(false); sendBtn.disabled=false; _streamAbort=null;
       }
 
-      clearTimeout(_slowTimer);
-      removeTyping();
+      // timers already cleared in finally; just collapse trace if no tokens arrived
+      if(!_streamDiv) collapseTrace();
       if(finalReply){
         _imageFollowUp = false;
         // Parse and strip LLM marker: [S] = taught subject, [C] = casual/meta
@@ -3731,8 +4344,8 @@ async function sendMessage(){
             chipsArg = !botAsking; // no marker (fallback): suppress only if mid-question
           }
         }
-        if(_streamDiv){ if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;} _streamDiv.remove(); _streamDiv=null; _streamBub=null; _streamText=''; _streamPending=''; }
-        addBotMessage(replyText || 'দুঃখিত, সমস্যা হয়েছে।', chipsArg);
+        if(_streamDiv){ if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;} _streamDiv.querySelector('.disha-avatar-wrap')?.classList.remove('thinking'); _streamDiv.remove(); _streamDiv=null; _streamBub=null; _streamText=''; _streamPending=''; }
+        addBotMessage(replyText.trim() ? replyText : 'দুঃখিত, এবার উত্তর আসেনি — আরেকবার চেষ্টা করো।', chipsArg);
         // Sync activeSubject to server's confirmed subject so follow-ups stay on-topic
         if(finalReply.subject){ activeSubject = finalReply.subject; localStorage.setItem('activeSubject', activeSubject); }
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
@@ -3743,6 +4356,18 @@ async function sendMessage(){
           document.getElementById('topic-bar-tag').style.display='';
         }
       }else if(!quizRendered){
+        if(_streamDiv){
+          if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;}
+          _streamDiv.querySelector('.disha-avatar-wrap')?.classList.remove('thinking');
+          if(_streamText.trim()){
+            // Partial content arrived but no reply event — seal what we have
+            _streamBub?.classList.remove('streaming');
+          } else {
+            // Empty bubble — remove it entirely
+            _streamDiv.remove();
+          }
+          _streamDiv=null; _streamBub=null; _streamText=''; _streamPending='';
+        }
         showRetryError('সংযোগে সমস্যা হয়েছে।');
       }
     }

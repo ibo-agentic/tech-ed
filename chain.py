@@ -497,9 +497,28 @@ CASUAL_PATTERNS = [
 def is_casual_chat(user_input: str) -> bool:
     """Returns True for greetings/thanks/casual — skip RAG and stage indicators."""
     text = user_input.strip().lower()
-    if len(text) <= 15:
+    _STUDY_INTENT = [
+        'diagram', 'dekho', 'dekhao', 'bujhao', 'bujiye', 'bujhiye',
+        'explain', 'solve', 'chitro', 'proman', 'example', 'ans', 'answer',
+        'likho', 'ki kore', 'kivabe', 'kibhabe',
+    ]
+    if any(k in text for k in _STUDY_INTENT):
+        return False
+    # Length heuristic only applies to non-Bengali text — short Bengali strings are
+    # legitimate study questions (e.g. "সেট ও ফাংশন কী?" = 15 chars but is NOT casual)
+    has_bengali = bool(re.search(r'[ঀ-৿]', text))
+    if len(text) <= 15 and not has_bengali:
         return True
-    return any(p in text for p in CASUAL_PATTERNS)
+    # Short ASCII patterns (≤4 chars, no space) need word-level matching to avoid
+    # substring false-positives: "ok" in "rokto", "hm" in "home", "bye" in "goodbye"
+    words = set(text.split())
+    for p in CASUAL_PATTERNS:
+        if len(p) <= 4 and ' ' not in p and p.isascii():
+            if p.strip() in words:
+                return True
+        elif p in text:
+            return True
+    return False
 
 
 # ── INSTANT GREETING RESPONSES (zero LLM cost) ──
@@ -1283,7 +1302,10 @@ def do_rag_lookup(user_input: str, subject: str = "biology"):
                         chapters_found = [title]
                         break
 
-    return nctb_context, chapters_found
+    # Count the number of retrieved chunks (split on the separator used by get_relevant_chunks)
+    chunk_count = len([c for c in nctb_context.split('\n\n---\n\n') if c.strip()]) if nctb_context else 0
+
+    return nctb_context, chapters_found, chunk_count
 
 
 def run_llm(user_input, history, nctb_context, project_instructions="", stream="", student_name="", subject="", student_profile: dict = None, preferred_model: str = ""):

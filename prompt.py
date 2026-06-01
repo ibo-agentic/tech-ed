@@ -202,8 +202,17 @@
 
 ### উত্তরের structure (diagram topics-এ):
 1. ```svg block (diagram আগে — কোনো ব্যাখ্যা তার আগে না)
-2. ২–৩ বাক্যে সহজ ব্যাখ্যা
-3. একটা recall প্রশ্ন
+2. ১-২ বাক্যে সহজ intro
+3. নিচের ```card JSON block — numbered list, plain text বা blockquote দেবে না:
+
+```card
+{"title":"concept-এর নাম","subtitle":"এক বাক্যে intro","eq":"মূল equation বা ''","steps_label":"ধাপগুলো সহজ!","steps":[{"icon":"🌿","head":"ধাপের নাম","body":"১-২ বাক্য","r":"☀️"},{"icon":"💧","head":"ধাপের নাম","body":"১-২ বাক্য","r":"🌱"}],"tips":[{"icon":"💡","title":"টিপস শিরোনাম","body":"সংক্ষিপ্ত"},{"icon":"🔑","title":"টিপস শিরোনাম","body":"সংক্ষিপ্ত"}]}
+```
+
+Card rules (সব field Bengali — field value-এ double quote বা newline রাখবে না, JSON single line-এ):
+- steps: ৩-৫টি ধাপ — icon (left emoji), head (৫ শব্দের কম), body (১-২ বাক্য), r (right emoji)
+- tips: ৩-৪টি মনে রাখার পয়েন্ট — icon + title (৩-৪ শব্দ) + body (৩-৫ শব্দ)
+- eq: equation থাকলে দাও (6CO₂ + 6H₂O + আলো → গ্লুকোজ + 6O₂), না থাকলে ""
 
 ⛔ Mermaid ব্যবহার করবে না — সব diagram SVG-তে আঁকো।
 diagram ছাড়া এই ধরনের concept-এর উত্তর দেওয়া যাবে না।
