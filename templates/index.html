@@ -243,6 +243,11 @@
     .bubble-typing-dots .dot:nth-child(2){animation-delay:.18s;}
     .bubble-typing-dots .dot:nth-child(3){animation-delay:.36s;}
     @keyframes bounce-dot{0%,80%,100%{transform:translateY(0);opacity:.5;}40%{transform:translateY(-5px);opacity:1;}}
+    .svg-gen-placeholder{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(13,228,160,.06);border:1px solid rgba(13,228,160,.18);border-radius:10px;}
+    .svg-gen-bar{width:120px;height:4px;border-radius:2px;background:rgba(13,228,160,.15);overflow:hidden;position:relative;}
+    .svg-gen-bar::after{content:'';position:absolute;top:0;left:-60%;width:60%;height:100%;background:var(--green);border-radius:2px;animation:svgGenScan 1.4s ease-in-out infinite;}
+    @keyframes svgGenScan{0%{left:-60%;}100%{left:110%;}}
+    .svg-gen-label{font-family:'Noto Sans Bengali',sans-serif;font-size:13px;color:var(--green);opacity:.85;}
 
     .bot-col{flex:1;min-width:0;display:flex;flex-direction:column;}
     .bot .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);padding:18px 22px;font-size:13.5px;line-height:1.85;word-break:break-word;overflow-wrap:anywhere;overflow-x:hidden;}
@@ -2740,6 +2745,9 @@ function buildStepCard(problem, parsed) {
   return wrap;
 }
 
+// Strip CJK characters (model occasionally emits Chinese for Bangla science terms)
+const _noCJK=s=>(s||'').replace(/[　-鿿豈-﫿＀-￯]/g,'').trim();
+
 function buildExplainerCard(data){
   const subj=typeof activeSubject!=='undefined'?activeSubject:'biology';
   const _S={biology:{icon:'🧬',label:'জীববিজ্ঞান'},physics:{icon:'⚛️',label:'পদার্থবিজ্ঞান'},chemistry:{icon:'⚗️',label:'রসায়ন'},geography:{icon:'🌍',label:'ভূগোল'},accounting:{icon:'💼',label:'হিসাববিজ্ঞান'},math:{icon:'🔢',label:'গণিত'},higher_math:{icon:'📐',label:'উচ্চতর গণিত'},bangla:{icon:'📖',label:'বাংলা সাহিত্য'}};
@@ -2754,7 +2762,7 @@ function buildExplainerCard(data){
   const hdr=document.createElement('div');hdr.className='xcard-hdr';
   hdr.innerHTML=
     `<div class="xcard-hdr-left">`+
-      `<div class="xcard-pretitle">চল, খুব সহজে বুয়ে নেই...</div>`+
+      `<div class="xcard-pretitle">📌 পরীক্ষার আগে এক নজরে</div>`+
       `<div class="xcard-title">${escapeHtml(data.title||'')}</div>`+
       (data.subtitle?`<div class="xcard-subtitle">${escapeHtml(data.subtitle)}</div>`:'')+
     `</div>`+
@@ -2781,8 +2789,8 @@ function buildExplainerCard(data){
         `<div class="xcard-step-num">${toBn(i+1)}</div>`+
         `<div class="xcard-step-l-icon">${escapeHtml(step.icon||'')}</div>`+
         `<div class="xcard-step-body">`+
-          `<div class="xcard-step-head">${escapeHtml(step.head||'')}</div>`+
-          `<div class="xcard-step-text">${escapeHtml(step.body||'')}</div>`+
+          `<div class="xcard-step-head">${escapeHtml(_noCJK(step.head))}</div>`+
+          `<div class="xcard-step-text">${escapeHtml(_noCJK(step.body))}</div>`+
         `</div>`+
         (step.r?`<div class="xcard-step-r-icon">${escapeHtml(step.r)}</div>`:'');
       sw.appendChild(sc);
@@ -2794,14 +2802,14 @@ function buildExplainerCard(data){
   if(data.tips&&data.tips.length){
     const tw=document.createElement('div');tw.className='xcard-tips';
     const th=document.createElement('div');th.className='xcard-tips-hdr';
-    th.textContent='💡 মনে রাখার সহজ টিপস';tw.appendChild(th);
+    th.textContent='🧠 পরীক্ষার আগে চেক করো';tw.appendChild(th);
     const tg=document.createElement('div');tg.className='xcard-tips-grid';
     data.tips.forEach(tip=>{
       const tc=document.createElement('div');tc.className='xcard-tip-cell';
       tc.innerHTML=
         `<div class="xcard-tip-icon">${escapeHtml(tip.icon||'')}</div>`+
-        `<div class="xcard-tip-title">${escapeHtml(tip.title||'')}</div>`+
-        `<div class="xcard-tip-body">${escapeHtml(tip.body||'')}</div>`;
+        `<div class="xcard-tip-title">${escapeHtml(_noCJK(tip.title))}</div>`+
+        `<div class="xcard-tip-body">${escapeHtml(_noCJK(tip.body))}</div>`;
       tg.appendChild(tc);
     });
     tw.appendChild(tg);card.appendChild(tw);
@@ -2885,7 +2893,7 @@ function postProcessConceptCard(bub){
       for(const s of candidates){
         if(!s) continue;
         const t=s.textContent.replace(/[:—:]\s*$/,'').trim();
-        if(t.length>0&&t.length<60){headText=t;s.remove();break;}
+        if(t.length>0&&t.length<60){headText=_noCJK(t);s.remove();break;}
       }
 
       // Build: [step-num] [step-content[head+body]] [r-icon]
@@ -2936,7 +2944,7 @@ function postProcessConceptCard(bub){
         inner.appendChild(lbl);
       }
       const txt=document.createElement('div');txt.className='memory-tip-cell-text';
-      txt.textContent=cell.trim();
+      txt.textContent=_noCJK(cell.trim());
       inner.appendChild(txt);
       d.appendChild(ic);d.appendChild(inner);
       grid.appendChild(d);
@@ -2972,6 +2980,10 @@ function addBotMessage(text, showChips=false){
     if(_cm){
       try{
         const _cd=JSON.parse(_cm[1]);
+        // Strip CJK characters from step/tip text (model occasionally outputs Chinese for Bangla terms).
+        // Strip rather than drop — a partial Bangla term is better than a blank entry.
+        if(_cd.steps) _cd.steps=_cd.steps.map(s=>({...s,head:_noCJK(s.head),body:_noCJK(s.body)})).filter(s=>s.head||s.body);
+        if(_cd.tips)  _cd.tips =_cd.tips.map(t=>({...t,title:_noCJK(t.title),body:_noCJK(t.body)})).filter(t=>t.title||t.body);
         const _above=text.replace(/```card\s*\n[\s\S]+?\n```/,'').trim();
         const div=createBotWrapper('');
         const bub=div.querySelector('.bubble');
@@ -3100,7 +3112,21 @@ function _flushStream(){
   // Keep typing dots visible until we have actual renderable content.
   // Empty markdown (newlines, whitespace, or an unclosed SVG fence stripped by _safeStreamText)
   // would otherwise leave the bubble blank for the entire streaming duration.
-  if(html.replace(/<[^>]*>/g,'').trim().length>0) _streamBub.innerHTML=html;
+  const _hasText=html.replace(/<[^>]*>/g,'').trim().length>0;
+  if(_hasText){
+    _streamBub.innerHTML=html;
+  } else if(_streamHasOpenSvgFence(_streamText)){
+    // Model is generating an animated diagram — show a progress bar so the user knows it's working.
+    // Only set once (guard against replacing it on every rAF tick while SVG is streaming).
+    if(!_streamBub.querySelector('.svg-gen-placeholder')){
+      _streamBub.innerHTML=
+        '<div class="svg-gen-placeholder">'+
+          '<span style="font-size:20px">📊</span>'+
+          '<div><div class="svg-gen-label">চিত্র তৈরি হচ্ছে...</div>'+
+          '<div class="svg-gen-bar"></div></div>'+
+        '</div>';
+    }
+  }
   renderMath(_streamBub);
   // SVG rendering intentionally skipped during streaming: _streamBub.innerHTML is rebuilt
   // from raw text on every tick, which destroys any previously-rendered svg-wrap and races
