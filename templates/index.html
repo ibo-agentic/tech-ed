@@ -2170,6 +2170,9 @@ function renderMath(el){
       }
     }catch(e){}
   });
+  el.querySelectorAll('.katex-error').forEach(err=>{
+    console.warn('[KaTeX error]', err.getAttribute('title'), '|', err.textContent);
+  });
 }
 
 function convertLatexEq(eq){
@@ -3274,20 +3277,36 @@ function _streamHasOpenSvgFence(text){
 
 function _flushStream(){
   _streamRafId = null;
-  if(!_streamBub || !_streamPending) return;
+  if(!_streamPending) return;
   _streamPending = '';
   let safe = preprocessMath(_safeStreamText(_streamText));
   // Strip in-progress ```card block — raw JSON in a code block looks terrible mid-stream;
   // the full card renders once in addBotMessage when streaming completes.
   {const _ci=safe.indexOf('```card');if(_ci!==-1&&!safe.slice(_ci+7).includes('```')) safe=safe.slice(0,_ci).trim();}
   const html = marked.parse(safe, {breaks:true, gfm:true});
-  // Keep typing dots visible until we have actual renderable content.
-  // Empty markdown (newlines, whitespace, or an unclosed SVG fence stripped by _safeStreamText)
-  // would otherwise leave the bubble blank for the entire streaming duration.
   const _hasText=html.replace(/<[^>]*>/g,'').trim().length>0;
+  const _hasSvg=_streamHasOpenSvgFence(_streamText);
+
+  // Don't show the stream bubble until we have real content — avoids a blank
+  // bubble while the model outputs leading whitespace or unclosed LaTeX/SVG.
+  // The typing indicator stays visible until the first renderable content arrives.
+  if(!_streamDiv){
+    if(!_hasText && !_hasSvg) return;
+    mascotStage('done');
+    _mascotClear();
+    traceDone('compose', '✓ উত্তর তৈরি!');
+    collapseTrace();
+    document.getElementById('welcome-screen')?.remove();
+    _streamDiv = createBotWrapper('');
+    _streamBub = _streamDiv.querySelector('.bubble');
+    _streamBub.classList.add('streaming');
+    _streamDiv.querySelector('.disha-avatar-wrap')?.classList.add('thinking');
+    chatBox.appendChild(_streamDiv);
+  }
+
   if(_hasText){
     _streamBub.innerHTML=html;
-  } else if(_streamHasOpenSvgFence(_streamText)){
+  } else if(_hasSvg){
     // Model is generating an animated diagram — show a progress bar so the user knows it's working.
     // Only set once (guard against replacing it on every rAF tick while SVG is streaming).
     if(!_streamBub.querySelector('.svg-gen-placeholder')){
@@ -3681,10 +3700,8 @@ function useChip(btn, action){
     _chipSendOverride='এই topic-এ SSC পরীক্ষায় পূর্ণ নম্বরের জন্য উত্তর কীভাবে লিখব — NCTB ভাষায়, সংজ্ঞা ও ব্যাখ্যা সহ। শুধু exam-format উত্তর চাই, নতুন করে পড়াবে না।';
     sendMessage();
   }else if(action==='concept_quiz'){
-    // Quiz based on what was just taught — bypasses the pre-stored quiz bank.
-    // The model uses conversation context to know which concept to quiz on.
     input.value='Quiz করো 🎯';
-    _chipSendOverride='এইমাত্র যে concept পড়ালে সেটার উপর একটা SSC-style MCQ quiz দাও। ৪টি option (ক, খ, গ, ঘ) দাও — একটি সঠিক, বাকি তিনটি plausible কিন্তু ভুল। quiz শেষে সঠিক উত্তরটি দেওয়ার আগে student-কে উত্তর বলতে বলো।';
+    _chipSendOverride='__QUIZ__';
     sendMessage();
   }
 }
@@ -3791,9 +3808,7 @@ function submitMcqAnswer(btn,chosen){
 function nextQuizQuestion(btn){
   if(btn){btn.disabled=true;btn.style.opacity='.4';}
   input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8';
-  // Use conversation context instead of the pre-stored bank (__QUIZ__) which runs out.
-  // Ask the model to generate a NEW question on the same concept, different from the last one.
-  _chipSendOverride='\u098F\u0987 topic-\u098F\u09B0 \u0989\u09AA\u09B0 \u0986\u09B0\u09C7\u0995\u099F\u09BF \u09A8\u09A4\u09C1\u09A8 MCQ \u09A6\u09BE\u0993 \u2014 \u0986\u0997\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u099F\u09BF\u09B0 \u09AE\u09A4\u09CB \u09A8\u09AF\u09BC, \u09AD\u09BF\u09A8\u09CD\u09A8 \u098F\u0995\u099F\u09BF aspect \u09A5\u09C7\u0995\u09C7\u0964 \u09EA\u099F\u09BF option (\u0995, \u0996, \u0997, \u0998) \u09A6\u09BE\u0993 \u2014 \u098F\u0995\u099F\u09BF \u09B8\u09A0\u09BF\u0995, \u09A4\u09BF\u09A8\u099F\u09BF plausible \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u09AD\u09C1\u09B2\u0964 student \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BF\u09B2\u09C7 \u09A4\u09BE\u09B0\u09AA\u09B0 \u09B8\u09A0\u09BF\u0995 \u0989\u09A4\u09CD\u09A4\u09B0 \u0993 \u09B8\u0982\u0995\u09CD\u09B7\u09BF\u09AA\u09CD\u09A4 \u09AC\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE \u09A6\u09BE\u0993\u0964';
+  _chipSendOverride='__QUIZ__';
   sendMessage();
 }
 
@@ -4429,19 +4444,6 @@ async function sendMessage(){
               quizRendered=true;
             }else if(evt.type==='token'){
               if(!_firstTokenReceived){ _firstTokenReceived=true; clearTimeout(_slowTimer); clearTimeout(_hangTimer); }
-              if(!_streamDiv){
-                mascotStage('done');
-                _mascotClear();
-                traceDone('compose', '✓ উত্তর তৈরি!');
-                collapseTrace();
-                document.getElementById('welcome-screen')?.remove();
-                _streamDiv = createBotWrapper('');
-                _streamBub = _streamDiv.querySelector('.bubble');
-                _streamBub.innerHTML='<div class="bubble-typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-                _streamBub.classList.add('streaming');
-                _streamDiv.querySelector('.disha-avatar-wrap')?.classList.add('thinking');
-                chatBox.appendChild(_streamDiv);
-              }
               _streamText += evt.text;
               _streamPending += evt.text;
               if(!_streamRafId) _streamRafId = requestAnimationFrame(_flushStream);

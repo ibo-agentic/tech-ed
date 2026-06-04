@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "rag"))
 from query import get_relevant_chunks
 
 # Reuse the LLM clients from chain.py — single source of truth
-from chain import flash_llm, vision_llm, gemini_pro_llm, gpt54_mini_llm
+from chain import flash_llm, vision_llm
 from chapters import SUBJECT_STREAM as _KNOWN_SUBJECTS
 
 load_dotenv()
@@ -20,8 +20,6 @@ load_dotenv()
 # Vision-capable parsers
 parser = StrOutputParser()
 flash_vision_chain = vision_llm | parser          # Gemini 2.5 Flash: vision-capable, classification + image solving
-pro_vision_chain = gemini_pro_llm | parser
-gpt54_mini_vision_chain = gpt54_mini_llm | parser
 
 
 # The frontend sends this when the user uploads an image without typing anything
@@ -30,6 +28,17 @@ _DEFAULT_CAPTION = "এই ছবিটি দেখে বুঝিয়ে �
 
 _IMAGE_KNOWN = frozenset(_KNOWN_SUBJECTS.keys()) | {"accounting_hard", "accounting_simple"}
 _STREAM_DEFAULTS = {'science': 'biology', 'commerce': 'accounting', 'arts': 'geography'}
+
+_LATEX_IMG_RULE = (
+    "\n\n⚠️ LaTeX RULES (violating these breaks rendering):\n"
+    "1. আবৃত্ত দশমিক সবসময় \\overline{} দিয়ে লিখবে: $0.\\overline{3}$, $42.34\\overline{78}$ — কখনো ˙ বা \\dot{} ব্যবহার করবে না।\n"
+    "2. NEVER nest $...$ inside $$...$$. Write LaTeX directly inside display blocks — no inner $ signs.\n"
+    "   ✗ WRONG: $$x = $0.\\overline{3}$ = 0.333...$$   ✓ CORRECT: $$x = 0.\\overline{3} = 0.333...$$\n"
+    "3. NEVER put $ inside {} braces: ✗ \\frac{$x$}{y}  ✓ \\frac{x}{y}\n"
+    "4. Each step = ONE $$...$$ on its own line. ✗ $$x$$ $$=$$ $$y$$  ✓ $$x = y$$\n"
+    "5. Chemical equations: ALWAYS Arabic/English numerals (0-9), NEVER Bengali digits (০-৯). Use Unicode subscripts: CO₂, H₂O.\n"
+    "6. SVG <text> element-এ কখনো LaTeX লিখবে না — Unicode symbol ব্যবহার করো।"
+)
 
 
 def detect_subject_from_image(image_base64: str, image_type: str, fallback: str = "biology") -> str:
@@ -77,8 +86,8 @@ def pick_vision_chain(images: list, fallback: str = "biology") -> tuple:
     first_b64, first_mime = images[0]
     subject = detect_subject_from_image(first_b64, first_mime, fallback=fallback)
     if subject == "accounting_hard":
-        print(f"[Image Routing] complex accounting -> Gemini 2.5 Pro")
-        return pro_vision_chain, "accounting"
+        print(f"[Image Routing] complex accounting -> Gemini extract + DeepSeek Flash (hybrid)")
+        return None, "accounting"
     print(f"[Image Routing] {subject} -> Gemini 2.5 Flash")
     return flash_vision_chain, subject
 
@@ -137,19 +146,12 @@ def get_answer_with_image(
     """
     from chain import check_stream_mismatch
 
-    # ── HYBRID PATH: DeepSeek models → Gemini extracts image text, DeepSeek solves ──
-    # deepseek-pro (Math Pro) → DeepSeek V4 Pro (strongest, always)
-    # deepseek    (Math+)     → DeepSeek V4 Flash (faster, for math images)
-    # gemini / "" (Standard)  → full Gemini vision pipeline below
-    if preferred_model in ("deepseek-pro", "deepseek"):
-        from chain import deepseek_pro_chain, deepseek_chain, detect_subject_from_question, build_system_prompt
+    # ── HYBRID PATH: deepseek → Gemini extracts image text, DeepSeek Flash solves ──
+    if preferred_model == "deepseek":
+        from chain import deepseek_chain, detect_subject_from_question, build_system_prompt
 
-        if preferred_model == "deepseek-pro":
-            solve_chain = deepseek_pro_chain
-            print("[Image Routing] Math Pro → Gemini extract → DeepSeek V4 Pro solve", flush=True)
-        else:
-            solve_chain = deepseek_chain
-            print("[Image Routing] Math+ → Gemini extract → DeepSeek V4 Flash solve", flush=True)
+        solve_chain = deepseek_chain
+        print("[Image Routing] Math+ → Gemini extract → DeepSeek V4 Flash solve", flush=True)
 
         # Step 1: Gemini Flash reads all images and extracts all problem text
         extracted = extract_problem_from_image(images, user_caption=user_input)
@@ -174,23 +176,12 @@ def get_answer_with_image(
             elif msg["role"] == "assistant":
                 msgs.append(AIMessage(content=msg["content"]))
 
-        _overline_rule = (
-            "\n\n⚠️ LaTeX RULES (violating these breaks rendering):\n"
-            "1. আবৃত্ত দশমিক সবসময় \\overline{} দিয়ে লিখবে: $0.\\overline{3}$, $42.34\\overline{78}$\n"
-            "2. NEVER nest $...$ inside $$...$$. Inside $$...$$ write LaTeX directly — no inner $ signs.\n"
-            "   ✗ WRONG: $$x = $0.\\overline{3}$ = 0.333...$\n"
-            "   ✓ CORRECT: $$x = 0.\\overline{3} = 0.333...$$\n"
-            "3. NEVER put $ inside {} braces: ✗ \\frac{$x$}{y}  ✓ \\frac{x}{y}\n"
-            "4. Each step = ONE $$...$$ on its own line. ✗ $$x$$ $$=$$ $$y$$  ✓ $$x = y$$\n"
-            "5. SVG <text> element-এ কখনো LaTeX লিখবে না — Unicode symbol ব্যবহার করো।"
-        )
         if user_input and user_input != _DEFAULT_CAPTION:
-            solve_text = f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}{_overline_rule}"
+            solve_text = f"[ছবির সমস্যা:]\n{extracted}\n\n[ছাত্রের নির্দেশ:] {user_input}{_LATEX_IMG_RULE}"
         else:
             solve_text = (
                 f"[ছবির সমস্যা:]\n{extracted}\n\n"
-                "এটা NCTB format-এ সম্পূর্ণ সমাধান করো। "
-                f"ধাপে ধাপে বাংলায় explain করো।{_overline_rule}"
+                f"এটা NCTB format-এ সম্পূর্ণ সমাধান করো। ধাপে ধাপে বাংলায় explain করো।{_LATEX_IMG_RULE}"
             )
         msgs.append(HumanMessage(content=solve_text))
 
@@ -201,6 +192,55 @@ def get_answer_with_image(
     # Compute fallback: stream default > chat subject > "biology"
     _img_fallback = _STREAM_DEFAULTS.get(stream) or subject or "biology"
     selected_chain, subject = pick_vision_chain(images, fallback=_img_fallback)
+
+    # accounting_hard: Gemini extract → DeepSeek Flash → verify loop
+    if selected_chain is None:
+        from chain import deepseek_chain
+        extracted = extract_problem_from_image(images, user_caption=user_input)
+        print(f"[Image Hybrid] accounting_hard: extracted {len(extracted)} chars", flush=True)
+        nctb_ctx = get_relevant_chunks(extracted, subject="accounting")
+        sys_text = build_image_system_prompt(nctb_ctx, project_instructions, student_name=student_name, student_profile=student_profile)
+        ds_msgs = [SystemMessage(content=sys_text)]
+        for msg in history:
+            if msg["role"] == "user":
+                ds_msgs.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] == "assistant":
+                ds_msgs.append(AIMessage(content=msg["content"]))
+        ds_msgs.append(HumanMessage(content=(
+            f"[ছবির সমস্যা:]\n{extracted}\n\n"
+            "এটা NCTB format-এ সম্পূর্ণ সমাধান করো। "
+            "ধাপে ধাপে বাংলায় explain করো এবং proper bivoroni table format ব্যবহার করো। "
+            f"প্রতিটা subtotal verify করে দেখাও। শেষে balance sheet match করছে কিনা check করো।{_LATEX_IMG_RULE}"
+        )))
+        answer = deepseek_chain.invoke(ds_msgs)
+        is_valid, errors = verify_accounting_answer(answer)
+        if is_valid:
+            print("[Verify] Accounting math checks out")
+            return answer, False, "accounting"
+        print(f"[Verify] Math errors detected: {errors}")
+        _retry_msg = HumanMessage(content=(
+            f"তোমার আগের উত্তরে math এ ভুল আছে:\n\n"
+            f"{chr(10).join('- ' + e for e in errors)}\n\n"
+            f"এগুলো ঠিক করে আবার সম্পূর্ণ সমাধান লেখো। "
+            f"বিশেষ করে check করো:\n"
+            f"১. মোট প্রাপ্তি = মোট প্রদান (প্রাপ্তি প্রদান হিসাবে)\n"
+            f"২. মোট সম্পদ = মোট দায় + মালিকানা স্বত্ব (আর্থিক অবস্থার বিবরণীতে)\n"
+            f"৩. প্রতিটা যোগফল ধাপে ধাপে verify করো।\n\n"
+            f"সব হিসাব ঠিকভাবে balance হলে তবেই উত্তর দাও।"
+        ))
+        retry_answer = deepseek_chain.invoke(ds_msgs + [AIMessage(content=answer), _retry_msg])
+        is_valid_retry, retry_errors = verify_accounting_answer(retry_answer)
+        if is_valid_retry:
+            print("[Verify] Retry successful — math now balances")
+            return retry_answer, False, "accounting"
+        print(f"[Verify] Both attempts failed: {retry_errors}")
+        return (
+            f"আপু/ভাই, এই অঙ্কটা আমি দুইবার চেষ্টা করেছি কিন্তু math ঠিকমতো verify করতে পারছি না 🌱\n\n"
+            f"যা পেয়েছি সেটা নিচে দিচ্ছি, কিন্তু **বইয়ের সমাধান বা স্যারের সাথে অবশ্যই check করো**:\n\n"
+            f"---\n\n{retry_answer}\n\n---\n\n"
+            f"⚠️ **সতর্কতা:** এই উত্তরে calculation error থাকতে পারে। "
+            f"বইয়ের সমাধান দেখে নিজে verify করে নিও — exam-এ এই answer copy করো না যতক্ষণ না নিজে check করেছ।"
+        ), False, "accounting"
 
     # Stream mismatch check — return redirect before hitting the LLM
     mismatch = check_stream_mismatch(stream, subject)
@@ -232,7 +272,7 @@ def get_answer_with_image(
     # Non-accounting + user has a real question → solve directly with vision
     if subject != "accounting" and user_input and user_input != _DEFAULT_CAPTION:
         print("[Image Pipeline] Direct vision solve")
-        messages.append(HumanMessage(content=_img_parts(images) + [{"type": "text", "text": user_input}]))
+        messages.append(HumanMessage(content=_img_parts(images) + [{"type": "text", "text": user_input + _LATEX_IMG_RULE}]))
         answer = selected_chain.invoke(messages)
         # If model still refuses due to image quality, force a solve retry
         _blur_signals = ["ঝাপসা", "অস্পষ্ট", "পড়তে পারছি না", "blurry", "unclear", "can't read"]
@@ -249,7 +289,7 @@ def get_answer_with_image(
     content = _img_parts(images)
 
     if user_input and user_input != _DEFAULT_CAPTION:
-        content.append({"type": "text", "text": user_input})
+        content.append({"type": "text", "text": user_input + _LATEX_IMG_RULE})
     elif subject == "accounting":
         # Accounting: always solve fully — math is too complex to guide step-by-step
         content.append({
@@ -258,7 +298,7 @@ def get_answer_with_image(
                 "ছবিতে যা আছে সেটা NCTB format-এ সম্পূর্ণ সমাধান করো। "
                 "ধাপে ধাপে বাংলায় explain করো এবং proper bivoroni table format ব্যবহার করো। "
                 "প্রতিটা subtotal verify করে দেখাও। "
-                "শেষে balance sheet match করছে কিনা check করো।"
+                f"শেষে balance sheet match করছে কিনা check করো।{_LATEX_IMG_RULE}"
             ),
         })
     else:
@@ -273,6 +313,7 @@ def get_answer_with_image(
                 "প্রতিটি অংশ সংক্ষেপে তালিকা করো, তারপর জিজ্ঞেস করো "
                 "'কোন অংশটা solve করব, নাকি সবগুলো একসাথে?'\n\n"
                 "গুরুত্বপূর্ণ: ছবিতে ক/খ/গ/ঘ না থাকলে কখনো কাল্পনিক ক/খ/গ/ঘ তৈরি করবে না।"
+                f"{_LATEX_IMG_RULE}"
             ),
         })
 

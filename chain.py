@@ -29,105 +29,24 @@ flash_llm = ChatOpenAI(
 )
 vision_llm = flash_llm  # same model — supports vision natively
 
-# Gemini 2.5 Flash Lite — student-facing output: natural Bangla conversational responses
-output_llm = ChatOpenAI(
-    model="google/gemini-2.5-flash-lite",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.7,
-)
-
-# Claude Haiku 4.5 — better arithmetic precision, NCTB-format math
-# Used for ~20% of messages (math/calculation problems)
-haiku_llm = ChatOpenAI(
-    model="anthropic/claude-haiku-4-5",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.5,  # Lower for math precision
-)
-
-# Claude Sonnet 4.5 — vision tier, used for image-based math problems
-# where vision + Bangla numeral OCR + arithmetic all need to work together
-sonnet_llm = ChatOpenAI(
-    model="anthropic/claude-sonnet-4-5",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.5,
-)
-gemini_pro_llm = ChatOpenAI(
-    model="google/gemini-2.5-pro",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.5,
-)
-gpt54_mini_llm = ChatOpenAI(
-    model="openai/gpt-5.4-mini",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.5,
-)
 deepseek_llm = ChatOpenAI(
     model="deepseek/deepseek-v4-flash",
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
     temperature=0.6,
 )
-deepseek_pro_llm = ChatOpenAI(
-    model="deepseek/deepseek-v4-pro",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    temperature=0.5,
-)
 
 parser = StrOutputParser()
 _img_extract_cache: dict[str, str] = {}  # url → extracted text, avoids re-running Gemini on same image
 flash_chain = flash_llm | parser
-output_chain = output_llm | parser
 vision_chain = vision_llm | parser
-haiku_chain = haiku_llm | parser
-sonnet_chain = sonnet_llm | parser
-gemini_pro_chain = gemini_pro_llm | parser
-gpt54_mini_chain = gpt54_mini_llm | parser
 deepseek_chain = deepseek_llm | parser
-deepseek_pro_chain = deepseek_pro_llm | parser
 
-# Student-selectable models (deepseek-pro retired — redirects to deepseek)
 _STUDENT_CHAINS = {
     "gemini": flash_chain,
     "deepseek": deepseek_chain,
-    "deepseek-pro": deepseek_chain,
 }
 
-
-def rewrite_to_bangla(draft: str) -> str:
-    """Pass Gemini Flash draft through Gemini Flash Lite for natural Bangla output."""
-    try:
-        return output_chain.invoke([HumanMessage(content=(
-            "তুমি দীপ্তি আপু। নিচের উত্তরটি হুবহু same content রেখে "
-            "natural, প্রাকৃতিক বাংলায় rewrite করো। "
-            "কোনো তথ্য, সংখ্যা বা ব্যাখ্যা বাদ দেবে না — শুধু ভাষা সুন্দর ও স্বাভাবিক করো।"
-            f"\n\n{draft}"
-        ))])
-    except Exception as e:
-        print(f"[rewrite] error: {e}")
-        return draft
-
-
-def _make_two_step_chain():
-    from langchain_core.runnables import RunnableLambda
-
-    def _to_rewrite_msgs(draft: str):
-        return [HumanMessage(content=(
-            "তুমি দীপ্তি আপু। নিচের উত্তরটি হুবহু same content রেখে "
-            "natural, প্রাকৃতিক বাংলায় rewrite করো। "
-            "কোনো তথ্য, সংখ্যা বা ব্যাখ্যা বাদ দেবে না — শুধু ভাষা সুন্দর ও স্বাভাবিক করো।"
-            f"\n\n{draft}"
-        ))]
-
-    return flash_chain | RunnableLambda(_to_rewrite_msgs) | output_llm | parser
-
-
-two_step_output_chain = _make_two_step_chain()
 
 
 # ── MATH DETECTION ──
@@ -282,24 +201,21 @@ def classify_question(user_input: str) -> str:
 
 def route_model(user_input: str, preferred_model: str) -> str:
     """
-    Smart routing: DeepSeek models (Flash + Pro) are only used for math questions.
+    Smart routing: DeepSeek is only used for math questions.
     Theory questions route to Gemini 2.5 Flash for better Bengali prose quality.
     Returns the effective model name to use downstream.
     """
-    if preferred_model in ("deepseek", "deepseek-pro"):
+    if preferred_model == "deepseek":
         if is_math_question(user_input):
-            print(f"[Smart Route] Math detected → keeping {preferred_model}", flush=True)
-            return preferred_model
-        print(f"[Smart Route] Theory detected → Gemini 2.5 Flash (was {preferred_model})", flush=True)
+            print(f"[Smart Route] Math detected → keeping deepseek", flush=True)
+            return "deepseek"
+        print(f"[Smart Route] Theory detected → Gemini 2.5 Flash (was deepseek)", flush=True)
         return "gemini"
     return preferred_model or "gemini"
 
 
 def pick_chain(_user_input: str, subject: str = "", preferred_model: str = ""):
     """Selects the chain for the given effective model (post-routing)."""
-    if preferred_model == "deepseek-pro":
-        print(f"[Model] DeepSeek V4 Pro (Math Pro)", flush=True)
-        return deepseek_pro_chain
     if preferred_model == "deepseek":
         print(f"[Model] DeepSeek V4 Flash (Math+)", flush=True)
         return deepseek_chain
@@ -1322,7 +1238,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         "cache_control": {"type": "ephemeral"},
     }])]
     has_image = False
-    vision_supported = preferred_model not in ("deepseek", "deepseek-pro")
+    vision_supported = preferred_model != "deepseek"
     for msg in history:
         if msg["role"] == "user":
             img_url = msg.get("image_url")
@@ -1377,8 +1293,7 @@ def run_llm(user_input, history, nctb_context, project_instructions="", stream="
         )))
 
         selected = pick_chain(user_input, subject=subject)
-        label = "Flash Lite rewrite" if selected is two_step_output_chain else "Flash direct"
-        print(f"[Image Pipeline] Step 2: Gemini Flash solves -> {label}")
+        print(f"[Image Pipeline] Step 2: Gemini Flash solves")
         return selected.invoke(text_messages)
 
     effective_model = route_model(user_input, preferred_model)
@@ -1429,9 +1344,6 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
     Streaming version of run_llm.
     For DeepSeek models with mixed questions, streams Gemini (theory) then DeepSeek (math).
     """
-    # Redirect retired model to its replacement
-    if preferred_model == "deepseek-pro":
-        preferred_model = "deepseek"
     base_system = build_system_prompt(nctb_context, project_instructions, stream=stream, student_name=student_name, student_profile=student_profile)
 
     _latex_core = (
@@ -1498,25 +1410,21 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
     )
 
     # Build per-model system strings
-    gemini_sys    = _gemini_rules + base_system
-    deepseek_sys  = _deepseek_rules + base_system
-    deepseek_pro_sys = (
-        "CRITICAL: Respond ONLY in Bengali (বাংলা). Never use Chinese or Cyrillic characters.\n\n"
-        + _latex_core + base_system
-    )
+    gemini_sys   = _gemini_rules + base_system
+    deepseek_sys = _deepseek_rules + base_system
 
     # Classify question for hybrid routing
-    if preferred_model in ("deepseek", "deepseek-pro"):
+    if preferred_model == "deepseek":
         q_type = classify_question(user_input)
     else:
         q_type = "theory"
 
     print(f"[Router] preferred={preferred_model or 'gemini'}, q_type={q_type}", flush=True)
 
-    if preferred_model in ("deepseek", "deepseek-pro") and q_type == "mixed":
+    if preferred_model == "deepseek" and q_type == "mixed":
         # ── HYBRID MODE ──
         # Phase 1: Gemini explains the theory component
-        # Phase 2: DeepSeek solves the math component
+        # Phase 2: DeepSeek Flash solves the math component
         theory_note = (
             "\n\nIMPORTANT: এই প্রশ্নে theory এবং math দুটো অংশ আছে। "
             "শুধু conceptual/theory অংশটুকু explain করো — কোনো equation solve বা "
@@ -1529,17 +1437,9 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
         )
 
         gemini_msgs = _build_chat_messages(gemini_sys + theory_note, history, user_input, vision_supported=True)
+        ds_msgs = _build_chat_messages(deepseek_sys + math_note, history, user_input, vision_supported=False)
 
-        if preferred_model == "deepseek-pro":
-            ds_sys   = deepseek_pro_sys + math_note
-            ds_chain = deepseek_pro_chain
-            print("[Router] Hybrid: Gemini (theory) + DeepSeek V4 Pro (math)", flush=True)
-        else:
-            ds_sys   = deepseek_sys + math_note
-            ds_chain = deepseek_chain
-            print("[Router] Hybrid: Gemini (theory) + DeepSeek V4 Flash (math)", flush=True)
-
-        ds_msgs = _build_chat_messages(ds_sys, history, user_input, vision_supported=False)
+        print("[Router] Hybrid: Gemini (theory) + DeepSeek V4 Flash (math)", flush=True)
 
         # Stream theory phase
         for chunk in flash_chain.stream(gemini_msgs):
@@ -1550,28 +1450,21 @@ def stream_llm(user_input, history, nctb_context, project_instructions="", strea
         yield "\n\n**গাণিতিক সমাধান:**\n\n"
 
         # Stream math phase
-        for chunk in ds_chain.stream(ds_msgs):
+        for chunk in deepseek_chain.stream(ds_msgs):
             if chunk:
                 yield chunk
 
-    elif preferred_model in ("deepseek", "deepseek-pro") and q_type == "math":
-        # ── PURE MATH → DeepSeek only ──
-        if preferred_model == "deepseek-pro":
-            sys_text = deepseek_pro_sys
-            ds_chain = deepseek_pro_chain
-            print("[Router] Pure math → DeepSeek V4 Pro", flush=True)
-        else:
-            sys_text = deepseek_sys
-            ds_chain = deepseek_chain
-            print("[Router] Pure math → DeepSeek V4 Flash", flush=True)
-        msgs = _build_chat_messages(sys_text, history, user_input, vision_supported=False)
-        for chunk in ds_chain.stream(msgs):
+    elif preferred_model == "deepseek" and q_type == "math":
+        # ── PURE MATH → DeepSeek Flash only ──
+        print("[Router] Pure math → DeepSeek V4 Flash", flush=True)
+        msgs = _build_chat_messages(deepseek_sys, history, user_input, vision_supported=False)
+        for chunk in deepseek_chain.stream(msgs):
             if chunk:
                 yield chunk
 
     else:
         # ── THEORY ONLY or Gemini selected → Gemini ──
-        if preferred_model in ("deepseek", "deepseek-pro"):
+        if preferred_model == "deepseek":
             print("[Router] Theory detected → Gemini 2.5 Flash (overrides DeepSeek)", flush=True)
         else:
             print(f"[Router] Gemini 2.5 Flash (subject={subject or 'general'})", flush=True)

@@ -682,7 +682,7 @@ def ask_stream():
     subject = data.get("subject", "biology")
     stream = data.get("stream", "")
     socratic = bool(data.get("socratic", False))
-    preferred_model = data.get("model", "") if data.get("model") in ("gemini", "deepseek", "deepseek-pro") else ""
+    preferred_model = data.get("model", "") if data.get("model") in ("gemini", "deepseek") else ""
     print(f"[Request] model_sent={data.get('model')!r} → preferred_model={preferred_model!r}", flush=True)
 
     if not user_message:
@@ -1296,7 +1296,7 @@ def ask_image():
     stream  = request.form.get("stream", "")
     socratic_img = bool(request.form.get("socratic", ""))
     _img_preferred_model = request.form.get("model", "")
-    if _img_preferred_model not in ("gemini", "deepseek", "deepseek-pro"):
+    if _img_preferred_model not in ("gemini", "deepseek"):
         _img_preferred_model = ""
 
     chat = get_or_create_chat(user_id, chat_id, project_id=project_id, subject=subject)
