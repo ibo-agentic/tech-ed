@@ -676,6 +676,78 @@ def reset_password():
 
 
 # ──────────────────────────────────────────
+#  GOOGLE OAUTH CALLBACK
+# ──────────────────────────────────────────
+
+@auth_bp.route('/auth/callback')
+def auth_callback():
+    from flask import render_template
+    return render_template('auth_callback.html',
+        supabase_url=os.getenv('SUPABASE_URL', ''),
+        supabase_anon_key=os.getenv('SUPABASE_ANON_KEY', '')
+    )
+
+
+@auth_bp.route('/auth/google-session', methods=['POST'])
+def google_session():
+    data     = request.get_json()
+    user_id  = (data.get('user_id') or '').strip()
+    email    = (data.get('email')   or '').strip().lower()
+    name     = (data.get('name')    or '').strip()
+
+    if not user_id or not email:
+        return jsonify({'error': 'Missing user data'}), 400
+
+    admin         = get_admin_client()
+    device_fp     = get_device_fingerprint(request)
+    session_token = generate_session_token()
+
+    try:
+        profile_res = admin.table('profiles').select('*').eq('id', user_id).execute()
+
+        if not profile_res.data:
+            display_name = name or email.split('@')[0]
+            admin.table('profiles').insert({
+                'id':                   user_id,
+                'name':                 display_name,
+                'email':                email,
+                'device_fingerprint':   device_fp,
+                'active_session_token': session_token,
+                'active_device_fp':     device_fp,
+                'session_created_at':   datetime.utcnow().isoformat(),
+                'message_count_today':  0,
+                'plan':                 'free',
+                'email_verified':       True,
+            }).execute()
+            user_profile = {'name': display_name, 'plan': 'free'}
+        else:
+            user_profile = profile_res.data[0]
+            admin.table('profiles').update({
+                'active_session_token': session_token,
+                'active_device_fp':     device_fp,
+                'session_created_at':   datetime.utcnow().isoformat(),
+                'email_verified':       True,
+            }).eq('id', user_id).execute()
+
+        session.permanent          = True
+        session['user_id']         = user_id
+        session['name']            = user_profile.get('name') or name
+        session['email']           = email
+        session['device_fp']       = device_fp
+        session['session_token']   = session_token
+        session['plan']            = user_profile.get('plan', 'free')
+        session['verified']        = True
+
+        print(f"[GOOGLE LOGIN] user_id={user_id} email={email}", flush=True)
+        return jsonify({'success': True, 'name': session['name']})
+
+    except Exception as e:
+        print(f"[GOOGLE SESSION ERROR] {e}", flush=True)
+        import traceback; traceback.print_exc()
+        return jsonify({'error': 'Login failed. Please try again.'}), 500
+
+
+# ──────────────────────────────────────────
 #  LOGOUT
 # ──────────────────────────────────────────
 

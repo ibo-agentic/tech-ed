@@ -25,6 +25,7 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
   <style>
     :root {
@@ -360,6 +361,7 @@
     /* overflow:hidden clips SVG content that leaks outside viewBox (e.g. rotated axis labels) */
     .svg-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px;margin:10px 0;overflow:hidden;text-align:center;position:relative;scrollbar-width:none;}
     pre:has(>code.language-svg){display:none;}
+    pre.svg-rendered{display:none;}
     .svg-wrap::-webkit-scrollbar{display:none;}
     .svg-wrap svg{max-width:100%;height:auto;}
     .svg-replay-btn{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:4px 12px;background:rgba(13,228,160,.1);border:1px solid rgba(13,228,160,.3);border-radius:20px;color:var(--green);font-size:12px;font-family:var(--font);cursor:pointer;transition:background .2s;}
@@ -561,6 +563,11 @@
     .card-btn:disabled{background:var(--border);cursor:not-allowed;color:var(--text3);}
     .card-footer{font-size:10.5px;color:var(--text3);margin-top:10px;}
     .card-footer span{color:var(--green);}
+    .btn-google{width:100%;padding:10px;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;margin-bottom:2px;}
+    .btn-google:hover{background:var(--bg4);}
+    .btn-google:disabled{opacity:.6;cursor:not-allowed;}
+    .modal-divider{display:flex;align-items:center;gap:8px;margin:10px 0;color:var(--text3);font-size:11px;}
+    .modal-divider::before,.modal-divider::after{content:"";flex:1;height:1px;background:var(--border2);}
 
     /* ── Blob mascot trio ── */
     .bl-trio{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:14px;height:86px;}
@@ -682,8 +689,25 @@
     .trace-arrow{display:inline-block;transition:transform .2s ease;font-size:9px;}
     .thinking-bubble.trace-open .trace-arrow{transform:rotate(180deg);}
     .thinking-bubble.collapsed{opacity:.8!important;transition:all .3s ease;padding:7px 12px!important;}
-    .mascot-loader{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0 8px;}
+    .mascot-loader{padding:4px 0 6px;}
     .thinking-bubble.trace-collapsed .mascot-loader,.thinking-bubble.collapsed .mascot-loader{display:none;}
+    .prog-heading{font-size:12.5px;font-weight:700;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;margin-bottom:10px;}
+    .prog-stages{display:flex;flex-direction:column;gap:8px;}
+    .prog-row{display:flex;align-items:center;gap:9px;opacity:.4;transition:opacity .35s ease;}
+    .prog-row.active{opacity:1;}
+    .prog-row.done{opacity:.68;}
+    .prog-tile{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;font-weight:700;font-family:'Sora',sans-serif;}
+    .prog-info{flex:1;min-width:0;}
+    .prog-lbl{font-size:12px;font-weight:600;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.3;margin-bottom:4px;transition:color .3s;}
+    .prog-row.active .prog-lbl{color:var(--text);}
+    .prog-row.done .prog-lbl{color:var(--green);}
+    .prog-bar-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+    .prog-bar{height:100%;border-radius:2px;width:0;}
+    .prog-pct{font-size:11px;font-weight:700;color:var(--text3);min-width:26px;text-align:right;flex-shrink:0;font-family:'Sora',sans-serif;transition:color .3s;}
+    .prog-row.active .prog-pct{color:var(--text2);}
+    .prog-row.done .prog-pct{color:var(--green);font-size:12px;}
+    .prog-robot-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px;}
+    .prog-speech{font-size:11.5px;font-weight:600;color:var(--text);background:var(--bg);border:1px solid var(--border2);border-radius:10px 10px 10px 2px;padding:5px 10px;font-family:'Noto Sans Bengali','Sora',sans-serif;white-space:nowrap;opacity:0;transition:opacity .25s,transform .25s;transform:translateY(6px);}
 
     /* ── STREAM PICKER ── */
     .stream-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
@@ -768,6 +792,44 @@
     .xcard-tip-icon{font-size:20px;}
     .xcard-tip-title{font-size:11px;font-weight:700;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.4;}
     .xcard-tip-body{font-size:10.5px;color:var(--text2);font-family:'Noto Sans Bengali','Sora',sans-serif;line-height:1.5;}
+    @media(max-width:480px){
+      /* ── KaTeX display math ─────────────────────────────── */
+      /* overflow-x:auto alone doesn't scroll unless max-width constrains the box */
+      .katex-display{font-size:.92em;padding:.55em .9em;max-width:100%;overflow-x:auto;overflow-y:hidden;box-sizing:border-box;}
+      /* KaTeX renders: .katex-display > .katex > .katex-html — all three need overflow */
+      .katex-display>.katex{max-width:100%;overflow-x:auto;overflow-y:hidden;}
+      .katex-display>.katex>.katex-html{overflow-x:auto;overflow-y:hidden;}
+      /* eq-strip and xcard-eq: smaller text, horizontal scroll for long equations */
+      .eq-strip{font-size:12px;padding:8px 10px;overflow-x:auto;}
+      .xcard-eq{font-size:12px;padding:8px 13px;overflow-x:auto;}
+      /* ── xcard step rows ───────────────────────────────── */
+      .xcard-steps{gap:5px;padding:5px 8px 8px;}
+      .xcard-step{padding:8px 10px;gap:8px;}
+      .xcard-step-num{width:24px;height:24px;font-size:11px;}
+      .xcard-step-l-icon{font-size:18px;width:22px;}
+      .xcard-step-head{font-size:12px;}
+      .xcard-step-text{line-height:1.6;font-size:12.5px;}
+      .xcard-step-r-icon{display:none;}          /* hide decorative right icon — saves ~26px */
+      /* ── step-solver step cards ────────────────────────── */
+      .step-cards{gap:6px;}
+      .step-card{padding:8px 10px;gap:8px;}
+      .step-num{width:24px;height:24px;font-size:11px;}
+      .step-body{line-height:1.6;font-size:13px;}
+      .step-card-r-icon{display:none;}
+      /* ── xcard header ─────────────────────────────────── */
+      .xcard-hdr{padding:11px 13px 9px;}
+      .xcard-title{font-size:15px;}
+      .xcard-hdr-icon{font-size:24px;}
+      .xcard-steps-label{padding:9px 13px 3px;font-size:12px;}
+      .xcard-eq{padding:8px 13px;font-size:12.5px;}
+      /* ── xcard tips — switch tall squares → compact rows ─ */
+      .xcard-tips{padding:10px 10px 12px;}
+      .xcard-tips-grid{grid-template-columns:1fr;gap:6px;}  /* single column, each cell = one row */
+      .xcard-tip-cell{flex-direction:row;text-align:left;align-items:flex-start;padding:8px 10px;gap:9px;}
+      .xcard-tip-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+      .xcard-tip-title{font-size:11px;}
+      .xcard-tip-body{font-size:10.5px;line-height:1.45;}
+    }
   </style>
 </head>
 <body>
@@ -1383,6 +1445,16 @@
     </div>
     <div id="card-error" class="card-error"></div>
     <div id="card-success" class="card-success"></div>
+    <button class="btn-google" id="modal-google-btn" onclick="googleLoginModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66 2.84-.84-.68z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="modal-divider"><span>or</span></div>
     <div class="form-field" id="card-name-field" style="display:none;"><label>Your Name</label><input type="text" id="card-name" placeholder="e.g. Tasnim Zara"></div>
     <div class="form-field"><label>Email</label><input type="email" id="card-email" placeholder="example@gmail.com"></div>
     <div class="form-field" id="card-password-field"><label>Password</label><input type="password" id="card-password" placeholder="At least 6 characters"></div>
@@ -1493,6 +1565,10 @@ const chatBox=document.getElementById('chat-box');
 const input=document.getElementById('user-input');
 const sendBtn=document.getElementById('send-btn');
 if(input)autoResize(input);
+// Mobile keyboard guard: focus the input only on desktop/non-touch devices.
+// On phones, input.focus() after a reply pops the keyboard over the answer the student is reading.
+const _isMobile=window.matchMedia('(max-width:768px)').matches||('ontouchstart' in window);
+function focusInputDesktopOnly(){if(!_isMobile)input.focus();}
 const attachBtn=document.getElementById('attach-btn');
 const strip=document.getElementById('image-preview-strip');
 const scrollBtn=document.getElementById('scroll-btn');
@@ -1712,7 +1788,7 @@ async function loadChatById(chatId){
 
     document.getElementById('topic-bar-title').textContent = _cleanSidebarTitle(chat.title) || 'Chat';
     document.getElementById('topic-bar-tag').style.display = '';
-    chatBox.scrollTop = chatBox.scrollHeight;
+    _stickToBottom=true;chatBox.scrollTop = chatBox.scrollHeight;
     activeSubject = chat.subject || 'biology';
     localStorage.setItem('activeSubject', activeSubject);
     renderHistory();
@@ -1907,7 +1983,7 @@ function _doNewChat(){
   const projectHeader=projectName?`📂 ${escapeHtml(projectName)} — New Chat`:'';
   welcome.innerHTML=`<h2>${greet.text} ${greet.emoji}</h2><p class="welcome-sub">${projectHeader||'আজ কী শিখতে চাও?'}<br><span style="color:var(--text3);font-size:11px;">তোমাদের SSC সিলেবাসের বিজ্ঞান, বাণিজ্য ও মানবিকের যেকোনো কঠিন টপিক একদম পানির মতো সহজ করে বুঝিয়ে দেবো! 🌱</span></p><p class="welcome-img-note">📎 যেকোনো প্রশ্নের ছবি তুলেও কিন্তু আপুকে পাঠাতে পারো!</p>`;
   chatBox.appendChild(welcome);
-  input.value='';input.focus();
+  input.value='';focusInputDesktopOnly();
   document.getElementById('topic-bar-title').textContent=projectName?`📂 ${projectName} — New Chat`:'New Chat';
   document.getElementById('topic-bar-tag').style.display='none';
   closeSidebar();
@@ -1928,14 +2004,14 @@ function _doNewChat(){
           setTimeout(()=>{
             const chips = document.createElement('div'); chips.className='reply-chips';
             chips.innerHTML=d.review_due.map(t=>`<button class="reply-chip review-due" data-topic="${escapeHtml(t)}" onclick="useChip(this,'spaced_review')">📅 ${escapeHtml(t)} review করি</button>`).join('')+`<button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয়</button>`;
-            chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+            chatBox.appendChild(chips); maybeScrollBottom();
           },600);
         } else if(d.weak_topics && d.weak_topics.length > 0){
           setTimeout(()=>{
             const topic = d.weak_topics[d.weak_topics.length - 1];
             const chips = document.createElement('div'); chips.className='reply-chips';
             chips.innerHTML=`<button class="reply-chip" data-topic="${escapeHtml(topic)}" onclick="useChip(this,'weak_topic_review')">${escapeHtml(topic)} আবার দেখি 📚</button><button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয় পড়ব</button>`;
-            chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+            chatBox.appendChild(chips); maybeScrollBottom();
           },600);
         }
       }
@@ -1961,8 +2037,10 @@ function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMe
 function filterChats(q){q=q.toLowerCase();document.querySelectorAll('.chat-item').forEach(el=>{const title=el.querySelector('.chat-item-title')?.textContent.toLowerCase()||'';el.style.display=title.includes(q)?'':'none';});}
 
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sidebarOpen)closeSidebar();document.querySelectorAll('.modal-overlay.active').forEach(m=>{if(m.id!=='verify-overlay')m.classList.remove('active');});}});
-chatBox.addEventListener('scroll',()=>{const atBottom=chatBox.scrollHeight-chatBox.scrollTop-chatBox.clientHeight<120;scrollBtn.classList.toggle('visible',!atBottom&&chatBox.scrollHeight>chatBox.clientHeight+200);});
-function scrollToBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
+let _stickToBottom=true;
+chatBox.addEventListener('scroll',()=>{const nearBottom=chatBox.scrollHeight-chatBox.scrollTop-chatBox.clientHeight<80;_stickToBottom=nearBottom;scrollBtn.classList.toggle('visible',!nearBottom&&chatBox.scrollHeight>chatBox.clientHeight+200);},{passive:true});
+function maybeScrollBottom(){if(_stickToBottom)chatBox.scrollTop=chatBox.scrollHeight;}
+function scrollToBottom(){_stickToBottom=true;chatBox.scrollTop=chatBox.scrollHeight;}
 
 function makeDiptiSVG(size=38){
   return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" style="display:block;">` +
@@ -2033,7 +2111,7 @@ function addUserBubble(text, fileInfos=[]){
   chatBox.appendChild(div);
   if(!isFileOnly) navPush(text, div);
   mmRegister(div, 'user');
-  chatBox.scrollTop = chatBox.scrollHeight;
+  _stickToBottom=true;chatBox.scrollTop=chatBox.scrollHeight;
 }
 
 function openLightbox(url){
@@ -2175,6 +2253,13 @@ function preprocessMath(text){
 
   // SHARED: strip zero-width / invisible Unicode chars that corrupt equations
   text = text.replace(/[​‌‍‎‏﻿]/g, '');
+  // SHARED: collapse multiline $$…$$ blocks into a single line.
+  // marked.js with breaks:true inserts <br> on every newline, which breaks KaTeX
+  // when a display-math block spans more than one line.
+  text = text.replace(/\$\$([\s\S]*?)\$\$/g, (_, inner) =>
+    inner.includes('\n')
+      ? '$$' + inner.replace(/\n+/g, ' ').replace(/\s{2,}/g, ' ').trim() + '$$'
+      : `$$${inner}$$`);
 
   // SHARED: strip markers, Cyrillic, normalise Bengali digits
   text = text.replace(/^[^\n]*\[S\][^\n]*\n?/gm, '');
@@ -2302,6 +2387,30 @@ function preprocessMath(text){
   text = text.replace(/(?<!\$)\$([^$\n]*\\(?:frac|boxed)[^$\n]*)\$(?!\$)/g, (_, eq) => `$$${eq}$$`);
   text = text.replace(/^\$\$([^\n]*?)\$$/gm, (m, inner) => `$$${inner.replace(/\$/g, '')}$$`);
   text = text.replace(/^[ \t]*\$([^$\n]+)\$[ \t]*$/gm, (m, eq) => `$$${eq}$$`);
+  // SHARED: chemical-equation rescue — $$...$$ blocks with \rightarrow / \xrightarrow
+  // KaTeX cannot reliably render Bengali text inside arrow commands (\xrightarrow{\text{ক্লোরোফিল}}).
+  // Convert the whole block to Unicode plain text so it displays correctly everywhere.
+  text = text.replace(/\$\$([^$]+)\$\$/g, (match, inner) => {
+    if (!/\\x?rightarrow/.test(inner)) return match;
+    const _sub = '₀₁₂₃₄₅₆₇₈₉';
+    const _sup = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+    let eq = inner
+      .replace(/\\xrightarrow\{\\text\{([^}]+)\}\}/g, (_, lbl) => ` →${lbl} `) // arrow with Bengali label
+      .replace(/\\xrightarrow\{[^}]*\}/g, ' → ')                                // arrow with other label (drop)
+      .replace(/\\rightarrow/g, ' → ')
+      .replace(/\\text\{([^}]+)\}/g, '$1')    // \text{X} → X
+      .replace(/\\mathrm\{([^}]+)\}/g, '$1')
+      .replace(/_{([^}]+)}/g, (_, n) => [...n].map(d => _sub[+d] ?? d).join(''))
+      .replace(/_(\d)/g, (_, d) => _sub[+d])
+      .replace(/\^{([^}]+)}/g, (_, n) => [...n].map(d => _sup[+d] ?? d).join(''))
+      .replace(/\^(\d)/g, (_, d) => _sup[+d])
+      .replace(/\\[a-zA-Z]+/g, '')            // drop remaining LaTeX commands
+      .replace(/[{}]/g, '')                   // drop stray braces
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+    return eq;
+  });
+
   // SHARED: strip $$...$$ blocks whose content is >30% Bengali — prose ended up in display math
   // Exclude \text{...} content from Bengali count so chemistry formulas with Bengali labels don't get stripped
   text = text.replace(/\$\$([^$\n]+)\$\$/g, (m, content) => {
@@ -2594,6 +2703,9 @@ function renderSVG(el){
         }
       }
     }
+    // Mark the pre as rendered BEFORE replacing it — fallback for browsers that don't
+    // support :has() so the pre stays invisible even if replaceWith races a paint.
+    block.parentElement.classList.add('svg-rendered');
     block.parentElement.replaceWith(wrap);
     _startSvgParticles(wrap);
     // SMIL: debug mpath linkage, then force-start (innerHTML injection doesn't auto-start SMIL)
@@ -2634,6 +2746,46 @@ function renderSVG(el){
           el.style.animationName = 'none';
           el.getBoundingClientRect();
           el.style.animationName = savedName;
+        });
+      });
+    }
+  });
+
+  // FALLBACK: catch <pre><code> blocks that contain SVG but lack the language-svg class.
+  // Happens when (a) the model's closing ``` fence is absent — marked.js omits the language
+  // hint on an unclosed block — or (b) the model echoed the fence without the "svg" tag.
+  // Without this, raw <svg viewBox=...> source stays visible as plain text.
+  el.querySelectorAll('pre > code:not(.language-svg)').forEach(block=>{
+    const raw=block.textContent.trim();
+    const si=raw.search(/<svg\b/i);
+    if(si===-1) return;  // not SVG content — leave it alone
+    let clean=raw.slice(si)
+      .replace(/<script[\s\S]*?<\/script>/gi,'')
+      .replace(/\bon\w+\s*=/gi,'data-x=')
+      .replace(/javascript:/gi,'');
+    const wrap=document.createElement('div');wrap.className='svg-wrap';
+    wrap.innerHTML=clean;
+    // Fix mpath href namespace (same as main pass)
+    const _XL='http://www.w3.org/1999/xlink';
+    wrap.querySelectorAll('mpath').forEach(mp=>{
+      const ref=mp.getAttribute('href')||mp.getAttributeNS(_XL,'href')||'';
+      if(ref) mp.setAttributeNS(_XL,'xlink:href',ref);
+    });
+    const svg=wrap.querySelector('svg');
+    if(svg){
+      const mw=svg.style.maxWidth;
+      if(mw&&mw!=='100%'){wrap.style.maxWidth=mw;wrap.style.margin='10px auto';svg.style.maxWidth='100%';}
+      else if(!svg.getAttribute('width')&&!svg.style.width) svg.style.maxWidth='100%';
+      svg.style.height='auto';
+      if(!svg.querySelector('rect[fill="#ffffff"],rect[fill="white"]')) svg.style.background='transparent';
+    }
+    block.parentElement.replaceWith(wrap);
+    _startSvgParticles(wrap);
+    // Force-start any SMIL animations (animateMotion particles, etc.)
+    if(svg&&svg.querySelector('animateMotion,animate,animateTransform')){
+      requestAnimationFrame(()=>{
+        svg.querySelectorAll('animateMotion,animate,animateTransform').forEach(a=>{
+          try{a.beginElement();}catch(e){}
         });
       });
     }
@@ -2953,7 +3105,7 @@ function postProcessConceptCard(bub){
   });
 }
 
-function addBotMessage(text, showChips=false){
+function addBotMessage(text, showChips=false, _inPlaceDiv=null){
   document.getElementById('welcome-screen')?.remove();
   // Parse question labels from initial image listing so progress bar can track them
   if(showChips==='image_question'){ initTeachProgress(text); _imageProblemText = text; }
@@ -2985,18 +3137,31 @@ function addBotMessage(text, showChips=false){
         if(_cd.steps) _cd.steps=_cd.steps.map(s=>({...s,head:_noCJK(s.head),body:_noCJK(s.body)})).filter(s=>s.head||s.body);
         if(_cd.tips)  _cd.tips =_cd.tips.map(t=>({...t,title:_noCJK(t.title),body:_noCJK(t.body)})).filter(t=>t.title||t.body);
         const _above=text.replace(/```card\s*\n[\s\S]+?\n```/,'').trim();
+        _inPlaceDiv?.remove();
         const div=createBotWrapper('');
         const bub=div.querySelector('.bubble');
         bub.style.lineHeight='2.1';
         if(_above){
           const intro=document.createElement('div');
           intro.innerHTML=marked.parse(preprocessMath(_above),{breaks:true,gfm:true});
+          // A revision card IS the step list — strip any <ol>/<ul> the model added to the prose
+          // so the same content never appears twice (prose list + card steps).
+          [...intro.querySelectorAll('ol,ul')].forEach(l=>l.remove());
           bub.appendChild(intro);renderMath(intro);renderSVG(intro);
         }
         bub.appendChild(buildExplainerCard(_cd));
         chatBox.appendChild(div);mmRegister(div,'bot');
-        chatBox.scrollTop=chatBox.scrollHeight;
-        setTimeout(()=>{chatBox.scrollTop=chatBox.scrollHeight;mmRedraw();},150);
+        // Chips after a revision card — same row as regular study chips + exam chip
+        if(showChips){
+          const chips=document.createElement('div');chips.className='reply-chips';
+          chips.innerHTML=
+            `<button class="reply-chip" onclick="useChip(this,'exam_write')">পরীক্ষায় কীভাবে লিখব? ✍️</button>`+
+            `<button class="reply-chip" onclick="useChip(this,'concept_quiz')">Quiz করো 🎯</button>`+
+            `<button class="reply-chip primary" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
+          chatBox.appendChild(chips);
+        }
+        maybeScrollBottom();
+        setTimeout(()=>{maybeScrollBottom();mmRedraw();},150);
         return;
       }catch(e){/* JSON parse failed \u2014 fall through */}
     }
@@ -3006,23 +3171,30 @@ function addBotMessage(text, showChips=false){
   if (selectedModel === 'gemini') {
     const parsed = parseStepSolution(text);
     if (parsed && parsed.steps.length >= 2) {
+      _inPlaceDiv?.remove();
       const div = createBotWrapper('');
       const bub = div.querySelector('.bubble');
       bub.style.lineHeight = '2.1';
       bub.appendChild(buildStepCard(_stepCardProblem || _lastSentText || '', parsed));
       chatBox.appendChild(div);
       mmRegister(div, 'bot');
-      chatBox.scrollTop = chatBox.scrollHeight;
-      setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; mmRedraw(); }, 150);
+      maybeScrollBottom();
+      setTimeout(() => { maybeScrollBottom(); mmRedraw(); }, 150);
       return;
     }
   }
 
   const html=marked.parse(text);
-  const div=createBotWrapper(html);
-  const bub=div.querySelector('.bubble');
+  let div,bub;
+  if(_inPlaceDiv){
+    div=_inPlaceDiv;bub=div.querySelector('.bubble');
+    bub.classList.remove('streaming');bub.style.webkitMaskImage='';bub.style.maskImage='';
+    bub.innerHTML=html;
+  }else{
+    div=createBotWrapper(html);bub=div.querySelector('.bubble');chatBox.appendChild(div);
+  }
   bub.style.lineHeight=/[\u0980-\u09FF]/.test(text)?'2.1':'1.85';
-  chatBox.appendChild(div);renderMath(bub);renderMermaid(bub);renderSVG(bub);postProcessConceptCard(bub);
+  renderMath(bub);renderMermaid(bub);renderSVG(bub);postProcessConceptCard(bub);
   if(showChips==='image_question'){
     const chips=document.createElement('div');chips.className='reply-chips';
     chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'img_solve')">\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \uD83D\uDCDD</button><button class="reply-chip" onclick="useChip(this,'img_teach')">\u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDCD6</button>`;
@@ -3051,12 +3223,12 @@ function addBotMessage(text, showChips=false){
     chatBox.appendChild(chips);
   }else if(showChips){
     const chips=document.createElement('div');chips.className='reply-chips';
-    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD04</button><button class="reply-chip" onclick="useChip(this,'quiz')">Quiz \u0995\u09B0\u09CB \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
+    chips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'write')">\u09A8\u09BF\u099C\u09C7 \u09AC\u09B2\u09B2\u09BE\u09AE \u270F\uFE0F</button><button class="reply-chip" onclick="useChip(this,'explain')">\u0986\u09B0\u09C7\u0995\u09AC\u09BE\u09B0 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993 \uD83D\uDD04</button><button class="reply-chip" onclick="useChip(this,'quiz')">Quiz \u0995\u09B0\u09CB \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'exam_write')">পরীক্ষায় কীভাবে লিখব? ✍️</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
     chatBox.appendChild(chips);
   }
   mmRegister(div, 'bot');
-  chatBox.scrollTop=chatBox.scrollHeight;
-  setTimeout(()=>{ chatBox.scrollTop=chatBox.scrollHeight; mmRedraw(); }, 150);
+  maybeScrollBottom();
+  setTimeout(()=>{ maybeScrollBottom(); mmRedraw(); }, 150);
 }
 
 let _chipSendOverride = null;
@@ -3131,8 +3303,7 @@ function _flushStream(){
   // SVG rendering intentionally skipped during streaming: _streamBub.innerHTML is rebuilt
   // from raw text on every tick, which destroys any previously-rendered svg-wrap and races
   // with the rAF beginElement() call. addBotMessage() renders SVG once on the final text.
-  if(chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight < 120)
-    chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 let _imageJustExplaining = false;
 let _pendingTeachAdvance = false;
@@ -3181,7 +3352,7 @@ function renderRoadmapCard(data){
 
   div.appendChild(aw); col.appendChild(bub); div.appendChild(col);
   chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 function guidePickChapter(idx){
@@ -3445,7 +3616,7 @@ function useChip(btn, action){
     addBotMessage('\u09AC\u09BE\u09B9! \uD83C\uDF89 \u09AD\u09BE\u09B2\u09CB \u0995\u09B0\u09C7\u099B \u2014 \u098F\u09AD\u09BE\u09AC\u09C7\u0987 \u098F\u0997\u09BF\u09AF\u09BC\u09C7 \u09AF\u09BE\u0993\u0964', false);
     const _doneChips=document.createElement('div');_doneChips.className='reply-chips';
     _doneChips.innerHTML=`<button class="reply-chip primary" onclick="useChip(this,'quiz')">\u0986\u09B0\u09C7\u0995\u099F\u09BE Quiz \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'new_topic')">\u09A8\u09A4\u09C1\u09A8 \u09AC\u09BF\u09B7\u09AF\u09BC \u09AA\u09A1\u09BC\u09AC</button>`;
-    chatBox.appendChild(_doneChips);chatBox.scrollTop=chatBox.scrollHeight;
+    chatBox.appendChild(_doneChips);maybeScrollBottom();
   }else if(action==='img_solve'){
     input.value='\u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BE\u0993';
     _chipSendOverride='\u0989\u09AA\u09B0\u09C7\u09B0 \u099B\u09AC\u09BF\u09B0 \u09AC\u09BF\u09B7\u09AF\u09BC\u09AC\u09B8\u09CD\u09A4\u09C1\u09B0 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3 \u09B8\u09AE\u09BE\u09A7\u09BE\u09A8 \u09A6\u09BE\u0993\u0964 \u09AF\u09A6\u09BF \u0995, \u0996, \u0997, \u0998 \u098F\u09B0 \u09AE\u09A4\u09CB \u0986\u09B2\u09BE\u09A6\u09BE \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A5\u09BE\u0995\u09C7, \u09A4\u09BE\u09B9\u09B2\u09C7 \u09AA\u09CD\u09B0\u09A4\u09BF\u099F\u09BF \u0985\u0982\u09B6\u09C7\u09B0 \u0989\u09A4\u09CD\u09A4\u09B0 \u0986\u09B2\u09BE\u09A6\u09BE \u0995\u09B0\u09C7 \u09B8\u09BE\u099C\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964 \u0986\u09B0 \u09AF\u09A6\u09BF \u0995\u09CB\u09A8\u09CB \u0986\u09B2\u09BE\u09A6\u09BE \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09A8\u09BE \u09A5\u09C7\u0995\u09C7 \u09B6\u09C1\u09A7\u09C1 \u098F\u0995\u099F\u09BF \u0989\u09AA\u09AA\u09BE\u09A6\u09CD\u09AF, \u09B8\u0982\u099C\u09CD\u099E\u09BE \u09AC\u09BE \u09AC\u09BF\u09AC\u09C3\u09A4\u09BF \u09A5\u09BE\u0995\u09C7, \u09A4\u09BE\u09B9\u09B2\u09C7 \u09B8\u09C7\u099F\u09BF\u0995\u09C7\u0987 \u09B8\u09AE\u09CD\u09AA\u09C2\u09B0\u09CD\u09A3\u09AD\u09BE\u09AC\u09C7 \u09AC\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE \u0995\u09B0\u09CB \u2014 \u0989\u09AA\u09AA\u09BE\u09A6\u09CD\u09AF \u09B9\u09B2\u09C7 \u09A4\u09BE\u09B0 \u09AA\u09CD\u09B0\u09AE\u09BE\u09A3\u09B8\u09B9, \u099A\u09BF\u09A4\u09CD\u09B0\u09B8\u09B9 \u09AC\u09C1\u099D\u09BF\u09AF\u09BC\u09C7 \u09A6\u09BE\u0993\u0964 \u099B\u09AC\u09BF\u09A4\u09C7 \u09AF\u09BE \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A6\u09C7\u0996\u09BE \u09AF\u09BE\u099A\u09CD\u099B\u09C7 \u09B6\u09C1\u09A7\u09C1 \u09B8\u09C7\u099F\u09BE\u0987 \u09A8\u09BF\u09AF\u09BC\u09C7 \u0995\u09BE\u099C \u0995\u09B0\u09CB, \u09A8\u09BF\u099C\u09C7 \u09A5\u09C7\u0995\u09C7 \u09A8\u09A4\u09C1\u09A8 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u09AF\u09CB\u0997 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964 \u0995\u09CB\u09A8\u09CB \u0985\u0982\u09B6 \u099B\u09AC\u09BF\u09A4\u09C7 \u0985\u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09B9\u09B2\u09C7 \u09AC\u09B2\u09CB \'\u099B\u09AC\u09BF\u09A4\u09C7 \u098F\u0987 \u0985\u0982\u09B6 \u09B8\u09CD\u09AA\u09B7\u09CD\u099F \u09A8\u09BE\' \u2014 \u0985\u09A8\u09C1\u09AE\u09BE\u09A8 \u0995\u09B0\u09AC\u09C7 \u09A8\u09BE\u0964';
@@ -3504,6 +3675,17 @@ function useChip(btn, action){
     _chipSendOverride='আমি নতুন একটা বিষয় পড়তে চাই। আমার জন্য কোন topic সবচেয়ে দরকারি সেটা suggest করো এবং পড়ানো শুরু করো।';
     input.value='নতুন বিষয় পড়ব';
     sendMessage();
+  }else if(action==='exam_write'){
+    // Hidden prompt: sends exam-format request; input.value is the user-visible bubble text.
+    input.value='পরীক্ষায় কীভাবে লিখব? ✍️';
+    _chipSendOverride='এই topic-এ SSC পরীক্ষায় পূর্ণ নম্বরের জন্য উত্তর কীভাবে লিখব — NCTB ভাষায়, সংজ্ঞা ও ব্যাখ্যা সহ। শুধু exam-format উত্তর চাই, নতুন করে পড়াবে না।';
+    sendMessage();
+  }else if(action==='concept_quiz'){
+    // Quiz based on what was just taught — bypasses the pre-stored quiz bank.
+    // The model uses conversation context to know which concept to quiz on.
+    input.value='Quiz করো 🎯';
+    _chipSendOverride='এইমাত্র যে concept পড়ালে সেটার উপর একটা SSC-style MCQ quiz দাও। ৪টি option (ক, খ, গ, ঘ) দাও — একটি সঠিক, বাকি তিনটি plausible কিন্তু ভুল। quiz শেষে সঠিক উত্তরটি দেওয়ার আগে student-কে উত্তর বলতে বলো।';
+    sendMessage();
   }
 }
 
@@ -3558,7 +3740,7 @@ function renderMcqBubble(mcq, quizNum, quizTotal){
   const nextBtn=quizTotal>1?`<button class="mcq-next-btn" style="display:none" onclick="nextQuizQuestion(this)">\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8 \u2192</button>`:'';
   bub.innerHTML=`<div class="mcq-bubble" data-correct="${mcq.correct}" data-expl="${encodeURIComponent(mcq.explanation||'')}">${counterHtml}<div class="mcq-label">\uD83C\uDFAF QUIZ</div><div class="mcq-question">${escapeHtml(mcq.question)}</div><div class="mcq-options">${opts}</div><div class="mcq-explanation" style="display:none"></div>${nextBtn}</div>`;
   chatBox.appendChild(div);
-  chatBox.scrollTop=chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 function submitMcqAnswer(btn,chosen){
@@ -3598,7 +3780,7 @@ function submitMcqAnswer(btn,chosen){
         }else{
           chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">আরেকটা Quiz 🎯</button><button class="reply-chip" onclick="useChip(this,'done')">বুঝেছি ✓</button>`;
         }
-        chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
+        chatBox.appendChild(chips);maybeScrollBottom();
       },delay);
     }else{
       setTimeout(showQuizScore,1800);
@@ -3609,7 +3791,9 @@ function submitMcqAnswer(btn,chosen){
 function nextQuizQuestion(btn){
   if(btn){btn.disabled=true;btn.style.opacity='.4';}
   input.value='\u09AA\u09B0\u09AC\u09B0\u09CD\u09A4\u09C0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8';
-  _chipSendOverride='__QUIZ__';
+  // Use conversation context instead of the pre-stored bank (__QUIZ__) which runs out.
+  // Ask the model to generate a NEW question on the same concept, different from the last one.
+  _chipSendOverride='\u098F\u0987 topic-\u098F\u09B0 \u0989\u09AA\u09B0 \u0986\u09B0\u09C7\u0995\u099F\u09BF \u09A8\u09A4\u09C1\u09A8 MCQ \u09A6\u09BE\u0993 \u2014 \u0986\u0997\u09C7\u09B0 \u09AA\u09CD\u09B0\u09B6\u09CD\u09A8\u099F\u09BF\u09B0 \u09AE\u09A4\u09CB \u09A8\u09AF\u09BC, \u09AD\u09BF\u09A8\u09CD\u09A8 \u098F\u0995\u099F\u09BF aspect \u09A5\u09C7\u0995\u09C7\u0964 \u09EA\u099F\u09BF option (\u0995, \u0996, \u0997, \u0998) \u09A6\u09BE\u0993 \u2014 \u098F\u0995\u099F\u09BF \u09B8\u09A0\u09BF\u0995, \u09A4\u09BF\u09A8\u099F\u09BF plausible \u0995\u09BF\u09A8\u09CD\u09A4\u09C1 \u09AD\u09C1\u09B2\u0964 student \u0989\u09A4\u09CD\u09A4\u09B0 \u09A6\u09BF\u09B2\u09C7 \u09A4\u09BE\u09B0\u09AA\u09B0 \u09B8\u09A0\u09BF\u0995 \u0989\u09A4\u09CD\u09A4\u09B0 \u0993 \u09B8\u0982\u0995\u09CD\u09B7\u09BF\u09AA\u09CD\u09A4 \u09AC\u09CD\u09AF\u09BE\u0996\u09CD\u09AF\u09BE \u09A6\u09BE\u0993\u0964';
   sendMessage();
 }
 
@@ -3635,22 +3819,20 @@ function showQuizScore(){
     const chips=document.createElement('div');chips.className='reply-chips';
     const guideBtn=_guideNextBtn();
     chips.innerHTML=`${guideBtn}<button class="reply-chip ${guideBtn?'':'primary'}" onclick="useChip(this,'quiz')">\u0986\u09B0\u09C7\u0995\u099F\u09BE Quiz \uD83C\uDFAF</button><button class="reply-chip" onclick="useChip(this,'done')">\u09AC\u09C1\u099D\u09C7\u099B\u09BF \u2713</button>`;
-    chatBox.appendChild(chips);chatBox.scrollTop=chatBox.scrollHeight;
+    chatBox.appendChild(chips);maybeScrollBottom();
   },800);
 }
 
-// ── WATERMELON MASCOT ──
-const MELON_STAGES = {
-  search: { cls:'search', browW:'2.5', browL:'M76,108 L98,102',  browR:'M144,108 L122,102', eyeL:'M76,118 Q86,113 96,118', eyeR:'M124,118 Q134,113 144,118', mouth:'M100,136 Q110,132 120,136' },
-  think:  { cls:'think',  browW:'3.5', browL:'M76,106 L98,100',  browR:'M144,106 L122,100', eyeL:'M78,120 L94,120',        eyeR:'M126,120 L142,120',         mouth:'M100,138 Q110,134 120,138' },
-  done:   { cls:'done',   browW:'0',   browL:'',                 browR:'',                  eyeL:'M76,122 Q86,112 96,122', eyeR:'M124,122 Q134,112 144,122',  mouth:'M96,132 Q110,148 124,132'  },
+// ── PROGRESS CARD LOADER ──
+const _PROG_STAGE_DEFS={
+  understand:{label:'প্রশ্ন বুঝছি',    icon:'?', color:'var(--green)',bg:'rgba(13,228,160,.18)',target:100,dur:1100},
+  rag:       {label:'NCTB বই পড়ছি',   icon:'📖',color:'var(--blue)', bg:'rgba(77,127,255,.18)',target:68, dur:4500},
+  compose:   {label:'উত্তর সাজাচ্ছি', icon:'✍', color:'#e0609a',     bg:'rgba(224,96,154,.18)',target:38, dur:6500},
+  ready:     {label:'প্রায় তৈরি',     icon:'⚡',color:'var(--amber)',bg:'rgba(240,160,48,.18)',target:10, dur:9000},
 };
-const _SEARCH_MSGS = ['কই গেল রে অধ্যায়টা 🔍','বইয়ের পাতা উল্টাচ্ছি 📖','পেয়ে যাব এক্ষুনি!','দাঁড়া দাঁড়া, এইখানে আছে মনে হয়','বইয়ের পোকা হয়ে গেলাম 🐛','একটু দাঁড়াও, খুঁজছি 🔍'];
-const _THINK_MSGS  = ['উফ এত প্রশ্ন! ভাবতে দে 😩','হুম… গুছিয়ে বলি…','এটা সহজ করে বলতে হবে 🌱','মাথা ঘুরছে কিন্তু পারবো 💪'];
-
-function _pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-let _mascotLoops = [];
-function _mascotClear(){ _mascotLoops.forEach(l=>clearInterval(l)); _mascotLoops=[]; }
+let _currentProgKey=null;
+let _mascotLoops=[];
+function _mascotClear(){_mascotLoops.forEach(l=>{clearInterval(l);clearTimeout(l);});_mascotLoops=[];}
 
 function _mascotSay(text){
   const b=document.getElementById('mascot-bubble');
@@ -3659,84 +3841,101 @@ function _mascotSay(text){
   setTimeout(()=>{ b.textContent=text; b.style.opacity='1'; b.style.transform='translateY(0)'; },120);
 }
 
-function setMelonFace(stage){
-  const s=MELON_STAGES[stage]||MELON_STAGES.search;
-  const body=document.getElementById('melon-body');
-  if(!body) return;
-  body.className=s.cls;
-  document.getElementById('mouth')?.setAttribute('d',s.mouth);
-  document.getElementById('eyeL')?.setAttribute('d',s.eyeL);
-  document.getElementById('eyeR')?.setAttribute('d',s.eyeR);
-  const bL=document.getElementById('browL'),bR=document.getElementById('browR');
-  if(bL){bL.setAttribute('stroke-width',s.browW);if(s.browL)bL.setAttribute('d',s.browL);}
-  if(bR){bR.setAttribute('stroke-width',s.browW);if(s.browR)bR.setAttribute('d',s.browR);}
+function _buildProgRow(key){
+  const s=_PROG_STAGE_DEFS[key];
+  const div=document.createElement('div');
+  div.className='prog-row';div.id='prog-row-'+key;
+  div.innerHTML=
+    `<div class="prog-tile" id="prog-tile-${key}" style="background:${s.bg};color:${s.color};">${s.icon}</div>`+
+    `<div class="prog-info"><div class="prog-lbl">${s.label}</div>`+
+    `<div class="prog-bar-track"><div class="prog-bar" id="prog-bar-${key}" style="background:${s.color};"></div></div></div>`+
+    `<div class="prog-pct" id="prog-pct-${key}">0%</div>`;
+  return div;
+}
+
+function _startProgStage(key){
+  const s=_PROG_STAGE_DEFS[key];
+  const row=document.getElementById('prog-row-'+key);
+  const bar=document.getElementById('prog-bar-'+key);
+  const pct=document.getElementById('prog-pct-'+key);
+  if(!row||!bar||!pct) return;
+  _currentProgKey=key;
+  row.classList.add('active');
+  requestAnimationFrame(()=>{bar.style.transition=`width ${s.dur}ms linear`;bar.style.width=s.target+'%';});
+  let cur=0;const tgt=s.target,step=tgt/(s.dur/50);
+  const iv=setInterval(()=>{cur=Math.min(cur+step,tgt);pct.textContent=Math.round(cur)+'%';if(cur>=tgt)clearInterval(iv);},50);
+  _mascotLoops.push(iv);
+}
+
+function _completeProgStage(key){
+  const row=document.getElementById('prog-row-'+key);
+  const bar=document.getElementById('prog-bar-'+key);
+  const pct=document.getElementById('prog-pct-'+key);
+  const tile=document.getElementById('prog-tile-'+key);
+  if(!row||!bar||!pct) return;
+  row.classList.remove('active');row.classList.add('done');
+  bar.style.transition='width 0.35s ease';bar.style.width='100%';
+  pct.textContent='✓';if(tile) tile.textContent='✓';
+}
+
+function _insertAndStartProgStage(key){
+  const c=document.getElementById('prog-stages-container');
+  if(!c) return;
+  c.appendChild(_buildProgRow(key));
+  _startProgStage(key);
 }
 
 function buildMascotLoader(){
+  _currentProgKey=null;
   const wrap=document.createElement('div');
   wrap.className='mascot-loader';
-  wrap.innerHTML=`
-    <div style="min-height:30px;display:flex;justify-content:center;">
-      <div id="mascot-bubble" style="background:var(--bg);border:1px solid var(--border2);border-radius:14px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--text);opacity:0;transition:opacity .25s,transform .25s;transform:translateY(6px);max-width:240px;text-align:center;line-height:1.4;font-family:'Noto Sans Bengali','Sora',sans-serif;">…</div>
-    </div>
-    <svg id="melon-svg" viewBox="0 0 220 240" xmlns="http://www.w3.org/2000/svg" style="width:190px;height:auto;">
-      <style>
-        #melon-body * { transform-box:fill-box; transform-origin:center; }
-        #melon-body.search { animation:lean 1.4s ease-in-out infinite; }
-        #melon-body.think  { animation:huff 1.3s ease-in-out infinite; }
-        #melon-body.done   { animation:hop  .6s ease-in-out infinite; }
-        @keyframes lean { 0%,100%{transform:rotate(-3deg)} 50%{transform:rotate(3deg)} }
-        @keyframes huff { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04,.96)} }
-        @keyframes hop  { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-12px)} }
-        #sweat { opacity:0; }
-        #melon-body.think #sweat { opacity:1; animation:drip 1.6s ease-in infinite; }
-        @keyframes drip { 0%{opacity:0;transform:translateY(0)} 30%{opacity:.9} 100%{opacity:0;transform:translateY(16px)} }
-        #glass { opacity:0; }
-        #melon-body.search #glass { opacity:1; }
-        #sparkle { opacity:0; }
-        #melon-body.done #sparkle { opacity:1; animation:spk 1s ease-out infinite; }
-        @keyframes spk { 0%{opacity:0;transform:scale(.5)} 40%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.3)} }
-      </style>
-      <g id="melon-body" class="search">
-        <ellipse cx="110" cy="224" rx="46" ry="8" fill="rgba(13,228,160,.12)"/>
-        <g id="sweat"><path d="M150,100 Q154,108 150,114 Q146,108 150,100 Z" fill="#6bbbff"/></g>
-        <g id="sparkle"><text x="40" y="60" font-size="20">✨</text><text x="160" y="70" font-size="16">✨</text></g>
-        <path d="M110,34 Q150,34 152,58 Q165,46 158,40" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
-        <path d="M96,42 Q104,26 116,40 Q124,28 132,42 Z" fill="#3a8f3f" stroke="#1f5e23" stroke-width="2"/>
-        <ellipse cx="110" cy="120" rx="78" ry="76" fill="#5fb83f"/>
-        <ellipse cx="110" cy="120" rx="78" ry="76" fill="none" stroke="#3a8f3f" stroke-width="3"/>
-        <path d="M70,52 Q60,120 78,186" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
-        <path d="M110,46 Q104,120 110,194" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
-        <path d="M150,52 Q160,120 142,186" fill="none" stroke="#2f7a33" stroke-width="5" opacity=".5"/>
-        <line x1="92" y1="196" x2="90" y2="216" stroke="#3a8f3f" stroke-width="7" stroke-linecap="round"/>
-        <line x1="128" y1="196" x2="130" y2="216" stroke="#3a8f3f" stroke-width="7" stroke-linecap="round"/>
-        <ellipse cx="86" cy="220" rx="13" ry="8" fill="#e0473f" stroke="#b8302a" stroke-width="2"/>
-        <ellipse cx="134" cy="220" rx="13" ry="8" fill="#e0473f" stroke="#b8302a" stroke-width="2"/>
-        <path id="browL" d="M76,108 L98,102" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-        <path id="browR" d="M144,108 L122,102" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-        <path id="eyeL" d="M76,118 Q86,113 96,118" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/>
-        <path id="eyeR" d="M124,118 Q134,113 144,118" fill="none" stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="74" cy="134" r="6" fill="rgba(232,65,63,.5)"/>
-        <circle cx="146" cy="134" r="6" fill="rgba(232,65,63,.5)"/>
-        <path id="mouth" d="M100,136 Q110,132 120,136" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
-        <g id="glass"><circle cx="158" cy="150" r="15" fill="rgba(107,187,255,.15)" stroke="#1a1a1a" stroke-width="3"/><line x1="169" y1="161" x2="180" y2="172" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round"/></g>
-      </g>
-    </svg>`;
+  wrap.innerHTML=
+    `<div class="prog-heading">তোমার জন্য উত্তর তৈরি করছি...</div>`+
+    `<div class="prog-stages" id="prog-stages-container"></div>`+
+    `<div class="prog-robot-row">`+
+      `<div id="mascot-bubble" class="prog-speech">একটু দাঁড়াও!</div>`+
+      `<svg viewBox="0 0 62 76" xmlns="http://www.w3.org/2000/svg" style="width:48px;height:auto;flex-shrink:0;overflow:visible;">`+
+        `<defs><style>`+
+          `.r-arm{transform-box:view-box;transform-origin:50px 52px;animation:rarm 2s ease-in-out infinite;}`+
+          `@keyframes rarm{0%,100%{transform:rotate(0deg)}45%{transform:rotate(-30deg)}}`+
+          `.r-bob{animation:rbob 2.4s ease-in-out infinite;}`+
+          `@keyframes rbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}`+
+        `</style></defs>`+
+        `<g class="r-bob">`+
+          `<line x1="31" y1="1" x2="31" y2="12" stroke="#4b5563" stroke-width="2.5" stroke-linecap="round"/>`+
+          `<circle cx="31" cy="5" r="4.5" style="fill:var(--green);"/>`+
+          `<rect x="7" y="12" width="48" height="32" rx="11" style="fill:var(--bg3);stroke:var(--border2);stroke-width:1.5px;"/>`+
+          `<rect x="13" y="21" width="12" height="9" rx="3.5" style="fill:var(--blue);opacity:.85;"/>`+
+          `<circle cx="16.5" cy="23.5" r="1.8" style="fill:white;opacity:.85;"/>`+
+          `<rect x="37" y="21" width="12" height="9" rx="3.5" style="fill:var(--blue);opacity:.85;"/>`+
+          `<circle cx="40.5" cy="23.5" r="1.8" style="fill:white;opacity:.85;"/>`+
+          `<path d="M21,36 Q31,43 41,36" style="fill:none;stroke:var(--green);stroke-width:2px;stroke-linecap:round;"/>`+
+          `<rect x="11" y="48" width="40" height="26" rx="8" style="fill:var(--bg3);stroke:var(--border2);stroke-width:1.5px;"/>`+
+          `<circle cx="31" cy="61" r="5.5" style="fill:var(--green);opacity:.18;"/>`+
+          `<circle cx="31" cy="61" r="2.5" style="fill:var(--green);opacity:.6;"/>`+
+          `<path d="M11,54 Q4,61 3,69" style="fill:none;stroke:var(--border3);stroke-width:5px;stroke-linecap:round;"/>`+
+          `<g class="r-arm">`+
+            `<path d="M50,52 Q58,45 60,38" style="fill:none;stroke:var(--border3);stroke-width:5px;stroke-linecap:round;"/>`+
+            `<circle cx="60" cy="36" r="3.5" style="fill:var(--border3);"/>`+
+          `</g>`+
+        `</g>`+
+      `</svg>`+
+    `</div>`;
   return wrap;
 }
 
-function mascotStage(stage){
+function mascotStage(stageName){
   _mascotClear();
-  setMelonFace(stage);
-  if(stage==='search'){
-    _mascotSay(_pick(_SEARCH_MSGS));
-    _mascotLoops.push(setInterval(()=>_mascotSay(_pick(_SEARCH_MSGS)),2000));
-  } else if(stage==='think'){
-    _mascotSay('উফ এত প্রশ্ন! ভাবতে দে 😩');
-    _mascotLoops.push(setInterval(()=>_mascotSay(_pick(_THINK_MSGS)),2000));
-  } else if(stage==='done'){
-    _mascotSay('এই নে তোর উত্তর ✨');
-  }
+  if(_currentProgKey) _completeProgStage(_currentProgKey);
+  let nextKey;
+  if(stageName==='search'&&!_currentProgKey) nextKey='understand';
+  else if(stageName==='search') nextKey='rag';
+  else if(stageName==='think') nextKey='compose';
+  else if(stageName==='done') nextKey='ready';
+  else return;
+  _insertAndStartProgStage(nextKey);
+  const msgs={understand:'প্রশ্নটা বুঝছি...',rag:'বই খুঁজছি 📖',compose:'লিখছি ✍️',ready:'প্রায় শেষ! ⚡'};
+  _mascotSay(msgs[nextKey]||'একটু দাঁড়াও!');
 }
 
 function showTyping(){
@@ -3756,7 +3955,7 @@ function showTyping(){
   const _mascotEl = buildMascotLoader();
   bub.appendChild(_mascotEl);
   mascotStage('search');
-  chatBox.scrollTop=chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 // Tracks the currently-active loading stage so we can mark it "done" when the next stage arrives
@@ -3877,7 +4076,7 @@ function pushThinkingStage(text){
   stage.innerHTML = `<span class="stage-dot loading">\u27f3</span><span class="shimmer-text">${escapeHtml(text)}</span>`;
   stages.appendChild(stage);
   activeStageEl = stage;
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 function pushChapterFound(chapters){
@@ -3885,7 +4084,7 @@ function pushChapterFound(chapters){
   if(!activeStageEl || !chapters || chapters.length===0) return;
   activeStageEl.innerHTML = `<span class="stage-dot done">\ud83d\udcd6</span><span class="stage-text-done">Found in textbook</span>`;
   activeStageEl = null; // this stage is now "done", next pushThinkingStage will start fresh
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 function removeTyping(){
   _mascotClear();
@@ -3905,7 +4104,7 @@ function traceStart(id, label, detail){
   stages.appendChild(stage);
   activeStageEl = stage;
   _traceMap[id] = stage;
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 function traceDone(id, detail){
@@ -3918,7 +4117,7 @@ function traceDone(id, detail){
   if(lbl){ lbl.classList.remove('shimmer-text'); lbl.classList.add('done-label'); }
   if(det && detail) det.textContent = detail;
   if(stage === activeStageEl) activeStageEl = null;
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 function toggleTraceDetails(btn){
@@ -3931,39 +4130,9 @@ function toggleTraceDetails(btn){
 
 function collapseTrace(){
   _mascotClear();
-  const indicator = document.getElementById('typing-indicator');
-  if(!indicator){ return; }
-  const bub = indicator.querySelector('.thinking-bubble');
-  const hasDoneStages = indicator.querySelector('.stage-dot.done');
-  if(!hasDoneStages){
-    // No meaningful trace — just remove (quiz/roadmap paths)
-    indicator.remove();
-    return;
-  }
-  // Force-complete every stage still in loading state (compose may not be activeStageEl
-  // if tokens started flowing and nulled it before collapseTrace ran)
-  indicator.querySelectorAll('.stage-dot.loading').forEach(dot => {
-    dot.classList.remove('loading'); dot.classList.add('done'); dot.textContent = '✓';
-    const stage = dot.closest('.thinking-stage');
-    const lbl = stage?.querySelector('.stage-label');
-    if(lbl){ lbl.classList.remove('shimmer-text'); lbl.classList.add('done-label'); }
-    const det = stage?.querySelector('.stage-detail');
-    if(det && /লিখছি/.test(det.textContent)) det.textContent = '✓ উত্তর তৈরি!';
-  });
-  activeStageEl = null;
-  // Stop avatar pulse
-  indicator.querySelector('.disha-avatar-wrap')?.classList.remove('thinking');
-  // Count AFTER the force-complete loop so all 4 stages register
-  const doneCount = indicator.querySelectorAll('.stage-dot.done').length;
-  const header = document.getElementById('trace-collapse-header');
-  if(header){
-    header.innerHTML = `<span class="trace-summary">✓ ${doneCount}টি ধাপ সম্পন্ন</span><button class="trace-toggle-btn" onclick="toggleTraceDetails(this)"><span class="trace-toggle-lbl">বিস্তারিত দেখো</span> <span class="trace-arrow">▾</span></button>`;
-  }
-  // Collapse: hide stages, show header, restore opacity
-  if(bub){
-    bub.classList.remove('sealed');
-    bub.classList.add('collapsed', 'trace-collapsed');
-  }
+  activeStageEl=null;
+  const indicator=document.getElementById('typing-indicator');
+  if(indicator) indicator.remove();
 }
 
 function sealThinking(){
@@ -4075,7 +4244,7 @@ function showRetryError(msg){
   bub.appendChild(retryBtn);
   col.appendChild(bub); div.appendChild(aw); div.appendChild(col);
   chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  maybeScrollBottom();
 }
 
 async function sendMessage(){
@@ -4370,8 +4539,9 @@ async function sendMessage(){
             chipsArg = !botAsking; // no marker (fallback): suppress only if mid-question
           }
         }
-        if(_streamDiv){ if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;} _streamDiv.querySelector('.disha-avatar-wrap')?.classList.remove('thinking'); _streamDiv.remove(); _streamDiv=null; _streamBub=null; _streamText=''; _streamPending=''; }
-        addBotMessage(replyText.trim() ? replyText : 'দুঃখিত, এবার উত্তর আসেনি — আরেকবার চেষ্টা করো।', chipsArg);
+        const _finDiv=_streamDiv;
+        if(_streamDiv){ if(_streamRafId){cancelAnimationFrame(_streamRafId);_streamRafId=null;} _streamDiv.querySelector('.disha-avatar-wrap')?.classList.remove('thinking'); _streamDiv=null; _streamBub=null; _streamText=''; _streamPending=''; }
+        addBotMessage(replyText.trim() ? replyText : 'দুঃখিত, এবার উত্তর আসেনি — আরেকবার চেষ্টা করো।', chipsArg, _finDiv);
         // Sync activeSubject to server's confirmed subject so follow-ups stay on-topic
         if(finalReply.subject){ activeSubject = finalReply.subject; localStorage.setItem('activeSubject', activeSubject); }
         if(finalReply.chat_id) currentChatId = finalReply.chat_id;
@@ -4403,7 +4573,7 @@ async function sendMessage(){
     removeTyping();
     showRetryError('সংযোগে সমস্যা হয়েছে।');
   }
-  _setStreaming(false); _streamAbort=null; sendBtn.disabled=false; input.focus();
+  _setStreaming(false); _streamAbort=null; sendBtn.disabled=false; focusInputDesktopOnly();
 }
 
 // ── MODEL PICKER ──
@@ -4761,14 +4931,14 @@ async function checkLoginState(){
             setTimeout(()=>{
               const chips = document.createElement('div'); chips.className='reply-chips';
               chips.innerHTML=data.review_due.map(t=>`<button class="reply-chip review-due" data-topic="${escapeHtml(t)}" onclick="useChip(this,'spaced_review')">📅 ${escapeHtml(t)} review করি</button>`).join('')+`<button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয়</button>`;
-              chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+              chatBox.appendChild(chips); maybeScrollBottom();
             },600);
           } else if(data.weak_topics && data.weak_topics.length > 0){
             setTimeout(()=>{
               const topic = data.weak_topics[data.weak_topics.length - 1];
               const chips = document.createElement('div'); chips.className='reply-chips';
               chips.innerHTML=`<button class="reply-chip" data-topic="${escapeHtml(topic)}" onclick="useChip(this,'weak_topic_review')">${escapeHtml(topic)} আবার দেখি 📚</button><button class="reply-chip primary" onclick="useChip(this,'new_topic')">নতুন বিষয় পড়ব</button>`;
-              chatBox.appendChild(chips); chatBox.scrollTop=chatBox.scrollHeight;
+              chatBox.appendChild(chips); maybeScrollBottom();
             },600);
           }
           // First-time user: auto-show stream picker if no stream set yet
@@ -4802,6 +4972,26 @@ function showGuestLimitCard(){
   wrap.scrollIntoView({behavior:'smooth',block:'end'});
   showLoginPrompt(true);
 }
+// ── Google OAuth (modal) ──
+const _sbClient = (()=>{
+  try{ return window.supabase?.createClient('{{ supabase_url }}','{{ supabase_anon_key }}'); }catch(e){ return null; }
+})();
+
+async function googleLoginModal(){
+  if(!_sbClient){ return; }
+  const btn=document.getElementById('modal-google-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Redirecting...'; }
+  try{
+    const { error } = await _sbClient.auth.signInWithOAuth({
+      provider:'google',
+      options:{ redirectTo: window.location.origin+'/auth/callback' }
+    });
+    if(error && btn){ btn.disabled=false; btn.textContent='Continue with Google'; }
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='Continue with Google'; }
+  }
+}
+
 function showLoginPrompt(limit){
   if(loggedInUser){showAccountModal();return;}
   const sub=document.getElementById('login-modal-sub');
@@ -4948,7 +5138,7 @@ async function handleCardSubmit(){
     const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json();
     if(d.success){
       if(d.needs_verification){hideLoginPrompt();showVerifyScreen(email);}
-      else{showCardSuccess(`Welcome${d.name?', '+d.name:''}! 👋`);updateUserUI({name:d.name,email,plan:d.plan||'free'});await loadProjects();await loadAllChats();loadProgress();setTimeout(()=>{hideLoginPrompt();input.focus();},1200);}
+      else{showCardSuccess(`Welcome${d.name?', '+d.name:''}! 👋`);updateUserUI({name:d.name,email,plan:d.plan||'free'});await loadProjects();await loadAllChats();loadProgress();setTimeout(()=>{hideLoginPrompt();focusInputDesktopOnly();},1200);}
     }else{showCardError(d.error||'Something went wrong.');}
   }catch(e){showCardError('Server error.');}
   finally{btn.disabled=false;btn.textContent=cardTab==='login'?'Login':'Create Account';}
@@ -4986,7 +5176,7 @@ function checkPasswordStrength(p){const b=document.getElementById('strength-bar'
     const screenH = window.screen.height;
     const kbOpen = vvh < screenH * 0.75;
     if(mobileNav) mobileNav.style.display = kbOpen ? 'none' : '';
-    if(!kbOpen) setTimeout(()=>{ chatBox.scrollTop = chatBox.scrollHeight; }, 80);
+    if(!kbOpen) setTimeout(()=>{ maybeScrollBottom(); }, 80);
   }
   if(window.visualViewport){
     window.visualViewport.addEventListener('resize', applyVV);
@@ -5013,7 +5203,7 @@ document.addEventListener('paste', (e) => {
         selectedFiles.push(named);
         _renderPreviewStrip();
       }else{_showFileToast('সর্বোচ্চ '+MAX_FILES+'টি ছবি দেওয়া যাবে');}
-      input.focus();
+      focusInputDesktopOnly();
       break; // handle one image per paste
     }
   }

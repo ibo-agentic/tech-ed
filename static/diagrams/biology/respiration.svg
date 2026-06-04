@@ -1,0 +1,119 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+      .pulse { animation: pulse 2s infinite alternate ease-in-out; }
+      .pulse-fast { animation: pulse 0.5s infinite alternate ease-in-out; }
+      .mito { animation: breathe 4s infinite alternate ease-in-out; }
+
+      @keyframes pulse {
+        0% { transform: scale(0.8); opacity: 0.6; }
+        100% { transform: scale(1.2); opacity: 1; }
+      }
+      @keyframes breathe {
+        0% { transform: scale(0.97); }
+        100% { transform: scale(1.03); }
+      }
+    </style>
+
+    <path id="p-glucose" d="M 15 155 C 80 155, 120 190, 160 190" />
+    <path id="p-o2" d="M 15 305 C 80 305, 120 250, 160 250" />
+    <path id="p-co2" d="M 190 190 C 230 190, 300 155, 365 155" />
+    <path id="p-atp" d="M 190 220 C 230 220, 300 235, 365 235" />
+    <path id="p-h2o" d="M 190 250 C 230 250, 300 315, 365 315" />
+
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f0a030" />
+    </marker>
+  </defs>
+
+  <text x="190" y="40" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">শ্বসন প্রক্রিয়া (Respiration)</text>
+  <text x="190" y="60" text-anchor="middle" fill="#0de4a0" font-size="12">গ্লুকোজ + O₂ → CO₂ + H₂O + ATP</text>
+  <text x="15" y="85" text-anchor="start" fill="#6bbbff" font-size="11" opacity="0.6">সাইটোপ্লাজম (Cytoplasm)</text>
+
+  <path d="M 15 155 C 80 155, 120 190, 160 190" fill="none" stroke="#0de4a0" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#arrow-amber)"/>
+  <path d="M 15 305 C 80 305, 120 250, 160 250" fill="none" stroke="#6bbbff" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#arrow-amber)"/>
+  <path d="M 190 190 C 230 190, 300 155, 365 155" fill="none" stroke="#f0a030" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#arrow-amber)"/>
+  <path d="M 190 220 C 230 220, 300 235, 365 235" fill="none" stroke="#f0a030" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#arrow-amber)"/>
+  <path d="M 190 250 C 230 250, 300 315, 365 315" fill="none" stroke="#6bbbff" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#arrow-amber)"/>
+
+  <g class="mito">
+    <path d="M 110 220 C 110 140, 270 140, 270 220 C 270 290, 220 300, 190 280 C 160 260, 110 290, 110 220 Z" fill="#0d1117" stroke="#ef4444" stroke-width="3" />
+
+    <path d="M 115 220 L 130 170 L 145 235 L 160 175 L 175 250 L 190 180 L 205 255 L 220 175 L 235 240 L 250 175 L 265 220" fill="none" stroke="#f0a030" stroke-width="2" stroke-linejoin="round" opacity="0.8" />
+
+    <circle cx="190" cy="220" r="25" fill="#f0a030" opacity="0.15" class="pulse"/>
+  </g>
+  <text x="190" y="340" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="bold">মাইটোকন্ড্রিয়া (Mitochondrion)</text>
+
+  <g transform="translate(15, 130)">
+    <text x="0" y="0" fill="#e6edf3" font-size="12" font-weight="bold">গ্লুকোজ (Glucose)</text>
+    <text x="0" y="16" fill="#0de4a0" font-size="11">C₆H₁₂O₆</text>
+  </g>
+  <g transform="translate(15, 280)">
+    <text x="0" y="0" fill="#e6edf3" font-size="12" font-weight="bold">অক্সিজেন (Oxygen)</text>
+    <text x="0" y="16" fill="#6bbbff" font-size="11">O₂</text>
+  </g>
+
+  <g transform="translate(365, 130)">
+    <text x="0" y="0" text-anchor="end" fill="#e6edf3" font-size="12" font-weight="bold">কার্বন ডাইঅক্সাইড</text>
+    <text x="0" y="16" text-anchor="end" fill="#f0a030" font-size="11">CO₂</text>
+  </g>
+  <g transform="translate(365, 210)">
+    <text x="0" y="0" text-anchor="end" fill="#e6edf3" font-size="12" font-weight="bold">শক্তি (Energy)</text>
+    <text x="0" y="16" text-anchor="end" fill="#f0a030" font-size="11">ATP</text>
+  </g>
+  <g transform="translate(365, 290)">
+    <text x="0" y="0" text-anchor="end" fill="#e6edf3" font-size="12" font-weight="bold">পানি (Water)</text>
+    <text x="0" y="16" text-anchor="end" fill="#6bbbff" font-size="11">H₂O</text>
+  </g>
+
+  <circle r="4" fill="#0de4a0" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0s" repeatCount="indefinite"><mpath href="#p-glucose" xlink:href="#p-glucose"/></animateMotion>
+  </circle>
+  <circle r="4" fill="#0de4a0" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1s" repeatCount="indefinite"><mpath href="#p-glucose" xlink:href="#p-glucose"/></animateMotion>
+  </circle>
+
+  <circle r="3" fill="#6bbbff" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0.5s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0.5s" repeatCount="indefinite"><mpath href="#p-o2" xlink:href="#p-o2"/></animateMotion>
+  </circle>
+  <circle r="3" fill="#6bbbff" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1.5s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1.5s" repeatCount="indefinite"><mpath href="#p-o2" xlink:href="#p-o2"/></animateMotion>
+  </circle>
+
+  <circle r="3" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0.2s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0.2s" repeatCount="indefinite"><mpath href="#p-co2" xlink:href="#p-co2"/></animateMotion>
+  </circle>
+  <circle r="3" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1.2s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1.2s" repeatCount="indefinite"><mpath href="#p-co2" xlink:href="#p-co2"/></animateMotion>
+  </circle>
+
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0.7s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0.7s" repeatCount="indefinite"><mpath href="#p-atp" xlink:href="#p-atp"/></animateMotion>
+    <circle r="5" fill="#f0a030" class="pulse-fast"/>
+    <circle r="2.5" fill="#ffffff"/>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1.7s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1.7s" repeatCount="indefinite"><mpath href="#p-atp" xlink:href="#p-atp"/></animateMotion>
+    <circle r="5" fill="#f0a030" class="pulse-fast"/>
+    <circle r="2.5" fill="#ffffff"/>
+  </g>
+
+  <circle r="3" fill="#6bbbff" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0.4s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0.4s" repeatCount="indefinite"><mpath href="#p-h2o" xlink:href="#p-h2o"/></animateMotion>
+  </circle>
+  <circle r="3" fill="#6bbbff" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1.4s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1.4s" repeatCount="indefinite"><mpath href="#p-h2o" xlink:href="#p-h2o"/></animateMotion>
+  </circle>
+</svg>

@@ -1,0 +1,118 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+      .pulse-fast { animation: rfPulse 1s infinite alternate ease-in-out; }
+      .muscle-twitch { animation: rfTwitch 2.8s infinite ease-out; animation-delay: 0.9s; }
+      @keyframes rfPulse {
+        0%  { transform: scale(0.8); opacity: 0.5; }
+        100%{ transform: scale(1.2); opacity: 1.0; }
+      }
+      @keyframes rfTwitch {
+        0%,72% { transform: scale(1); }
+        82%    { transform: scale(1.07); }
+        100%   { transform: scale(1); }
+      }
+    </style>
+
+    <!-- Full reflex arc: receptor → spinal cord → effector -->
+    <path id="rf-arc"
+      d="M 80 93
+         C 138 90, 176 140, 216 155
+         C 262 146, 278 170, 268 196
+         C 278 222, 262 248, 216 242
+         C 176 260, 140 318, 112 355"
+      fill="none" stroke="none"/>
+
+    <marker id="rf-arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,1 L8,5 L0,9 Z" fill="#6bbbff"/>
+    </marker>
+    <marker id="rf-arrG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,1 L8,5 L0,9 Z" fill="#0de4a0"/>
+    </marker>
+    <marker id="rf-arrA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,1 L8,5 L0,9 Z" fill="#f0a030"/>
+    </marker>
+  </defs>
+
+  <!-- ── Title ── -->
+  <text x="190" y="22" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">প্রতিবর্তী ক্রিয়া (Reflex Action)</text>
+
+  <!-- ── Signal flow arrow ── -->
+  <path d="M 28 148 L 28 342" fill="none" stroke="#f0a030" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.5" marker-end="url(#rf-arrA)"/>
+  <text x="23" y="248" transform="rotate(-90 23 248)" text-anchor="middle" fill="#f0a030" font-size="9" opacity="0.7">উদ্দীপনা প্রবাহ</text>
+
+  <!-- ══════════════════════ RECEPTOR / STIMULUS ══════════════════════ -->
+  <!-- Stimulus label box (top) -->
+  <rect x="36" y="33" width="90" height="18" rx="4" fill="rgba(239,68,68,0.18)" stroke="#ef4444" stroke-width="0.8"/>
+  <text x="81" y="45" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="bold">উদ্দীপনা (Stimulus)</text>
+  <!-- Stimulus spike -->
+  <line x1="80" y1="52" x2="80" y2="64" stroke="#e6edf3" stroke-width="2"/>
+  <line x1="70" y1="52" x2="90" y2="52" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+  <!-- Receptor box -->
+  <rect x="48" y="66" width="64" height="50" rx="10" fill="#0d1117" stroke="#f0a030" stroke-width="2.5"/>
+  <circle cx="80" cy="66" r="10" fill="#ef4444" opacity="0.7" class="pulse-fast"/>
+  <!-- Receptor label box (below) -->
+  <rect x="42" y="122" width="78" height="28" rx="5" fill="rgba(240,160,48,0.15)" stroke="#f0a030" stroke-width="1"/>
+  <text x="81" y="134" text-anchor="middle" fill="#f0a030" font-size="11" font-weight="bold">গ্রাহক অঙ্গ</text>
+  <text x="81" y="145" text-anchor="middle" fill="#8b949e" font-size="9">(Receptor)</text>
+
+  <!-- ══════════════════════ SENSORY NERVE PATH ══════════════════════ -->
+  <path d="M 80 93 C 138 90, 176 138, 216 153"
+        fill="none" stroke="#6bbbff" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#rf-arrB)"/>
+  <!-- Label with opaque background -->
+  <rect x="108" y="82" width="100" height="26" rx="5" fill="#0d1117" stroke="#6bbbff" stroke-width="1"/>
+  <text x="158" y="94" text-anchor="middle" fill="#6bbbff" font-size="11" font-weight="bold">সংবেদী স্নায়ু</text>
+  <text x="158" y="104" text-anchor="middle" fill="#8b949e" font-size="9">(Sensory Nerve)</text>
+
+  <!-- ══════════════════════ SPINAL CORD ══════════════════════ -->
+  <!-- Outer dashed border -->
+  <rect x="212" y="112" width="122" height="158" rx="18" fill="rgba(107,187,255,0.04)"
+        stroke="#4b5563" stroke-width="1.8" stroke-dasharray="5 4"/>
+  <!-- Interneuron badge (inside) -->
+  <rect x="228" y="166" width="90" height="38" rx="8" fill="rgba(240,160,48,0.18)" stroke="#f0a030" stroke-width="1.5"/>
+  <text x="273" y="181" text-anchor="middle" fill="#f0a030" font-size="12" font-weight="bold">ইন্টারনিউরন</text>
+  <text x="273" y="196" text-anchor="middle" fill="#8b949e" font-size="9">(Interneuron)</text>
+  <!-- Spinal cord label (below the box) -->
+  <rect x="218" y="278" width="116" height="28" rx="5" fill="rgba(107,187,255,0.1)" stroke="#6bbbff" stroke-width="0.8"/>
+  <text x="276" y="290" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">সুষুম্নাকাণ্ড</text>
+  <text x="276" y="301" text-anchor="middle" fill="#8b949e" font-size="9">(Spinal Cord)</text>
+  <!-- Brain-not-reached note -->
+  <rect x="218" y="312" width="116" height="22" rx="4" fill="rgba(99,102,241,0.12)" stroke="#6366f1" stroke-width="0.8"/>
+  <text x="276" y="326" text-anchor="middle" fill="#a5b4fc" font-size="9">মস্তিষ্কে পৌঁছায় না ✗</text>
+
+  <!-- ══════════════════════ MOTOR NERVE PATH ══════════════════════ -->
+  <path d="M 216 242 C 176 262, 140 318, 112 353"
+        fill="none" stroke="#0de4a0" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#rf-arrG)"/>
+  <!-- Label with opaque background -->
+  <rect x="118" y="294" width="100" height="26" rx="5" fill="#0d1117" stroke="#0de4a0" stroke-width="1"/>
+  <text x="168" y="306" text-anchor="middle" fill="#0de4a0" font-size="11" font-weight="bold">আজ্ঞাবাহী স্নায়ু</text>
+  <text x="168" y="316" text-anchor="middle" fill="#8b949e" font-size="9">(Motor Nerve)</text>
+
+  <!-- ══════════════════════ EFFECTOR / MUSCLE ══════════════════════ -->
+  <path class="muscle-twitch"
+        d="M 46 360 Q 112 320 174 360 Q 112 400 46 360 Z"
+        fill="#0d1117" stroke="#ef4444" stroke-width="3"/>
+  <!-- Effector label box (below) -->
+  <rect x="40" y="412" width="146" height="28" rx="5" fill="rgba(239,68,68,0.12)" stroke="#ef4444" stroke-width="0.8"/>
+  <text x="113" y="424" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="bold">সাড়া প্রদানকারী অঙ্গ</text>
+  <text x="113" y="435" text-anchor="middle" fill="#8b949e" font-size="9">(Effector / Muscle)</text>
+
+  <!-- ══════════════════════ ANIMATED SIGNAL PARTICLES ══════════════════════ -->
+  <!-- Particle color shifts: blue (sensory) → amber (interneuron) → green (motor) -->
+  <circle r="5" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="3s" begin="0s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#6bbbff;#6bbbff;#f0a030;#0de4a0;#0de4a0" keyTimes="0;0.36;0.50;0.64;1" dur="3s" begin="0s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="0s" repeatCount="indefinite"><mpath href="#rf-arc" xlink:href="#rf-arc"/></animateMotion>
+  </circle>
+  <circle r="4.5" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="3s" begin="1s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#6bbbff;#6bbbff;#f0a030;#0de4a0;#0de4a0" keyTimes="0;0.36;0.50;0.64;1" dur="3s" begin="1s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="1s" repeatCount="indefinite"><mpath href="#rf-arc" xlink:href="#rf-arc"/></animateMotion>
+  </circle>
+  <circle r="4" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="3s" begin="2s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#6bbbff;#6bbbff;#f0a030;#0de4a0;#0de4a0" keyTimes="0;0.36;0.50;0.64;1" dur="3s" begin="2s" repeatCount="indefinite"/>
+    <animateMotion dur="3s" begin="2s" repeatCount="indefinite"><mpath href="#rf-arc" xlink:href="#rf-arc"/></animateMotion>
+  </circle>
+</svg>

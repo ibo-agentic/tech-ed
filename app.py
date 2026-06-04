@@ -73,6 +73,60 @@ def rate_limit_handler(_e):
 MAX_INSTRUCTIONS_LENGTH = 1000
 
 
+# ── DIAGRAM LIBRARY ──
+
+_DIAGRAM_MANIFEST = None
+_MANIFEST_PATH = os.path.join(os.path.dirname(__file__), 'diagrams_manifest.json')
+
+
+def _load_manifest():
+    global _DIAGRAM_MANIFEST
+    if _DIAGRAM_MANIFEST is None:
+        try:
+            with open(_MANIFEST_PATH, encoding='utf-8') as f:
+                _DIAGRAM_MANIFEST = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"[Diagrams] manifest load error: {e}", flush=True)
+            _DIAGRAM_MANIFEST = {}
+    return _DIAGRAM_MANIFEST
+
+
+def find_diagram(question: str, subject: str):
+    """Return SVG file content if a pre-made diagram matches the question, else None.
+    Matches by longest alias (most specific). When multiple SVG variants exist for a
+    topic, picks one at random so students see variety across sessions."""
+    import random as _random
+    manifest = _load_manifest()
+    q = question.lower().strip()
+    best_slug = None
+    best_len = 0
+    for slug, info in manifest.items():
+        if info.get('subject') != subject:
+            continue
+        for alias in info.get('aliases', []):
+            a = alias.lower().strip()
+            if a and a in q and len(a) > best_len:
+                best_len = len(a)
+                best_slug = slug
+    if not best_slug:
+        return None
+    info = manifest[best_slug]
+    # Support both `files` (list) and legacy `file` (string)
+    file_list = info.get('files') or ([info['file']] if info.get('file') else [])
+    if not file_list:
+        return None
+    chosen = _random.choice(file_list)
+    svg_path = os.path.join(os.path.dirname(__file__), chosen)
+    try:
+        with open(svg_path, encoding='utf-8') as f:
+            content = f.read().strip()
+        print(f"[Diagram] slug={best_slug!r} variant={os.path.basename(chosen)!r} subject={subject}", flush=True)
+        return content
+    except FileNotFoundError:
+        print(f"[Diagram] SVG file not found: {svg_path}", flush=True)
+        return None
+
+
 # ── CHAT HELPERS ──
 
 def get_or_create_chat(user_id, chat_id=None, project_id=None, subject='biology'):
@@ -222,12 +276,18 @@ def home():
         session['guest_messages'] = 0
     session["history"] = []
     session.pop('chat_id', None)
-    return render_template("index.html")
+    return render_template("index.html",
+        supabase_url=os.getenv('SUPABASE_URL', ''),
+        supabase_anon_key=os.getenv('SUPABASE_ANON_KEY', '')
+    )
 
 
 @app.route('/login-page')
 def login_page():
-    return render_template('login.html')
+    return render_template('login.html',
+        supabase_url=os.getenv('SUPABASE_URL', ''),
+        supabase_anon_key=os.getenv('SUPABASE_ANON_KEY', '')
+    )
 
 
 # ─── PROJECT ROUTES ───
@@ -1046,6 +1106,22 @@ def ask_stream():
             yield sse({"type": "trace", "event": "start", "id": "compose",
                        "label": "উত্তর সাজাচ্ছি",
                        "detail": "সব মিলিয়ে তোমার জন্য উত্তর লিখছি…"})
+
+            # ── DIAGRAM INJECTION ──
+            _injected_svg_prefix = ""
+            _diagram_svg = find_diagram(user_message, effective_subject)
+            if _diagram_svg:
+                _injected_svg_prefix = "```svg\n" + _diagram_svg + "\n```\n\n"
+                yield sse({"type": "token", "text": _injected_svg_prefix})
+                # Tell the LLM a diagram is already shown — write prose + card only
+                nctb_context += (
+                    "\n\n[SYSTEM: একটি অ্যানিমেটেড ডায়াগ্রাম ইতিমধ্যে উপরে দেখানো হয়েছে। "
+                    "তুমি নিজে কোনো SVG, diagram, code block, বা চিত্র তৈরি করবে না — এটা MANDATORY। "
+                    "```svg অথবা ```mermaid অথবা কোনো কোড ফেন্স ব্যবহার করা যাবে না। "
+                    "শুধু সহজ বাংলায় পাঠ্য ব্যাখ্যা এবং revision card দাও। "
+                    "\"SVG দিয়ে দেখাই\" বা \"diagram এঁকে দেখাই\" জাতীয় কথা বলবে না।]"
+                )
+
             _req_time.sleep(0.35)
 
             project_instructions = ""
@@ -1149,7 +1225,7 @@ def ask_stream():
             _first_token = round((_first_token_time - _t_llm_start), 1) if _first_token_time else None
             yield sse({
                 "type": "reply",
-                "reply": reply,
+                "reply": _injected_svg_prefix + reply,
                 "chat_id": current_chat_id,
                 "chapters_found": chapters_found if is_biology else [],
                 "chips": chips_value,

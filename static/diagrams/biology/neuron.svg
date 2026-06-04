@@ -1,0 +1,104 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+      .pulse-core { animation: pulse 1s infinite alternate ease-in-out; }
+      @keyframes pulse {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        100% { transform: scale(1.2); opacity: 1; }
+      }
+    </style>
+
+    <path id="sig-left" d="M 140 50 C 150 90, 170 100, 190 120 L 190 370 L 140 430" fill="none" stroke="none" />
+    <path id="sig-right" d="M 240 50 C 230 90, 210 100, 190 120 L 190 370 L 240 430" fill="none" stroke="none" />
+    <path id="sig-mid" d="M 190 40 L 190 120 L 190 370 L 190 440" fill="none" stroke="none" />
+
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f0a030" />
+    </marker>
+  </defs>
+
+  <text x="190" y="25" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">নিউরন (Neuron)</text>
+
+  <path d="M 40 150 L 40 350" fill="none" stroke="#f0a030" stroke-width="2" stroke-dasharray="4 4" opacity="0.6" marker-end="url(#arrow)" />
+  <text x="35" y="250" transform="rotate(-90 35 250)" text-anchor="middle" fill="#f0a030" font-size="11" opacity="0.8">উদ্দীপনা প্রবাহ (Signal Flow)</text>
+
+  <g stroke="#0de4a0" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 190 90 L 190 40 M 190 60 L 175 45 M 190 70 L 205 50" />
+    <path d="M 170 95 L 140 50 M 155 70 L 130 70 M 145 60 L 155 40" />
+    <path d="M 210 95 L 240 50 M 225 70 L 250 70 M 235 60 L 225 40" />
+    <path d="M 160 120 L 110 110 M 130 115 L 115 90" />
+    <path d="M 220 120 L 270 110 M 250 115 L 265 90" />
+  </g>
+
+  <path d="M 190 140 L 190 380" fill="none" stroke="#6bbbff" stroke-width="8" stroke-linecap="round" />
+
+  <g stroke="#6bbbff" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M 190 370 L 140 430 M 165 400 L 155 435" />
+    <path d="M 190 370 L 190 440 M 190 410 L 210 440 M 190 410 L 170 440" />
+    <path d="M 190 370 L 240 430 M 215 400 L 225 435" />
+  </g>
+  <g fill="#0de4a0">
+    <circle cx="140" cy="430" r="4" />
+    <circle cx="155" cy="435" r="4" />
+    <circle cx="170" cy="440" r="4" />
+    <circle cx="190" cy="440" r="4" />
+    <circle cx="210" cy="440" r="4" />
+    <circle cx="225" cy="435" r="4" />
+    <circle cx="240" cy="430" r="4" />
+  </g>
+
+  <g fill="#0d1117" stroke="#e6edf3" stroke-width="2">
+    <rect x="180" y="160" width="20" height="40" rx="8" />
+    <rect x="180" y="210" width="20" height="40" rx="8" />
+    <rect x="180" y="260" width="20" height="40" rx="8" />
+    <rect x="180" y="310" width="20" height="40" rx="8" />
+  </g>
+
+  <circle cx="190" cy="120" r="32" fill="#0d1117" stroke="#0de4a0" stroke-width="3" />
+  <circle cx="190" cy="120" r="12" fill="#ef4444" />
+  <circle cx="190" cy="120" r="6" fill="#f0a030" class="pulse-core" />
+
+  <g fill="#f0a030">
+    <circle r="4" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0s" repeatCount="indefinite" />
+      <animateMotion dur="2s" begin="0s" repeatCount="indefinite"><mpath href="#sig-left" xlink:href="#sig-left"/></animateMotion>
+    </circle>
+    <circle r="4" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0.6s" repeatCount="indefinite" />
+      <animateMotion dur="2s" begin="0.6s" repeatCount="indefinite"><mpath href="#sig-right" xlink:href="#sig-right"/></animateMotion>
+    </circle>
+    <circle r="4" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1.2s" repeatCount="indefinite" />
+      <animateMotion dur="2s" begin="1.2s" repeatCount="indefinite"><mpath href="#sig-mid" xlink:href="#sig-mid"/></animateMotion>
+    </circle>
+  </g>
+
+  <text x="110" y="60" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">ডেনড্রাইট</text>
+  <text x="110" y="72" text-anchor="end" fill="#0de4a0" font-size="10">(Dendrite)</text>
+  <path d="M 115 65 L 140 70" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="270" y="115" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">কোষদেহ</text>
+  <text x="270" y="127" text-anchor="start" fill="#0de4a0" font-size="10">(Cell Body)</text>
+  <path d="M 265 120 L 225 120" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="270" y="160" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">নিউক্লিয়াস</text>
+  <text x="270" y="172" text-anchor="start" fill="#ef4444" font-size="10">(Nucleus)</text>
+  <path d="M 265 165 L 205 125" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="110" y="200" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">অ্যাক্সন</text>
+  <text x="110" y="212" text-anchor="end" fill="#6bbbff" font-size="10">(Axon)</text>
+  <path d="M 115 205 L 175 205" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="270" y="260" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">মায়েলিন সিথ</text>
+  <text x="270" y="272" text-anchor="start" fill="#e6edf3" font-size="10" opacity="0.8">(Myelin Sheath)</text>
+  <path d="M 265 265 L 205 275" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="110" y="300" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">র‍্যানভিয়ার পর্ব</text>
+  <text x="110" y="312" text-anchor="end" fill="#6bbbff" font-size="10">(Node of Ranvier)</text>
+  <path d="M 115 305 L 180 305" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+
+  <text x="270" y="415" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">অ্যাক্সন প্রান্ত</text>
+  <text x="270" y="427" text-anchor="start" fill="#0de4a0" font-size="10">(Axon Terminal)</text>
+  <path d="M 265 420 L 235 430" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6" marker-end="url(#arrow)" />
+</svg>

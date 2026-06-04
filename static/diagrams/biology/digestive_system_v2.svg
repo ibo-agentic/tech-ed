@@ -1,0 +1,50 @@
+<svg viewBox="0 0 420 380" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <marker id="dgArr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f0a030"/></marker>
+  </defs>
+  <style>
+    svg * { transform-box:fill-box; transform-origin:center; }
+    .dg-stom { animation:dgChurn 2.4s ease-in-out infinite; }
+    @keyframes dgChurn { 0%,100%{transform:scale(1) rotate(0deg);} 50%{transform:scale(1.05) rotate(-2deg);} }
+    .dg-t { fill:#0de4a0; font-size:15px; font-weight:bold; }
+    .dg-lbl { font-size:11px; font-weight:bold; fill:#e6edf3; }
+    .dg-sub { font-size:8.5px; fill:#8b949e; }
+  </style>
+
+  <text class="dg-t" x="210" y="28" text-anchor="middle">পরিপাকতন্ত্র (Digestive System)</text>
+
+  <path id="dgPath" d="M150,70 C150,90 150,100 150,118 C150,150 150,165 175,180 C215,200 230,215 230,240 C230,270 205,280 175,288 C150,295 140,310 150,330 C158,345 190,348 215,345" fill="none" stroke="#f0a030" stroke-width="2.5" opacity=".45" marker-end="url(#dgArr)" stroke-dasharray="6,4"/>
+
+  <ellipse cx="150" cy="64" rx="30" ry="16" fill="rgba(13,228,160,.12)" stroke="#0de4a0" stroke-width="1.8"/>
+  <text class="dg-lbl" x="150" y="60" text-anchor="middle">মুখগহ্বর</text>
+  <text class="dg-sub" x="150" y="73" text-anchor="middle">চর্বণ + লালা</text>
+
+  <rect x="142" y="82" width="16" height="40" rx="8" fill="rgba(107,187,255,.12)" stroke="#6bbbff" stroke-width="1.5"/>
+  <text class="dg-lbl" x="232" y="100" fill="#6bbbff">অন্ননালি</text>
+  <text class="dg-sub" x="232" y="113">(খাদ্য নিচে যায়)</text>
+
+  <path class="dg-stom" d="M150,128 C185,126 200,150 195,178 C190,205 160,210 140,196 C150,185 138,170 140,150 C142,135 145,128 150,128 Z" fill="rgba(224,80,80,.18)" stroke="#e05555" stroke-width="2"/>
+  <text class="dg-lbl" x="250" y="160" fill="#e05555" text-anchor="start">পাকস্থলী</text>
+  <text class="dg-sub" x="250" y="173" text-anchor="start">অ্যাসিড + এনজাইম</text>
+  <text class="dg-sub" x="250" y="184" text-anchor="start">খাদ্য মন্থন</text>
+
+  <path d="M185,225 C235,225 235,250 200,252 C235,254 235,275 195,278" fill="none" stroke="#0de4a0" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+  <text class="dg-lbl" x="252" y="248" fill="#0de4a0" text-anchor="start">ক্ষুদ্রান্ত্র</text>
+  <text class="dg-sub" x="252" y="261" text-anchor="start">পুষ্টি শোষণ</text>
+  <text class="dg-sub" x="252" y="272" text-anchor="start">(absorption)</text>
+
+  <path d="M150,308 C120,308 118,345 155,345 L210,345" fill="none" stroke="#f0a030" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+  <text class="dg-lbl" x="250" y="330" fill="#f0a030" text-anchor="start">বৃহদন্ত্র</text>
+  <text class="dg-sub" x="250" y="343" text-anchor="start">পানি শোষণ</text>
+  <text class="dg-sub" x="250" y="354" text-anchor="start">বর্জ্য নিষ্কাশন</text>
+
+  <circle r="5" fill="#f0a030">
+    <animateMotion dur="5s" repeatCount="indefinite"><mpath href="#dgPath" xlink:href="#dgPath"/></animateMotion>
+  </circle>
+  <circle r="4" fill="#f6b86a" opacity=".75">
+    <animateMotion dur="5s" begin="1.6s" repeatCount="indefinite"><mpath href="#dgPath" xlink:href="#dgPath"/></animateMotion>
+  </circle>
+  <circle r="4" fill="#f6b86a" opacity=".55">
+    <animateMotion dur="5s" begin="3.2s" repeatCount="indefinite"><mpath href="#dgPath" xlink:href="#dgPath"/></animateMotion>
+  </circle>
+</svg>

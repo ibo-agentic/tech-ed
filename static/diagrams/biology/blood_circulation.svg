@@ -1,0 +1,128 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+
+      .heartbeat { animation: beat 1s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+      .breathe { animation: breathe 3s infinite alternate ease-in-out; }
+
+      @keyframes beat {
+        0%, 100% { transform: scale(1); }
+        15% { transform: scale(1.08); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.08); }
+      }
+
+      @keyframes breathe {
+        0% { transform: scale(0.97); }
+        100% { transform: scale(1.03); }
+      }
+    </style>
+
+    <path id="p-body-heart" d="M 170 340 C 90 340, 90 260, 170 260" fill="none" stroke="none" />
+    <path id="p-heart-lung" d="M 170 220 C 90 220, 90 140, 170 140" fill="none" stroke="none" />
+    <path id="p-lung-heart" d="M 210 140 C 290 140, 290 220, 210 220" fill="none" stroke="none" />
+    <path id="p-heart-body" d="M 210 260 C 290 260, 290 340, 210 340" fill="none" stroke="none" />
+
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#6bbbff" />
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+  </defs>
+
+  <text x="190" y="35" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">রক্ত সংবহন (Blood Circulation)</text>
+
+  <path d="M 170 340 C 90 340, 90 260, 170 260" fill="none" stroke="#6bbbff" stroke-width="6" opacity="0.2" marker-end="url(#arrow-blue)"/>
+  <path d="M 170 220 C 90 220, 90 140, 170 140" fill="none" stroke="#6bbbff" stroke-width="6" opacity="0.2" marker-end="url(#arrow-blue)"/>
+
+  <path d="M 210 140 C 290 140, 290 220, 210 220" fill="none" stroke="#ef4444" stroke-width="6" opacity="0.2" marker-end="url(#arrow-red)"/>
+  <path d="M 210 260 C 290 260, 290 340, 210 340" fill="none" stroke="#ef4444" stroke-width="6" opacity="0.2" marker-end="url(#arrow-red)"/>
+
+  <text x="80" y="240" text-anchor="middle" fill="#6bbbff" font-size="11" font-weight="bold">CO₂ যুক্ত রক্ত</text>
+  <text x="80" y="255" text-anchor="middle" fill="#6bbbff" font-size="10">(Deoxygenated)</text>
+
+  <text x="300" y="240" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="bold">O₂ যুক্ত রক্ত</text>
+  <text x="300" y="255" text-anchor="middle" fill="#ef4444" font-size="10">(Oxygenated)</text>
+
+  <g>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0s" repeatCount="indefinite"><mpath href="#p-body-heart" xlink:href="#p-body-heart"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.5s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.5s" repeatCount="indefinite"><mpath href="#p-body-heart" xlink:href="#p-body-heart"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="1s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="1s" repeatCount="indefinite"><mpath href="#p-body-heart" xlink:href="#p-body-heart"/></animateMotion>
+    </circle>
+  </g>
+
+  <g>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.2s" repeatCount="indefinite"><mpath href="#p-heart-lung" xlink:href="#p-heart-lung"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.7s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.7s" repeatCount="indefinite"><mpath href="#p-heart-lung" xlink:href="#p-heart-lung"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#6bbbff" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="1.2s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#p-heart-lung" xlink:href="#p-heart-lung"/></animateMotion>
+    </circle>
+  </g>
+
+  <g>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0s" repeatCount="indefinite"><mpath href="#p-lung-heart" xlink:href="#p-lung-heart"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.5s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.5s" repeatCount="indefinite"><mpath href="#p-lung-heart" xlink:href="#p-lung-heart"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="1s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="1s" repeatCount="indefinite"><mpath href="#p-lung-heart" xlink:href="#p-lung-heart"/></animateMotion>
+    </circle>
+  </g>
+
+  <g>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.2s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.2s" repeatCount="indefinite"><mpath href="#p-heart-body" xlink:href="#p-heart-body"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="0.7s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="0.7s" repeatCount="indefinite"><mpath href="#p-heart-body" xlink:href="#p-heart-body"/></animateMotion>
+    </circle>
+    <circle r="4" fill="#ef4444" opacity="0">
+      <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.5s" begin="1.2s" repeatCount="indefinite" />
+      <animateMotion dur="1.5s" begin="1.2s" repeatCount="indefinite"><mpath href="#p-heart-body" xlink:href="#p-heart-body"/></animateMotion>
+    </circle>
+  </g>
+
+  <g class="breathe">
+    <path d="M 188 95 C 130 75, 120 145, 175 140 Z" fill="#0d1117" stroke="#0de4a0" stroke-width="2.5" />
+    <path d="M 192 95 C 250 75, 260 145, 205 140 Z" fill="#0d1117" stroke="#0de4a0" stroke-width="2.5" />
+    <path d="M 190 60 L 190 90 M 190 90 L 175 110 M 190 90 L 205 110" fill="none" stroke="#f0a030" stroke-width="2" stroke-linecap="round" />
+  </g>
+  <text x="190" y="80" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">ফুসফুস (Lungs)</text>
+
+  <g>
+    <rect x="130" y="340" width="120" height="50" rx="20" fill="#0d1117" stroke="#0de4a0" stroke-width="2.5" />
+    <path d="M 150 365 C 160 350, 180 380, 190 365 C 200 350, 220 380, 230 365" fill="none" stroke="#f0a030" stroke-width="2" opacity="0.6"/>
+  </g>
+  <text x="190" y="410" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">দেহ (Body / Systemic)</text>
+
+  <g class="heartbeat">
+    <path d="M 190 220 C 190 205 165 205 165 235 C 165 265 190 285 190 285 C 190 285 215 265 215 235 C 215 205 190 205 190 220 Z" fill="#ef4444" fill-opacity="0.15" stroke="#ef4444" stroke-width="3" />
+    <path d="M 190 212 L 190 285" stroke="#ef4444" stroke-width="2" opacity="0.7"/>
+    <path d="M 166 240 L 214 240" stroke="#ef4444" stroke-width="2" opacity="0.7"/>
+  </g>
+  <text x="190" y="305" text-anchor="middle" fill="#e6edf3" font-size="12" font-weight="bold">হৃৎপিণ্ড (Heart)</text>
+</svg>

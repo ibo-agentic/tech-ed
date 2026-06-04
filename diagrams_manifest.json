@@ -1,0 +1,185 @@
+{
+  "respiration": {
+    "subject": "biology",
+    "chapter": 4,
+    "files": [
+      "static/diagrams/biology/respiration.svg",
+      "static/diagrams/biology/respiration_v2.svg"
+    ],
+    "aliases": [
+      "শ্বসন",
+      "respiration",
+      "মাইটোকন্ড্রিয়া",
+      "mitochondria",
+      "শ্বাসক্রিয়া",
+      "cellular respiration",
+      "শ্বসন প্রক্রিয়া",
+      "ATP",
+      "শক্তি উৎপাদন",
+      "গ্লুকোজ ভাঙা",
+      "energy production",
+      "glucose oxidation",
+      "গ্লুকোজ",
+      "glucose",
+      "শক্তি"
+    ]
+  },
+  "blood_circulation": {
+    "subject": "biology",
+    "chapter": 6,
+    "files": [
+      "static/diagrams/biology/blood_circulation.svg"
+    ],
+    "aliases": [
+      "রক্ত সংবহন",
+      "blood circulation",
+      "রক্ত সঞ্চালন",
+      "হৃৎপিণ্ড",
+      "heart",
+      "ফুসফুস",
+      "lungs",
+      "ধমনী",
+      "শিরা",
+      "artery",
+      "vein",
+      "pulmonary circulation",
+      "systemic circulation",
+      "রক্ত প্রবাহ",
+      "blood flow"
+    ]
+  },
+  "digestive_system": {
+    "subject": "biology",
+    "chapter": 5,
+    "files": [
+      "static/diagrams/biology/digestive_system.svg",
+      "static/diagrams/biology/digestive_system_v2.svg"
+    ],
+    "aliases": [
+      "পরিপাকতন্ত্র",
+      "digestive system",
+      "পরিপাক",
+      "digestion",
+      "পাকস্থলী",
+      "stomach",
+      "ক্ষুদ্রান্ত্র",
+      "small intestine",
+      "বৃহদন্ত্র",
+      "large intestine",
+      "অন্ত্র",
+      "intestine",
+      "যকৃৎ",
+      "liver",
+      "অন্ননালী",
+      "esophagus",
+      "খাদ্য পরিপাক",
+      "food digestion"
+    ]
+  },
+  "nephron": {
+    "subject": "biology",
+    "chapter": 8,
+    "files": [
+      "static/diagrams/biology/nephron.svg"
+    ],
+    "aliases": [
+      "নেফ্রন",
+      "nephron",
+      "বৃক্ক",
+      "kidney",
+      "পরিস্রাবণ",
+      "filtration",
+      "গ্লোমেরুলাস",
+      "glomerulus",
+      "বোম্যান্স ক্যাপসুল",
+      "bowman's capsule",
+      "bowman capsule",
+      "মূত্র তৈরি",
+      "urine formation",
+      "রেচন",
+      "excretion",
+      "হেনলির লুপ",
+      "loop of henle",
+      "সংগ্রাহক নালিকা",
+      "collecting duct"
+    ]
+  },
+  "reflex_action": {
+    "subject": "biology",
+    "chapter": 10,
+    "files": [
+      "static/diagrams/biology/reflex_action.svg"
+    ],
+    "aliases": [
+      "প্রতিবর্তী ক্রিয়া",
+      "reflex action",
+      "reflex arc",
+      "রিফ্লেক্স",
+      "সংবেদী স্নায়ু",
+      "sensory nerve",
+      "আজ্ঞাবাহী স্নায়ু",
+      "motor nerve",
+      "সুষুম্নাকাণ্ড",
+      "spinal cord",
+      "ইন্টারনিউরন",
+      "interneuron",
+      "গ্রাহক অঙ্গ",
+      "receptor",
+      "effector",
+      "উদ্দীপনা ও সাড়া",
+      "stimulus response"
+    ]
+  },
+  "neuron": {
+    "subject": "biology",
+    "chapter": 10,
+    "files": [
+      "static/diagrams/biology/neuron.svg",
+      "static/diagrams/biology/neuron_v2.svg"
+    ],
+    "aliases": [
+      "নিউরন",
+      "neuron",
+      "স্নায়ুকোষ",
+      "nerve cell",
+      "ডেনড্রাইট",
+      "dendrite",
+      "অ্যাক্সন",
+      "axon",
+      "মায়েলিন",
+      "myelin",
+      "স্নায়ুতন্ত্র",
+      "nervous system",
+      "কোষদেহ",
+      "cell body",
+      "সিন্যাপস",
+      "synapse",
+      "র্যানভিয়ার",
+      "node of ranvier",
+      "উদ্দীপনা",
+      "nerve impulse"
+    ]
+  },
+  "respiratory_system": {
+    "subject": "biology",
+    "chapter": 7,
+    "files": [
+      "static/diagrams/biology/respiratory_system.svg"
+    ],
+    "aliases": [
+      "শ্বাসতন্ত্র",
+      "respiratory system",
+      "অ্যালভিওলাস",
+      "alveoli",
+      "alveolus",
+      "শ্বাসনালী",
+      "trachea",
+      "গ্যাস বিনিময়",
+      "gas exchange",
+      "শ্বাস প্রশ্বাস",
+      "breathing",
+      "কৈশিক জালিকা",
+      "capillary"
+    ]
+  }
+}

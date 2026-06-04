@@ -1,0 +1,59 @@
+<svg viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <marker id="nrArr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#0de4a0"/></marker>
+    <radialGradient id="nrSoma" cx="42%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#8fd0ff"/>
+      <stop offset="100%" stop-color="#2b6da3"/>
+    </radialGradient>
+  </defs>
+  <style>
+    svg * { transform-box:fill-box; transform-origin:center; }
+    .nr-soma { animation:nrPulse 2s ease-in-out infinite; }
+    @keyframes nrPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+    .nr-t { fill:#0de4a0; font-size:15px; font-weight:bold; }
+    .nr-lbl { font-size:11px; font-weight:bold; fill:#e6edf3; }
+    .nr-sub { font-size:8.5px; fill:#8b949e; }
+  </style>
+
+  <text class="nr-t" x="240" y="28" text-anchor="middle">নিউরন (Neuron)</text>
+
+  <path id="nrPath" d="M40,80 C70,95 90,108 112,118 C118,135 118,135 140,138 C200,142 280,142 350,142 C390,142 415,150 432,165" fill="none" stroke="#0de4a0" stroke-width="2" opacity=".4"/>
+
+  <line x1="40" y1="78" x2="108" y2="120" stroke="#6bbbff" stroke-width="2.5"/>
+  <line x1="42" y1="110" x2="108" y2="128" stroke="#6bbbff" stroke-width="2.5"/>
+  <line x1="40" y1="145" x2="108" y2="135" stroke="#6bbbff" stroke-width="2.5"/>
+  <line x1="55" y1="170" x2="110" y2="142" stroke="#6bbbff" stroke-width="2.5"/>
+  <text class="nr-lbl" x="48" y="200" fill="#6bbbff" text-anchor="middle">ডেনড্রাইট</text>
+  <text class="nr-sub" x="48" y="213" text-anchor="middle">(সংকেত গ্রহণ)</text>
+
+  <circle class="nr-soma" cx="130" cy="130" r="24" fill="url(#nrSoma)" stroke="#6bbbff" stroke-width="2"/>
+  <circle cx="130" cy="130" r="9" fill="#1a4566"/>
+  <text class="nr-lbl" x="130" y="95" text-anchor="middle">কোষদেহ</text>
+  <text class="nr-sub" x="130" y="180" text-anchor="middle">(নিউক্লিয়াসসহ)</text>
+
+  <line x1="154" y1="138" x2="350" y2="142" stroke="#0de4a0" stroke-width="4" opacity=".7"/>
+  <ellipse cx="200" cy="140" rx="16" ry="9" fill="rgba(240,160,48,.18)" stroke="#f0a030" stroke-width="1.4"/>
+  <ellipse cx="250" cy="141" rx="16" ry="9" fill="rgba(240,160,48,.18)" stroke="#f0a030" stroke-width="1.4"/>
+  <ellipse cx="300" cy="142" rx="16" ry="9" fill="rgba(240,160,48,.18)" stroke="#f0a030" stroke-width="1.4"/>
+  <text class="nr-lbl" x="252" y="172" text-anchor="middle" fill="#0de4a0">অ্যাক্সন</text>
+  <text class="nr-sub" x="252" y="185" text-anchor="middle">(সংকেত পরিবহন)</text>
+  <text class="nr-sub" x="250" y="120" text-anchor="middle" fill="#f0a030">মায়েলিন আবরণ</text>
+
+  <line x1="350" y1="142" x2="430" y2="115" stroke="#0de4a0" stroke-width="2.5"/>
+  <line x1="350" y1="142" x2="435" y2="142" stroke="#0de4a0" stroke-width="2.5"/>
+  <line x1="350" y1="142" x2="430" y2="168" stroke="#0de4a0" stroke-width="2.5"/>
+  <circle cx="432" cy="113" r="4" fill="#0de4a0"/>
+  <circle cx="438" cy="142" r="4" fill="#0de4a0"/>
+  <circle cx="432" cy="170" r="4" fill="#0de4a0"/>
+  <text class="nr-lbl" x="415" y="205" text-anchor="middle" fill="#0de4a0">প্রান্তবিন্দু</text>
+  <text class="nr-sub" x="415" y="218" text-anchor="middle">(সংকেত প্রেরণ)</text>
+
+  <text class="nr-sub" x="240" y="258" text-anchor="middle" fill="#f0a030">সংকেত একমুখী: ডেনড্রাইট → কোষদেহ → অ্যাক্সন → প্রান্ত</text>
+
+  <circle r="6" fill="#0de4a0">
+    <animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#nrPath" xlink:href="#nrPath"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#0de4a0" opacity=".6">
+    <animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite"><mpath href="#nrPath" xlink:href="#nrPath"/></animateMotion>
+  </circle>
+</svg>

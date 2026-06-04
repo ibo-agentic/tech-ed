@@ -1,0 +1,90 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+      .stomach-pulse { animation: pulse 3s infinite alternate ease-in-out; }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        100% { transform: scale(1.04); }
+      }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f0a030" />
+    </marker>
+
+    <path id="food-path" d="M 190 50 L 190 120 C 220 130, 230 160, 170 180 C 140 190, 140 220, 170 220 C 200 220, 200 250, 170 250 C 140 250, 140 280, 170 280 C 200 280, 200 310, 170 310 C 140 310, 130 320, 130 345 L 130 185 L 250 185 L 250 340 C 250 370, 190 380, 190 410" fill="none" stroke="none" />
+  </defs>
+
+  <text x="190" y="25" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">পরিপাকতন্ত্র (Digestive System)</text>
+
+  <circle cx="125" cy="45" r="4" fill="#f0a030" />
+  <text x="135" y="49" fill="#f0a030" font-size="11">খাদ্য কণা (Food Particle)</text>
+
+  <g stroke-linejoin="round">
+    <path d="M 130 345 L 130 185 L 250 185 L 250 340 C 250 370, 190 380, 190 410" fill="none" stroke="#6bbbff" stroke-width="24" />
+    <path d="M 130 345 L 130 185 L 250 185 L 250 340 C 250 370, 190 380, 190 410" fill="none" stroke="#0d1117" stroke-width="18" />
+    <path d="M 130 345 L 130 185 L 250 185 L 250 340 C 250 370, 190 380, 190 410" fill="none" stroke="#6bbbff" stroke-width="18" stroke-dasharray="2 12" opacity="0.6" />
+  </g>
+
+  <path d="M 125 110 C 160 105, 195 115, 195 140 C 195 145, 170 155, 140 160 C 120 165, 110 140, 125 110 Z" fill="#0d1117" stroke="#6bbbff" stroke-width="2.5" />
+  <path d="M 140 160 C 150 145, 180 140, 195 140" fill="none" stroke="#6bbbff" stroke-width="1.5" opacity="0.5" />
+
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 170 180 C 140 190, 140 220, 170 220 C 200 220, 200 250, 170 250 C 140 250, 140 280, 170 280 C 200 280, 200 310, 170 310 C 140 310, 130 320, 130 345" fill="none" stroke="#0de4a0" stroke-width="14" />
+    <path d="M 170 180 C 140 190, 140 220, 170 220 C 200 220, 200 250, 170 250 C 140 250, 140 280, 170 280 C 200 280, 200 310, 170 310 C 140 310, 130 320, 130 345" fill="none" stroke="#0d1117" stroke-width="10" />
+  </g>
+
+  <path d="M 190 45 L 190 120" fill="none" stroke="#0de4a0" stroke-width="14" />
+  <path d="M 190 45 L 190 120" fill="none" stroke="#0d1117" stroke-width="10" />
+
+  <path class="stomach-pulse" d="M 183 115 C 240 115, 250 170, 200 190 C 160 200, 140 175, 150 145 C 160 125, 183 115, 183 115 Z" fill="#0d1117" stroke="#ef4444" stroke-width="3" />
+
+  <circle r="4" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="8s" begin="0s" repeatCount="indefinite" />
+    <animateMotion dur="8s" begin="0s" repeatCount="indefinite">
+      <mpath href="#food-path" xlink:href="#food-path" />
+    </animateMotion>
+  </circle>
+
+  <circle r="4" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="8s" begin="2.66s" repeatCount="indefinite" />
+    <animateMotion dur="8s" begin="2.66s" repeatCount="indefinite">
+      <mpath href="#food-path" xlink:href="#food-path" />
+    </animateMotion>
+  </circle>
+
+  <circle r="4" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="8s" begin="5.33s" repeatCount="indefinite" />
+    <animateMotion dur="8s" begin="5.33s" repeatCount="indefinite">
+      <mpath href="#food-path" xlink:href="#food-path" />
+    </animateMotion>
+  </circle>
+
+  <text x="110" y="130" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">যকৃৎ</text>
+  <text x="110" y="142" text-anchor="end" fill="#6bbbff" font-size="10">(Liver)</text>
+  <path d="M 115 135 L 130 135" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="110" y="275" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">ক্ষুদ্রান্ত্র</text>
+  <text x="110" y="287" text-anchor="end" fill="#0de4a0" font-size="10">(Small Intestine)</text>
+  <path d="M 115 280 L 142 280" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="270" y="65" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">মুখছিদ্র</text>
+  <text x="270" y="77" text-anchor="start" fill="#0de4a0" font-size="10">(Mouth)</text>
+  <path d="M 265 70 L 202 70" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="270" y="105" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">অন্ননালী</text>
+  <text x="270" y="117" text-anchor="start" fill="#0de4a0" font-size="10">(Esophagus)</text>
+  <path d="M 265 110 L 202 110" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="270" y="150" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">পাকস্থলী</text>
+  <text x="270" y="162" text-anchor="start" fill="#ef4444" font-size="10">(Stomach)</text>
+  <path d="M 265 155 L 225 155" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="270" y="275" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">বৃহদন্ত্র</text>
+  <text x="270" y="287" text-anchor="start" fill="#6bbbff" font-size="10">(Large Intestine)</text>
+  <path d="M 265 280 L 256 280" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+
+  <text x="240" y="405" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">মলদ্বার</text>
+  <text x="240" y="417" text-anchor="start" fill="#6bbbff" font-size="10">(Anus)</text>
+  <path d="M 235 410 L 198 410" fill="none" stroke="#f0a030" stroke-width="1" marker-end="url(#arrow)" />
+</svg>

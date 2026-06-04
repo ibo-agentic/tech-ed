@@ -1,0 +1,78 @@
+<svg viewBox="0 0 510 340" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <marker id="rsArrG" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#0de4a0"/></marker>
+    <marker id="rsArrB" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#6bbbff"/></marker>
+    <marker id="rsArrO" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f0a030"/></marker>
+    <radialGradient id="rsMito" cx="42%" cy="38%" r="68%">
+      <stop offset="0%" stop-color="#f6b86a"/>
+      <stop offset="60%" stop-color="#d8762a"/>
+      <stop offset="100%" stop-color="#7a3d10"/>
+    </radialGradient>
+  </defs>
+  <style>
+    svg * { transform-box:fill-box; transform-origin:center; }
+    .rs-mito { animation:rsBreathe 3s ease-in-out infinite; }
+    @keyframes rsBreathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.04);} }
+    .rs-atp { animation:rsPulse 1.6s ease-in-out infinite; }
+    @keyframes rsPulse { 0%,100%{transform:scale(0.9);opacity:.8;} 50%{transform:scale(1.12);opacity:1;} }
+    .rs-title { fill:#0de4a0; font-size:15px; font-weight:bold; }
+    .rs-eq { fill:#0de4a0; font-size:12px; }
+    .rs-lbl { font-size:12px; font-weight:bold; }
+    .rs-sub { font-size:9px; }
+    .rs-org { fill:#f0a030; font-size:11px; font-weight:bold; }
+  </style>
+
+  <text class="rs-title" x="240" y="30" text-anchor="middle">শ্বসন প্রক্রিয়া (Respiration)</text>
+  <text class="rs-eq" x="240" y="50" text-anchor="middle">গ্লুকোজ + O₂ → CO₂ + H₂O + শক্তি (ATP)</text>
+
+  <path id="rsGlu" d="M118,120 C168,140 195,150 215,160" fill="none" stroke="#0de4a0" stroke-width="2" opacity=".55" marker-end="url(#rsArrG)"/>
+  <path id="rsO2"  d="M118,250 C168,230 195,205 215,185" fill="none" stroke="#6bbbff" stroke-width="2" opacity=".55" marker-end="url(#rsArrB)"/>
+
+  <path id="rsCO2" d="M325,150 C355,135 380,125 405,118" fill="none" stroke="#6bbbff" stroke-width="2" opacity=".55" marker-end="url(#rsArrB)"/>
+  <path id="rsATP" d="M330,178 C360,185 385,190 408,195" fill="none" stroke="#f0a030" stroke-width="2" opacity=".55" marker-end="url(#rsArrO)"/>
+  <path id="rsH2O" d="M325,205 C355,225 378,245 402,258" fill="none" stroke="#6bbbff" stroke-width="2" opacity=".55" marker-end="url(#rsArrB)"/>
+
+  <path class="rs-mito" d="M270,110 C320,108 350,140 348,172 C346,210 312,236 268,232 C228,229 210,206 214,180 C218,158 202,150 206,128 C210,110 240,112 270,110 Z" fill="url(#rsMito)" stroke="#e0902f" stroke-width="2"/>
+  <path d="M232,140 C252,150 244,170 266,176" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M250,200 C272,194 268,176 296,182" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M300,150 C312,162 300,184 318,190" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2.5" stroke-linecap="round"/>
+  <text class="rs-org" x="278" y="262" text-anchor="middle">মাইটোকন্ড্রিয়া (mitochondria)</text>
+  <text x="278" y="276" text-anchor="middle" fill="#e6edf3" class="rs-sub">শক্তি উৎপাদনের কেন্দ্র</text>
+
+  <text class="rs-lbl" x="20" y="108" fill="#0de4a0">গ্লুকোজ</text>
+  <text class="rs-sub" x="20" y="122" fill="#e6edf3">(glucose) C₆H₁₂O₆</text>
+  <text class="rs-lbl" x="20" y="248" fill="#6bbbff">অক্সিজেন</text>
+  <text class="rs-sub" x="20" y="262" fill="#e6edf3">(oxygen) O₂</text>
+
+  <text class="rs-lbl" x="412" y="116" fill="#6bbbff">CO₂</text>
+  <text class="rs-sub" x="412" y="129" fill="#e6edf3">কার্বন ডাইঅক্সাইড</text>
+  <text class="rs-lbl" x="412" y="194" fill="#f0a030">শক্তি</text><text class="rs-sub" x="412" y="207" fill="#e6edf3">(ATP)</text>
+  <text class="rs-lbl" x="408" y="258" fill="#6bbbff">H₂O</text>
+  <text class="rs-sub" x="408" y="271" fill="#e6edf3">পানি</text>
+
+  <circle class="rs-atp" cx="278" cy="170" r="13" fill="rgba(240,160,48,.5)" stroke="#f0a030" stroke-width="1.5"/>
+  <text x="278" y="174" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">ATP</text>
+
+  <circle r="5" fill="#0de4a0">
+    <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#rsGlu" xlink:href="#rsGlu"/></animateMotion>
+  </circle>
+  <circle r="4" fill="#0de4a0" opacity=".7">
+    <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#rsGlu" xlink:href="#rsGlu"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#6bbbff">
+    <animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#rsO2" xlink:href="#rsO2"/></animateMotion>
+  </circle>
+  <circle r="4" fill="#6bbbff" opacity=".7">
+    <animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#rsO2" xlink:href="#rsO2"/></animateMotion>
+  </circle>
+
+  <circle r="5" fill="#6bbbff">
+    <animateMotion dur="2.2s" begin="0.8s" repeatCount="indefinite"><mpath href="#rsCO2" xlink:href="#rsCO2"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#f0a030">
+    <animateMotion dur="2.2s" begin="0.8s" repeatCount="indefinite"><mpath href="#rsATP" xlink:href="#rsATP"/></animateMotion>
+  </circle>
+  <circle r="5" fill="#6bbbff">
+    <animateMotion dur="2.2s" begin="1.4s" repeatCount="indefinite"><mpath href="#rsH2O" xlink:href="#rsH2O"/></animateMotion>
+  </circle>
+</svg>

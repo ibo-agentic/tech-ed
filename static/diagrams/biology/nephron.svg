@@ -1,0 +1,108 @@
+<svg viewBox="0 0 380 480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width:380px;background:#0d1117;border-radius:12px;font-family:'Noto Sans Bengali',sans-serif;">
+  <defs>
+    <style>
+      svg * { transform-box:fill-box; transform-origin:center; }
+    </style>
+
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f0a030" />
+    </marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#6bbbff" />
+    </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#ef4444" />
+    </marker>
+
+    <path id="p-filtrate" d="M 95 140 C 130 140, 130 180, 140 210 L 140 360 C 140 400, 180 400, 180 360 L 180 210 C 180 160, 230 150, 260 180 L 300 180 L 300 440" fill="none" stroke="none" />
+    <path id="p-blood" d="M 15 130 L 65 130 C 75 120, 90 125, 80 135 C 95 140, 85 155, 75 145 C 70 155, 60 150, 65 150 L 15 150" fill="none" stroke="none" />
+  </defs>
+
+  <text x="190" y="25" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="bold">নেফ্রন (Nephron)</text>
+  <text x="190" y="42" text-anchor="middle" fill="#0de4a0" font-size="11">রক্ত পরিস্রাবণ ও মূত্র তৈরি</text>
+
+  <g stroke="#0de4a0" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 70 120 C 120 120, 120 160, 70 160" />
+    <path d="M 95 140 C 130 140, 130 180, 140 210 L 140 360 C 140 400, 180 400, 180 360 L 180 210 C 180 160, 230 150, 260 180 L 300 180" />
+    <path d="M 300 90 L 300 440" />
+    <path d="M 270 115 L 300 130" />
+    <path d="M 330 250 L 300 265" />
+    <path d="M 270 350 L 300 365" />
+  </g>
+
+  <g stroke="#0d1117" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 70 120 C 120 120, 120 160, 70 160" />
+    <path d="M 95 140 C 130 140, 130 180, 140 210 L 140 360 C 140 400, 180 400, 180 360 L 180 210 C 180 160, 230 150, 260 180 L 300 180" />
+    <path d="M 300 90 L 300 440" />
+    <path d="M 270 115 L 300 130" />
+    <path d="M 330 250 L 300 265" />
+    <path d="M 270 350 L 300 365" />
+  </g>
+
+  <path d="M 15 130 L 65 130 C 75 120, 90 125, 80 135 C 95 140, 85 155, 75 145 C 70 155, 60 150, 65 150 L 15 150" fill="none" stroke="#ef4444" stroke-width="3" stroke-linejoin="round" />
+
+  <path d="M 25 130 L 40 130" fill="none" stroke="#ef4444" stroke-width="1" marker-end="url(#arrow-red)" />
+  <path d="M 40 150 L 25 150" fill="none" stroke="#ef4444" stroke-width="1" marker-end="url(#arrow-red)" />
+
+  <circle r="2.5" fill="#ef4444" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="0s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="0s" repeatCount="indefinite"><mpath href="#p-blood" xlink:href="#p-blood"/></animateMotion>
+  </circle>
+  <circle r="2.5" fill="#ef4444" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2s" begin="1s" repeatCount="indefinite" />
+    <animateMotion dur="2s" begin="1s" repeatCount="indefinite"><mpath href="#p-blood" xlink:href="#p-blood"/></animateMotion>
+  </circle>
+
+  <circle r="3.5" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="6s" begin="0s" repeatCount="indefinite" />
+    <animateMotion dur="6s" begin="0s" repeatCount="indefinite"><mpath href="#p-filtrate" xlink:href="#p-filtrate"/></animateMotion>
+  </circle>
+  <circle r="3.5" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="6s" begin="1.5s" repeatCount="indefinite" />
+    <animateMotion dur="6s" begin="1.5s" repeatCount="indefinite"><mpath href="#p-filtrate" xlink:href="#p-filtrate"/></animateMotion>
+  </circle>
+  <circle r="3.5" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="6s" begin="3s" repeatCount="indefinite" />
+    <animateMotion dur="6s" begin="3s" repeatCount="indefinite"><mpath href="#p-filtrate" xlink:href="#p-filtrate"/></animateMotion>
+  </circle>
+  <circle r="3.5" fill="#f0a030" opacity="0">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="6s" begin="4.5s" repeatCount="indefinite" />
+    <animateMotion dur="6s" begin="4.5s" repeatCount="indefinite"><mpath href="#p-filtrate" xlink:href="#p-filtrate"/></animateMotion>
+  </circle>
+
+  <path d="M 132 290 L 105 290" fill="none" stroke="#6bbbff" stroke-width="1.5" marker-end="url(#arrow-blue)" />
+  <text x="100" y="294" text-anchor="end" fill="#6bbbff" font-size="11" font-weight="bold">H₂O</text>
+
+  <path d="M 188 320 L 215 320" fill="none" stroke="#e6edf3" stroke-width="1.5" marker-end="url(#arrow-amber)" />
+  <text x="220" y="324" text-anchor="start" fill="#e6edf3" font-size="11" font-weight="bold">NaCl</text>
+
+  <path d="M 85 125 L 85 85" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="85" y="75" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">গ্লোমেরুলাস</text>
+  <text x="85" y="87" text-anchor="middle" fill="#ef4444" font-size="9">(Glomerulus)</text>
+
+  <path d="M 70 165 L 70 215" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="70" y="230" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">বোম্যান্স ক্যাপসুল</text>
+  <text x="70" y="242" text-anchor="middle" fill="#0de4a0" font-size="9">(Bowman's Capsule)</text>
+
+  <text x="15" y="117" fill="#e6edf3" font-size="9">অ্যাফারেন্ট ধমনিকা (In)</text>
+  <text x="15" y="167" fill="#e6edf3" font-size="9">ইফারেন্ট ধমনিকা (Out)</text>
+
+  <path d="M 140 180 L 160 100" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="175" y="80" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">নিকটবর্তী প্যাঁচানো নালিকা</text>
+  <text x="175" y="92" text-anchor="middle" fill="#0de4a0" font-size="9">(PCT)</text>
+
+  <path d="M 235 170 L 255 120" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="270" y="95" text-anchor="middle" fill="#e6edf3" font-size="11" font-weight="bold">প্রান্তীয় প্যাঁচানো নালিকা</text>
+  <text x="270" y="107" text-anchor="middle" fill="#0de4a0" font-size="9">(DCT)</text>
+
+  <path d="M 160 400 L 100 400" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="95" y="396" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">হেনলির লুপ</text>
+  <text x="95" y="408" text-anchor="end" fill="#0de4a0" font-size="9">(Loop of Henle)</text>
+
+  <path d="M 292 230 L 235 230" fill="none" stroke="#f0a030" stroke-width="1" opacity="0.6"/>
+  <text x="230" y="226" text-anchor="end" fill="#e6edf3" font-size="11" font-weight="bold">সংগ্রাহক নালিকা</text>
+  <text x="230" y="238" text-anchor="end" fill="#0de4a0" font-size="9">(Collecting Duct)</text>
+
+  <path d="M 300 445 L 300 460" fill="none" stroke="#f0a030" stroke-width="2" marker-end="url(#arrow-amber)" />
+  <text x="290" y="458" text-anchor="end" fill="#f0a030" font-size="11" font-weight="bold">মূত্র (Urine)</text>
+</svg>
