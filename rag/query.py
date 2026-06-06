@@ -4,10 +4,11 @@ from chapters import SUBJECT_STREAM as _KNOWN_SUBJECTS
 
 load_dotenv()
 
-# Tuned for text-embedding-3-small + Bangla queries.
-# Real subject questions score ~1.0-1.25, casual chat scores 1.4+.
-# 1.25 captures borderline cases like "রক্ত সঞ্চালন" (1.218) while keeping casual out.
-RELEVANCE_THRESHOLD = 1.25
+# Tuned for text-embedding-3-small.
+# Bengali queries: real subject ~1.0-1.25, casual 1.4+.
+# English queries vs Bengali embeddings score ~1.4-1.55 even for on-topic questions.
+# 1.45 keeps Bengali casual out while letting English subject questions through.
+RELEVANCE_THRESHOLD = 1.45
 
 _vectorstore = None
 _chroma_unavailable = False

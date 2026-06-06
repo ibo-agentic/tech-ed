@@ -237,7 +237,7 @@ def auto_title_image(chat_id, subject: str, answer: str):
         pass
 
 
-def background_save(chat_id, messages, user_message, user_id):
+def background_save(chat_id, messages, user_message, user_id, subject="", chapters_found=None):
     try:
         save_messages(chat_id, messages)
         auto_title(chat_id, user_message)
@@ -250,6 +250,16 @@ def background_save(chat_id, messages, user_message, user_id):
         if user_id and len(messages) % 10 == 0:
             from memory import update_student_profile
             update_student_profile(user_id, messages)
+        if user_id and subject and chapters_found:
+            try:
+                admin = get_admin_client()
+                rows = [{"user_id": user_id, "subject": subject, "chapter": ch,
+                         "last_touched": datetime.now(timezone.utc).isoformat()}
+                        for ch in chapters_found if ch]
+                if rows:
+                    admin.table("chapter_activity").upsert(rows).execute()
+            except Exception as e:
+                print(f"[chapter_activity] save error: {e}", flush=True)
     except Exception as e:
         print(f"Background save error: {e}")
 
@@ -574,6 +584,53 @@ def student_progress():
     })
 
 
+@app.route("/subject-progress", methods=["GET"])
+@login_required
+def subject_progress():
+    """Return per-subject chapter-coverage progress for the current user."""
+    from rag.chapters import CHAPTERS
+    user_id = session['user_id']
+    try:
+        admin = get_admin_client()
+        rows = admin.table("chapter_activity").select("subject, chapter").eq("user_id", user_id).execute()
+        touched = {}  # subject -> set of chapters
+        for row in (rows.data or []):
+            s, ch = row.get("subject"), row.get("chapter")
+            if s and ch:
+                touched.setdefault(s, set()).add(ch)
+    except Exception as e:
+        print(f"[subject_progress] query error: {e}", flush=True)
+        touched = {}
+
+    progress = {}
+    for subj, chapters in CHAPTERS.items():
+        total = len(chapters)
+        done = len(touched.get(subj, set()))
+        progress[subj] = {"done": done, "total": total, "pct": round(done * 100 / total) if total else 0}
+
+    return jsonify({"ok": True, "progress": progress})
+
+
+@app.route("/notes", methods=["GET"])
+@login_required
+def list_notes():
+    user_id = session['user_id']
+    print(f"[notes] querying user_id={user_id}", flush=True)
+    try:
+        rows = get_admin_client().table("notes")\
+            .select("id, subject, chapter, title, points, created_at")\
+            .eq("user_id", user_id)\
+            .order("created_at", desc=True)\
+            .limit(100)\
+            .execute()
+        count = len(rows.data or [])
+        print(f"[notes] found {count} rows. data={rows.data}", flush=True)
+        return jsonify({"ok": True, "notes": rows.data or []})
+    except Exception as e:
+        print(f"[notes] list error: {e}", flush=True)
+        return jsonify({"ok": False, "notes": []})
+
+
 @app.route("/save-stream", methods=["POST"])
 @login_required
 def save_stream():
@@ -654,6 +711,7 @@ def ask():
     threading.Thread(
         target=background_save,
         args=(current_chat_id, messages, user_message, user_id),
+        kwargs={"subject": subject, "chapters_found": chapters_found},
         daemon=True
     ).start()
 
@@ -1196,6 +1254,8 @@ def ask_stream():
             # Strip pinned-fact header if LLM echoed it back
             reply_clean = re.sub(r'\[✅[^\]]*\]\n?', '', reply_clean)
 
+            # Always print so we can see is_logged_in value on every NCTB answer
+            print(f"[NOTE] guard: is_logged_in={is_logged_in} uid={user_id!r} chapters_found={chapters_found} msg_count={len(messages_list)}", flush=True)
             if is_logged_in:
                 messages_list.append({"role": "user", "content": user_message})
                 messages_list.append({"role": "assistant", "content": reply_clean})
@@ -1210,8 +1270,21 @@ def ask_stream():
                 threading.Thread(
                     target=background_save,
                     args=(current_chat_id, messages_list, user_message, user_id),
+                    kwargs={"subject": effective_subject, "chapters_found": chapters_found},
                     daemon=True
                 ).start()
+                # Note thread: fire on 1st answer, then every 4 messages (prevents spam when chat_id column missing)
+                _n = len(messages_list)
+                if _n >= 2 and (_n == 2 or _n % 4 == 0):
+                    def _write_note(_uid=user_id, _subj=effective_subject, _msgs=list(messages_list), _cid=current_chat_id):
+                        from memory import generate_session_note, save_note
+                        print(f"[NOTE] thread fired: uid={_uid} subj={_subj} msgs={len(_msgs)} chat={_cid}", flush=True)
+                        note = generate_session_note(_msgs, _subj)
+                        if note:
+                            save_note(_uid, _cid or "", _subj, note["title"], note["sections"])
+                        else:
+                            print(f"[NOTE] generate_session_note returned None", flush=True)
+                    threading.Thread(target=_write_note, daemon=True).start()
 
             # Guard: if reply is empty after stripping, use a friendly fallback
             print(f"[LLM done] reply_len={len(reply)} reply_clean_len={len(reply_clean.strip())} subject={effective_subject}", flush=True)

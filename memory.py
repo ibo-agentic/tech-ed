@@ -213,6 +213,149 @@ def generate_wrapup(messages: list, student_name: str = "") -> tuple[str, str]:
         return f"আজকের session শেষ! পরে আবার আসো, {name_call} 🌱", ""
 
 
+_SUBJECT_NAMES = {
+    "biology": "জীববিজ্ঞান", "physics": "পদার্থবিজ্ঞান",
+    "chemistry": "রসায়ন", "geography": "ভূগোল",
+    "accounting": "হিসাববিজ্ঞান", "math": "গণিত",
+    "higher_math": "উচ্চতর গণিত", "bangla": "বাংলা সাহিত্য",
+}
+_KNOWN_SUBJECTS = set(_SUBJECT_NAMES.keys())
+
+
+def generate_session_note(messages: list, subject: str) -> dict | None:
+    """
+    Produce a multi-section revision note covering all topics discussed in the chat.
+    Returns {"title": str, "sections": [...]} or None.
+    Each section: {heading, subject, definition, concepts, exam_tips}
+    """
+    print(f"[NOTE] generating for subject={subject} msgs={len(messages)}", flush=True)
+    real_pairs = sum(
+        1 for i in range(len(messages) - 1)
+        if messages[i].get('role') == 'user' and messages[i + 1].get('role') == 'assistant'
+        and isinstance(messages[i].get('content'), str)
+        and not messages[i]['content'].startswith('__')
+    )
+    print(f"[NOTE] real_pairs={real_pairs}", flush=True)
+    if real_pairs < 1:
+        print(f"[NOTE] skipping — no real pairs", flush=True)
+        return None
+
+    convo = "\n".join(
+        f"{'ছাত্র' if m['role'] == 'user' else 'দীপ্তি'}: {str(m.get('content', ''))[:250]}"
+        for m in messages[-20:]
+        if isinstance(m.get('content'), str) and not str(m.get('content', '')).startswith('__')
+    )
+    known_str = ", ".join(_KNOWN_SUBJECTS)
+    prompt = (
+        "এই পড়ার chat থেকে সব আলোচিত topic-এর জন্য একটি multi-section revision note তৈরি করো।\n\n"
+        f"কথোপকথন:\n{convo}\n\n"
+        "প্রতিটি আলাদা topic-এর জন্য একটি section তৈরি করো।\n"
+        "শুধু JSON দাও, অন্য কিছু না:\n"
+        '{{\n'
+        '  "title": "২-৬ শব্দে বাংলা শিরোনাম (সব topic একসাথে)",\n'
+        '  "sections": [\n'
+        '    {{\n'
+        '      "heading": "topic-এর বাংলা শিরোনাম",\n'
+        f'      "subject": "এই topic-এর বিষয় ({known_str} থেকে একটি)",\n'
+        '      "definition": "১-২ বাক্যে সংজ্ঞা",\n'
+        '      "concepts": ["মূল fact ১", "মূল fact ২", "মূল fact ৩"],\n'
+        '      "exam_tips": ["পরীক্ষার টিপস ১"]\n'
+        '    }}\n'
+        '  ]\n'
+        '}}\n'
+        "নিয়ম: প্রতি section-এ concepts: ৩-৫টি, exam_tips: ১-২টি। "
+        "subject field অবশ্যই সঠিক হতে হবে — তরঙ্গ/physics topic হলে 'physics', জীববিজ্ঞান হলে 'biology'।"
+    )
+    raw = ""
+    try:
+        raw = _flash.invoke([HumanMessage(content=prompt)]).strip()
+        print(f"[NOTE] LLM returned: {raw[:200]!r}", flush=True)
+        if "```" in raw:
+            raw = raw.split("```")[1].lstrip("json").strip()
+        data = json.loads(raw)
+        title = (data.get("title") or "").strip()
+        sections = data.get("sections") or []
+        if not title or not sections:
+            print(f"[NOTE] parse failed — no title or empty sections", flush=True)
+            return None
+        # Validate and clean each section
+        clean_sections = []
+        for s in sections:
+            if not isinstance(s, dict):
+                continue
+            heading = (s.get("heading") or "").strip()
+            subj = (s.get("subject") or subject).strip().lower()
+            if subj not in _KNOWN_SUBJECTS:
+                subj = subject
+            concepts = [p for p in (s.get("concepts") or []) if isinstance(p, str) and p.strip()]
+            if not heading or not concepts:
+                continue
+            clean_sections.append({
+                "heading":    heading,
+                "subject":    subj,
+                "definition": (s.get("definition") or "").strip(),
+                "concepts":   concepts,
+                "exam_tips":  [p for p in (s.get("exam_tips") or []) if isinstance(p, str) and p.strip()],
+            })
+        if not clean_sections:
+            print(f"[NOTE] parse failed — no valid sections", flush=True)
+            return None
+        return {"title": title, "sections": clean_sections}
+    except Exception as e:
+        import traceback
+        print(f"[NOTE] parse failed: {e}", flush=True)
+        print(f"[NOTE] raw was: {raw[:400]!r}", flush=True)
+        print(traceback.format_exc(), flush=True)
+        return None
+
+
+def save_note(user_id: str, chat_id: str, subject: str, title: str, sections: list):
+    """Upsert one note per chat — insert on first answer, update as chat grows."""
+    try:
+        from auth import get_admin_client
+        admin = get_admin_client()
+        # Primary subject: use first section's detected subject (more accurate than passed subject)
+        primary_subject = (sections[0].get("subject") or subject) if sections else subject
+        print(f"[NOTE] upserting: title={title!r} chat_id={chat_id} primary_subject={primary_subject}", flush=True)
+        note_data = {
+            "user_id": user_id,
+            "subject": primary_subject,
+            "chapter": primary_subject,
+            "title": title,
+            "points": {"v": 2, "sections": sections},
+        }
+
+        # Try upsert by chat_id (requires SQL migration: ALTER TABLE notes ADD COLUMN IF NOT EXISTS chat_id text)
+        existing = None
+        if chat_id:
+            try:
+                existing = admin.table("notes").select("id").eq("user_id", user_id).eq("chat_id", chat_id).execute()
+            except Exception:
+                pass  # column not yet added — fall through to plain insert
+
+        if existing and existing.data:
+            result = admin.table("notes").update(note_data).eq("id", existing.data[0]["id"]).execute()
+            print(f"[memory] note updated: {title!r}", flush=True)
+        else:
+            # Try insert with chat_id; fall back to without if column missing
+            if chat_id:
+                try:
+                    result = admin.table("notes").insert({**note_data, "chat_id": chat_id}).execute()
+                except Exception:
+                    result = admin.table("notes").insert(note_data).execute()
+                    print(f"[NOTE] inserted without chat_id (run migration to enable upsert)", flush=True)
+            else:
+                result = admin.table("notes").insert(note_data).execute()
+            print(f"[memory] note created: {title!r}", flush=True)
+
+        if not result.data:
+            print(f"[NOTE] upsert returned no data", flush=True)
+    except Exception as e:
+        import traceback
+        print(f"[NOTE] save_note EXCEPTION: {e}", flush=True)
+        print(traceback.format_exc(), flush=True)
+
+
 def touch_session_date(user_id: str):
     """Update last_session_date to now without touching anything else."""
     _upsert(user_id, {'last_session_date': datetime.now(timezone.utc).isoformat()})

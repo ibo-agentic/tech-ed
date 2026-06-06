@@ -125,6 +125,42 @@
     .all-chats-count{font-size:10px;background:var(--bg4);color:var(--text3);padding:1px 6px;border-radius:10px;}
     .all-chats-item.active .all-chats-count{background:var(--blue-bg);color:var(--blue);}
 
+    /* Notes view */
+    .notes-view{padding:16px;max-width:680px;margin:0 auto;}
+    .notes-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+    .notes-search{flex:1;min-width:160px;padding:7px 11px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:12.5px;font-family:'Sora',sans-serif;outline:none;}
+    .notes-search:focus{border-color:var(--green);}
+    .notes-filter-pills{display:flex;gap:6px;flex-wrap:wrap;}
+    .notes-pill{padding:4px 11px;border-radius:20px;font-size:11px;cursor:pointer;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:'Sora',sans-serif;transition:all .13s;}
+    .notes-pill.active{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+    .note-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;transition:border-color .15s;}
+    .note-card:hover{border-color:var(--border2);}
+    .note-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+    .note-card-icon{font-size:16px;flex-shrink:0;}
+    .note-card-title{font-size:13.5px;font-weight:600;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;flex:1;}
+    .note-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg4);color:var(--text3);white-space:nowrap;}
+    .note-points{list-style:none;padding:0;margin:6px 0 0;}
+    .note-points li{font-size:12.5px;color:var(--text2);padding:3px 0 3px 14px;position:relative;line-height:1.6;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .note-points li::before{content:"•";position:absolute;left:0;color:var(--green);}
+    .notes-empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:13.5px;line-height:1.8;font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .note-card{cursor:pointer;}
+    .note-card:hover{border-color:var(--green)!important;}
+    .note-read-more{font-size:11px;color:var(--green);margin-top:8px;text-align:right;font-family:'Sora',sans-serif;}
+    .note-reader{padding:20px 16px;max-width:680px;margin:0 auto;}
+    .note-reader-head{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+    .note-reader-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    .note-reader-h2{font-size:18px;font-weight:700;color:var(--text);margin:0;font-family:'Noto Sans Bengali','Sora',sans-serif;flex:1;}
+    .note-section{margin-bottom:20px;}
+    .note-section-lbl{font-size:11px;font-weight:700;color:var(--green);letter-spacing:.06em;margin-bottom:8px;font-family:'Sora',sans-serif;}
+    .note-definition{font-size:13.5px;color:var(--text);line-height:1.9;margin:0;padding:12px 16px;background:var(--bg3);border-left:3px solid var(--green);border-radius:0 6px 6px 0;font-family:'Noto Sans Bengali','Sora',sans-serif;font-style:italic;}
+    .note-reader-list{list-style:none;padding:0;margin:0;}
+    .note-reader-list li{font-size:13px;color:var(--text2);padding:8px 0 8px 22px;position:relative;line-height:1.8;border-bottom:1px solid var(--border);font-family:'Noto Sans Bengali','Sora',sans-serif;}
+    .note-reader-list li:last-child{border-bottom:none;}
+    .note-reader-list li::before{content:"•";position:absolute;left:0;color:var(--green);font-size:18px;line-height:1.2;}
+    .note-exam-list li::before{content:"★";color:var(--amber);font-size:13px;line-height:1.6;}
+    .note-back-btn{background:none;border:1px solid var(--border2);color:var(--text2);padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:'Sora',sans-serif;transition:all .13s;margin-bottom:4px;}
+    .note-back-btn:hover{border-color:var(--green);color:var(--green);}
+
     .sb-history-section{flex:1;min-height:0;overflow-y:auto;padding-bottom:8px;}
     .sb-history-section::-webkit-scrollbar{width:3px;}
     .sb-history-section::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
@@ -964,6 +1000,12 @@
       <span class="all-chats-count" id="all-chats-count">0</span>
     </div>
 
+    <div class="all-chats-item" id="notebook-btn" onclick="openNotebook()" title="আমার নোট">
+      <span class="all-chats-icon">📓</span>
+      <span class="all-chats-name">আমার নোট</span>
+      <span class="all-chats-count" id="notes-count" style="display:none">0</span>
+    </div>
+
     <div class="sb-progress-section" id="sb-progress-section" style="display:none;">
       <div class="sb-progress-header" onclick="toggleProgressSection()">
         <span class="sb-section-label">📊 PROGRESS</span>
@@ -1643,6 +1685,262 @@ async function loadProjects(){
   try{const r=await fetch('/projects');if(!r.ok)return;const d=await r.json();projects=d.projects||[];renderProjects();}catch(e){console.error(e);}
 }
 
+async function loadSubjectProgress(){
+  if(!loggedInUser) return;
+  try{
+    const r=await fetch('/subject-progress');
+    if(!r.ok) return;
+    const d=await r.json();
+    if(!d.ok) return;
+    document.querySelectorAll('.subj-card[data-subject]').forEach(card=>{
+      const subj=card.dataset.subject;
+      const p=d.progress[subj];
+      if(!p) return;
+      const ex=card.querySelector('.subj-card-example');
+      if(!ex) return;
+      ex.textContent=`${p.done}/${p.total} অধ্যায় · ${p.pct}%`;
+      const existing=card.querySelector('.subj-prog-bar');
+      if(!existing){
+        const track=document.createElement('div');
+        track.className='subj-prog-bar';
+        track.style.cssText='margin-top:5px;height:3px;border-radius:2px;background:var(--bg4);overflow:hidden;';
+        const fill=document.createElement('div');
+        fill.style.cssText=`height:100%;width:${p.pct}%;background:var(--green);border-radius:2px;transition:width .4s ease;`;
+        track.appendChild(fill);
+        card.appendChild(track);
+      }else{
+        const fill=existing.querySelector('div');
+        if(fill) fill.style.width=p.pct+'%';
+      }
+    });
+  }catch(e){}
+}
+
+const _SUBJ_ICONS = {biology:'🧬',physics:'⚛️',chemistry:'⚗️',geography:'🌍',accounting:'💼',math:'🔢',higher_math:'📐',bangla:'📖'};
+let _notesData = [];
+
+async function loadNotes(){
+  if(!loggedInUser) return;
+  try{
+    const r=await fetch('/notes');
+    if(!r.ok) return;
+    const d=await r.json();
+    if(!d.ok) return;
+    _notesData = d.notes || [];
+    const cnt = document.getElementById('notes-count');
+    if(cnt){ cnt.textContent = _notesData.length; cnt.style.display = _notesData.length ? '' : 'none'; }
+  }catch(e){}
+}
+
+function _fmtNoteDate(iso){
+  if(!iso) return '';
+  try{
+    const d=new Date(iso);
+    return d.toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})+' '+
+           d.toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){return '';}
+}
+
+function _noteIsV2(pts){ return pts && pts.v===2 && Array.isArray(pts.sections); }
+
+// Keyword-based subject detection for old v1 notes saved with wrong subject
+const _SUBJ_KEYWORDS = {
+  physics:    /তরঙ্গ|wave|বল\b|force|গতি|motion|ত্বরণ|তাপ|heat|বিদ্যুৎ|electric|চৌম্বক|magnet|আলো\b|light|শব্দ\b|sound|ভর\b|mass|শক্তি\b|energy|কার্য\b|work|ঘর্ষণ|friction|চাপ\b|pressure|ঘনত্ব\b|density|প্রতিসরণ|নিউটন|পদার্থ/i,
+  chemistry:  /রসায়ন|পরমাণু|atom|অণু\b|molecule|আয়ন\b|ion|বিক্রিয়া|reaction|এসিড|acid|ক্ষার\b|base|লবণ\b|salt|মৌল\b|element|যৌগ\b|compound|ইলেকট্রন|প্রোটন|নিউট্রন|অক্সিজেন|হাইড্রোজেন/i,
+  biology:    /কোষ\b|cell|অসমোসিস|osmosis|সালোকসংশ্লেষণ|photosynthesis|ক্লোরোফিল|chlorophyll|ডিএনএ|dna|ক্রোমোসোম|chromosome|মাইটোসিস|mitosis|মিয়োসিস|meiosis|জীব\b|বাস্তুতন্ত্র|ecosystem|শ্বসন|respiration|ভাইরাস|bacteria|উদ্ভিদ|প্রাণী/i,
+  accounting: /হিসাব|accounting|লেনদেন|transaction|ডেবিট|debit|ক্রেডিট|credit|মূলধন|capital|সম্পদ|asset|দায়\b|liability|মুনাফা|profit|ব্যয়\b|expense|আয়\b|income|বাজেট|balance/i,
+  geography:  /ভূগোল|geography|বায়ুমণ্ডল|atmosphere|নদী\b|river|পর্বত|mountain|মানচিত্র|map|মহাসাগর|ocean|জলবায়ু|climate|আবহাওয়া|weather|মাটি\b|soil|বনভূমি|forest|জনসংখ্যা|population/i,
+  math:       /সমীকরণ|equation|বীজগণিত|algebra|জ্যামিতি|geometry|ত্রিকোণমিতি|trigonometry|সংখ্যা\b|দ্বিঘাত|quadratic|ফাংশন\b|function|সেট\b|set|অনুপাত|ratio|শতকরা|percentage|গড়\b|mean|সম্ভাবনা|probability/i,
+  bangla:     /সাহিত্য|literature|কবিতা|poem|গল্প\b|story|উপন্যাস|novel|নাটক|drama|রবীন্দ্র|নজরুল|ছন্দ|rhyme|গদ্য|prose|সংলাপ|dialogue|চরিত্র|character/i,
+};
+function _guessSubject(n){
+  const text = (n.title||'') + ' ' + JSON.stringify(n.points||'');
+  for(const [subj, re] of Object.entries(_SUBJ_KEYWORDS)){
+    if(re.test(text)) return subj;
+  }
+  return null;
+}
+
+function _notePreviewHtml(pts){
+  if(!pts) return '';
+  if(_noteIsV2(pts)){
+    // Show first 2 concepts from first section
+    const s=pts.sections[0];
+    if(!s) return '';
+    return (s.concepts||[]).slice(0,2).map(p=>`<li>${escapeHtml(p)}</li>`).join('');
+  }
+  if(Array.isArray(pts)) return pts.slice(0,2).map(p=>`<li>${escapeHtml(p)}</li>`).join('');
+  let h='';
+  if(pts.definition) h+=`<li style="font-style:italic;color:var(--text)">${escapeHtml(pts.definition)}</li>`;
+  if(pts.concepts?.length) h+=pts.concepts.slice(0,2).map(c=>`<li>${escapeHtml(c)}</li>`).join('');
+  return h;
+}
+
+function _renderNotes(notes){
+  const container=document.getElementById('notes-cards');
+  if(!container) return;
+  if(!notes.length){
+    container.innerHTML='<div class="notes-empty">এখনো কোনো নোট নেই। কিছু পড়া শেষ করলে আপু এখানে নোট রেখে যাবে 🌱</div>';
+    return;
+  }
+  container.innerHTML=notes.map(n=>{
+    const pts=n.points;
+    const isV2=_noteIsV2(pts);
+    // Use _noteSubjects for consistent subject resolution (keyword-guess for v1 mislabelled notes)
+    const subjects=[...new Set(_noteSubjects(n))];
+    const subjectTags=subjects.map(s=>`<span class="note-tag">${_SUBJ_ICONS[s]||'📝'} ${escapeHtml(s)}</span>`).join(' ');
+    // Section count chip for v2
+    const secChip=isV2&&pts.sections.length>1?`<span class="note-tag" style="background:var(--bg4);color:var(--text3);">${pts.sections.length}টি topic</span>`:'';
+    const preview=_notePreviewHtml(pts);
+    const dateStr=_fmtNoteDate(n.created_at);
+    return `<div class="note-card" onclick="openNoteReader('${escapeHtml(n.id)}')">
+      <div class="note-card-head">
+        <span class="note-card-icon">${_SUBJ_ICONS[subjects[0]]||'📝'}</span>
+        <span class="note-card-title">${escapeHtml(n.title||'')}</span>
+        ${subjectTags}${secChip}
+      </div>
+      <ul class="note-points">${preview}</ul>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+        <span style="font-size:10px;color:var(--text3);">${dateStr}</span>
+        <span class="note-read-more">বিস্তারিত পড়ো →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openNoteReader(noteId){
+  const n=_notesData.find(x=>x.id===noteId);
+  if(!n||!chatBox) return;
+  chatBox.innerHTML=''; chatBox.scrollTop=0;
+  document.querySelectorAll('.all-chats-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('notebook-btn')?.classList.add('active');
+  const pts=n.points;
+  const isV2=_noteIsV2(pts);
+  const dateStr=_fmtNoteDate(n.created_at);
+
+  function _sec(lbl,items,extraClass=''){
+    if(!items||!items.length) return '';
+    return `<div class="note-section">
+      <div class="note-section-lbl">${lbl}</div>
+      <ul class="note-reader-list ${extraClass}">${items.map(p=>`<li>${escapeHtml(p)}</li>`).join('')}</ul>
+    </div>`;
+  }
+
+  let body='';
+  if(isV2){
+    body=(pts.sections||[]).map((s,i)=>{
+      const sIcon=_SUBJ_ICONS[s.subject]||'📝';
+      const sLabel=s.subject||'';
+      let sb='';
+      if(s.definition) sb+=`<div class="note-section"><div class="note-section-lbl">📌 সংজ্ঞা</div><p class="note-definition">${escapeHtml(s.definition)}</p></div>`;
+      sb+=_sec('💡 মূল ধারণা',s.concepts);
+      sb+=_sec('🎯 পরীক্ষার টিপস',s.exam_tips,'note-exam-list');
+      return `<div style="margin-bottom:24px;padding-bottom:20px;${i<pts.sections.length-1?'border-bottom:1px solid var(--border);':''}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-size:20px">${sIcon}</span>
+          <strong style="font-size:15px;color:var(--text);font-family:'Noto Sans Bengali','Sora',sans-serif;">${escapeHtml(s.heading||'')}</strong>
+          ${sLabel?`<span class="note-tag">${escapeHtml(sLabel)}</span>`:''}
+        </div>${sb}</div>`;
+    }).join('');
+  } else if(Array.isArray(pts)){
+    body=_sec('💡 মূল ধারণা',pts);
+  } else if(pts){
+    if(pts.definition) body+=`<div class="note-section"><div class="note-section-lbl">📌 সংজ্ঞা</div><p class="note-definition">${escapeHtml(pts.definition)}</p></div>`;
+    body+=_sec('💡 মূল ধারণা',pts.concepts);
+    body+=_sec('📝 উদাহরণ',pts.examples);
+    body+=_sec('🎯 পরীক্ষার টিপস',pts.exam_tips,'note-exam-list');
+  }
+
+  const reader=document.createElement('div');
+  reader.className='note-reader';
+  reader.innerHTML=`
+    <div class="note-reader-head">
+      <button class="note-back-btn" onclick="openNotebook()">← নোটে ফিরে যাও</button>
+      <div class="note-reader-title-row">
+        <h2 class="note-reader-h2">${escapeHtml(n.title||'')}</h2>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">${dateStr}</div>
+    </div>
+    ${body}`;
+  chatBox.appendChild(reader);
+}
+
+async function openNotebook(){
+  console.log('openNotebook fired');
+  try{
+    if(!chatBox){ console.error('[openNotebook] chatBox is null'); return; }
+    document.getElementById('welcome-screen')?.remove();
+    chatBox.innerHTML=''; navReset(); mmReset();
+    chatBox.scrollTop=0;
+    currentChatId=null;
+    document.querySelectorAll('.all-chats-item').forEach(el=>el.classList.remove('active'));
+    document.getElementById('notebook-btn')?.classList.add('active');
+    closeSidebar();
+
+    // Render shell immediately — gives instant click feedback before the fetch
+    const view = document.createElement('div');
+    view.id = 'notes-view';
+    view.className = 'notes-view';
+    view.innerHTML = `
+      <div class="notes-toolbar">
+        <input class="notes-search" id="notes-search-input" placeholder="নোট খুঁজো..." oninput="_noteFilter()">
+      </div>
+      <div class="notes-filter-pills" id="notes-pills"></div>
+      <div style="height:10px"></div>
+      <div id="notes-cards"><div class="notes-empty">লোড হচ্ছে...</div></div>`;
+    chatBox.appendChild(view);
+
+    // Fetch fresh data, then build pills + cards
+    await loadNotes();
+
+    // Build subject pills from all section-level subjects (v2 notes) + row-level (old notes)
+    const subjects = [...new Set(_notesData.flatMap(n=>{
+      const pts=n.points;
+      if(_noteIsV2(pts)) return (pts.sections||[]).map(s=>s.subject).filter(Boolean);
+      return [n.subject].filter(Boolean);
+    }))].sort();
+    const pillsHtml = ['সব',...subjects].map((s,i)=>
+      `<button class="notes-pill${i===0?' active':''}" data-subj="${i===0?'':s}" onclick="_notePill(this)">${i===0?s:(_SUBJ_ICONS[s]||'')+'  '+s}</button>`
+    ).join('');
+    const pEl = document.getElementById('notes-pills');
+    if(pEl) pEl.innerHTML = pillsHtml;
+
+    _renderNotes(_notesData);
+  }catch(e){
+    console.error('[openNotebook] error:', e);
+  }
+}
+
+function _noteSubjects(n){
+  // Returns array of all subjects covered by a note (section-level for v2, keyword-guessed for old)
+  const pts=n.points;
+  if(_noteIsV2(pts)) return (pts.sections||[]).map(s=>s.subject).filter(Boolean);
+  // v1: try keyword detection first, fall back to stored subject
+  const guessed=_guessSubject(n);
+  return [(guessed||n.subject)].filter(Boolean);
+}
+
+function _noteFilter(){
+  const q = (document.getElementById('notes-search-input')?.value||'').toLowerCase();
+  const activePill = document.querySelector('#notes-pills .notes-pill.active');
+  const subj = activePill?.dataset.subj || '';
+  const filtered = _notesData.filter(n=>{
+    if(subj && !_noteSubjects(n).includes(subj)) return false;
+    if(!q) return true;
+    const pts=n.points||{};
+    const ptext=_noteIsV2(pts)?(pts.sections||[]).map(s=>(s.heading||'')+' '+(s.concepts||[]).join(' ')).join(' '):(pts.concepts||[]).join(' ');
+    const text=(n.title+' '+ptext).toLowerCase();
+    return text.includes(q);
+  });
+  _renderNotes(filtered);
+}
+
+function _notePill(btn){
+  document.querySelectorAll('#notes-pills .notes-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  _noteFilter();
+}
+
 async function loadProgress(){
   if(!loggedInUser){document.getElementById('sb-progress-section').style.display='none';return;}
   const _ps=document.getElementById('sb-progress-section');
@@ -1774,13 +2072,7 @@ async function loadChatById(chatId){
           if(storedMcq){
             chatBox.appendChild(renderStoredMcqBubble(storedMcq));
           }else{
-            const div=createBotWrapper(marked.parse(fixGeometryMermaid(preprocessMath(m.content.replace(/^([ \t]*)•[ \t]+/gm,'$1* ').replace(/^ {4,}([*\-] )/gm,'  $1')))));
-            chatBox.appendChild(div);
-            const bub=div.querySelector('.bubble');
-            try{renderMath(bub);}catch(e){}
-            try{renderMermaid(bub);}catch(e){}
-            try{renderSVG(bub);}catch(e){console.warn('[loadChat] renderSVG error:',e);}
-            try{postProcessConceptCard(bub);}catch(e){}
+            addBotMessage(m.content, false);
           }
         }
       }catch(e){console.warn('[loadChat] message render error:',e);}
@@ -2017,6 +2309,7 @@ function _doNewChat(){
       }
     }).catch(()=>{});
   }
+  loadSubjectProgress();
 }
 
 function toggleSidebar(){if(sidebarOpen)closeSidebar();else openSidebar();}
@@ -3133,8 +3426,15 @@ function addBotMessage(text, showChips=false, _inPlaceDiv=null){
   {
     const _cm=text.match(/```card\s*\n([\s\S]+?)\n```/);
     if(_cm){
+      // Repair common LLM JSON mistakes before parsing
+      function _fixJson(s){
+        return s
+          .replace(/,\s*([}\]])/g,'$1')       // trailing commas
+          .replace(/[""]/g,'"').replace(/['']/g,"'") // smart quotes
+          .replace(/\t/g,' ');                 // literal tabs in strings
+      }
       try{
-        const _cd=JSON.parse(_cm[1]);
+        const _cd=JSON.parse(_fixJson(_cm[1]));
         // Strip CJK characters from step/tip text (model occasionally outputs Chinese for Bangla terms).
         // Strip rather than drop — a partial Bangla term is better than a blank entry.
         if(_cd.steps) _cd.steps=_cd.steps.map(s=>({...s,head:_noCJK(s.head),body:_noCJK(s.body)})).filter(s=>s.head||s.body);
@@ -3166,7 +3466,10 @@ function addBotMessage(text, showChips=false, _inPlaceDiv=null){
         maybeScrollBottom();
         setTimeout(()=>{maybeScrollBottom();mmRedraw();},150);
         return;
-      }catch(e){/* JSON parse failed \u2014 fall through */}
+      }catch(e){
+        // Parsing failed \u2014 strip the card block so raw JSON never shows in the bubble
+        text=text.replace(/```card\s*\n[\s\S]+?\n```/g,'').trim();
+      }
     }
   }
 
@@ -4875,10 +5178,6 @@ async function sendTestSummary(){
 
 const SUBJECT_LABELS={biology:'জীববিজ্ঞান',physics:'পদার্থবিজ্ঞান',chemistry:'রসায়ন',accounting:'হিসাববিজ্ঞান',geography:'ভূগোল',math:'গণিত',general:'সাধারণ'};
 
-function openNotebook(){
-  // notebook removed
-  return;
-}
 function closeNotebook(){}
 function hideLogoutModal(){document.getElementById('logout-overlay').classList.remove('active');}
 function handleLogoutOverlayClick(e){if(e.target.id==='logout-overlay')hideLogoutModal();}
@@ -4918,6 +5217,8 @@ async function checkLoginState(){
       await loadProjects();
       await loadAllChats();
       loadProgress();
+      loadSubjectProgress();
+      loadNotes();
       if(d.needs_verification&&d.email)showVerifyScreen(d.email);
       // Show Dipti's personalised opening on the initial welcome screen
       const _sp = activeStream ? `?stream=${encodeURIComponent(activeStream)}` : '';
